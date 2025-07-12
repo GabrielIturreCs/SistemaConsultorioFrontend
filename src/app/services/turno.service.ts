@@ -184,4 +184,38 @@ export class TurnoService {
   getMisTurnos(): Observable<Turno[]> {
     return this.http.get<Turno[]>(`${this.apiUrl}/mis-turnos`, { headers: this.getHeaders() });
   }
+
+  // Obtener horarios ocupados para una fecha específica
+  getHorariosOcupados(fecha: string, dentistaId?: string): Observable<any> {
+    const params: any = { fecha };
+    if (dentistaId) params.dentistaId = dentistaId;
+    
+    return this.http.get<any>(`${this.apiUrl}/horarios-ocupados`, {
+      headers: this.getHeaders(),
+      params
+    });
+  }
+
+  // Obtener disponibilidad de fechas para un mes
+  getDisponibilidadFechas(mes: string, anio: string, dentistaId?: string): Observable<any> {
+    const params: any = { mes, anio };
+    if (dentistaId) params.dentistaId = dentistaId;
+    
+    return this.http.get<any>(`${this.apiUrl}/disponibilidad-fechas`, {
+      headers: this.getHeaders(),
+      params
+    });
+  }
+
+  // Obtener agenda de un dentista específico
+  getAgendaDentista(dentistaId: string, fecha?: string): Observable<any> {
+    const params: any = {};
+    if (fecha) params.fecha = fecha;
+    
+    return this.http.get<any>(`${this.apiUrl}/agenda-dentista/${dentistaId}`, {
+      headers: this.getHeaders(),
+      params
+    });
+  }
+
 } 

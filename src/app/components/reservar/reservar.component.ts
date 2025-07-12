@@ -571,31 +571,79 @@ export class ReservarComponent implements OnInit {
     if (!day.available) return;
     
     this.selectedDate = this.formatDate(day.date);
+    this.selectedTime = '';
+    
+    // Actualizar el calendario para mostrar la fecha seleccionada
+    this.calendarDays.forEach(d => d.isSelected = false);
+    day.isSelected = true;
+    
+    // Generar slots de tiempo para la fecha seleccionada
     this.generateTimeSlots();
-    this.generateCalendar(); // Refresh to show selection
+    
+    // Avanzar al siguiente paso después de seleccionar la fecha
     this.nextStep();
   }
 
   // Time Slots Methods
   generateTimeSlots(): void {
-    this.availableTimeSlots = [];
-    const startHour = 8; // 8:00 AM
-    const endHour = 18; // 6:00 PM
-    const intervalMinutes = 20;
+    if (!this.selectedDate) return;
+
+    const dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
     
-    const occupiedTimes = this.occupiedSlots[this.selectedDate] || [];
-    
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (let minute = 0; minute < 60; minute += intervalMinutes) {
-        const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        const isOccupied = occupiedTimes.includes(timeStr);
+    // Cargar horarios ocupados desde el backend
+    this.turnoService.getHorariosOcupados(this.selectedDate, dentistaId).subscribe({
+      next: (response) => {
+        if (response.status === '1') {
+          const horasOcupadas = response.horasOcupadas || [];
+          
+          // Generar todos los slots de tiempo (8:00 AM a 6:00 PM, cada 20 minutos)
+          const slots = [];
+          for (let hour = 8; hour <= 18; hour++) {
+            for (let minute = 0; minute < 60; minute += 20) {
+              if (hour === 18 && minute > 0) break; // No pasar de las 6:00 PM
+              
+              const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+              const isOccupied = horasOcupadas.includes(timeString);
+              
+              slots.push({
+                time: timeString,
+                available: !isOccupied
+              });
+            }
+          }
+          
+          this.availableTimeSlots = slots;
+          console.log('✅ Slots de tiempo generados:', {
+            fecha: this.selectedDate,
+            totalSlots: slots.length,
+            ocupados: horasOcupadas.length,
+            disponibles: slots.filter(s => s.available).length
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar horarios ocupados:', error);
+        // Fallback: generar slots básicos
+        this.generateTimeSlotsFallback();
+      }
+    });
+  }
+
+  // Fallback para generar slots básicos en caso de error
+  private generateTimeSlotsFallback(): void {
+    const slots = [];
+    for (let hour = 8; hour <= 18; hour++) {
+      for (let minute = 0; minute < 60; minute += 20) {
+        if (hour === 18 && minute > 0) break;
         
-        this.availableTimeSlots.push({
-          time: timeStr,
-          available: !isOccupied
+        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        slots.push({
+          time: timeString,
+          available: true
         });
       }
     }
+    this.availableTimeSlots = slots;
   }
 
   selectTime(timeSlot: any): void {
@@ -647,14 +695,52 @@ export class ReservarComponent implements OnInit {
   }
 
   hasAvailableSlots(dateStr: string): boolean {
-    // Simular que hay slots disponibles (en una app real, esto vendría del backend)
-    const occupiedTimes = this.occupiedSlots[dateStr] || [];
-    const totalSlots = (18 - 8) * 3; // 8AM to 6PM, every 20 minutes
-    return occupiedTimes.length < totalSlots;
+    // Verificar si la fecha está marcada como completamente ocupada
+    const occupiedSlots = this.occupiedSlots[dateStr] || [];
+    if (occupiedSlots.includes('COMPLETO')) {
+      return false;
+    }
+    
+    // Si no hay datos específicos, asumir que hay disponibilidad
+    return true;
   }
 
   loadOccupiedSlots(): void {
-    // Simular datos ocupados (en una app real, esto vendría del backend)
+    // Cargar horarios ocupados desde el backend
+    const mes = (this.currentMonth.getMonth() + 1).toString().padStart(2, '0');
+    const anio = this.currentMonth.getFullYear().toString();
+    const dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
+
+    this.turnoService.getDisponibilidadFechas(mes, anio, dentistaId).subscribe({
+      next: (response) => {
+        if (response.status === '1' && response.disponibilidad) {
+          // Convertir la respuesta del backend al formato esperado
+          this.occupiedSlots = {};
+          
+          Object.keys(response.disponibilidad).forEach(fecha => {
+            const info = response.disponibilidad[fecha];
+            // Si el día está completamente ocupado (100%), marcar como no disponible
+            if (info.porcentajeOcupado >= 100) {
+              this.occupiedSlots[fecha] = ['COMPLETO'];
+            }
+          });
+
+          console.log('✅ Horarios ocupados cargados:', this.occupiedSlots);
+          
+          // Regenerar el calendario con la nueva información
+          this.generateCalendar();
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar horarios ocupados:', error);
+        // Fallback a datos simulados en caso de error
+        this.loadOccupiedSlotsFallback();
+      }
+    });
+  }
+
+  // Fallback con datos simulados en caso de error
+  private loadOccupiedSlotsFallback(): void {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
@@ -757,6 +843,18 @@ export class ReservarComponent implements OnInit {
 
     this.turnoService.createTurno(turnoData).subscribe({
       next: (turnoCreado: any) => {
+        // Recargar horarios ocupados para reflejar el nuevo turno
+        this.loadOccupiedSlots();
+        
+        // También recargar los slots de tiempo específicos para la fecha seleccionada
+        if (this.selectedDate) {
+          this.generateTimeSlots();
+          // Forzar actualización de la vista
+          setTimeout(() => {
+            this.generateTimeSlots();
+          }, 500);
+        }
+        
         // 2. Usar el _id real del turno para la preferencia de pago
         const turnoId = turnoCreado._id || turnoCreado.id;
         this.mercadoPagoService.createTurnoPayment(
@@ -822,6 +920,18 @@ export class ReservarComponent implements OnInit {
         next: (turnoCreado: any) => {
           this.isLoading = false;
           console.log('✅ Turno creado con pago en efectivo:', turnoCreado);
+          
+          // Recargar horarios ocupados para reflejar el nuevo turno
+          this.loadOccupiedSlots();
+          
+          // También recargar los slots de tiempo específicos para la fecha seleccionada
+          if (this.selectedDate) {
+            this.generateTimeSlots();
+            // Forzar actualización de la vista
+            setTimeout(() => {
+              this.generateTimeSlots();
+            }, 500);
+          }
           
           // Mostrar mensaje de éxito
           this.notificationService.showSuccess('Turno registrado exitosamente. Pago en efectivo al momento de la consulta.');
@@ -1070,6 +1180,16 @@ export class ReservarComponent implements OnInit {
       this.dataRefreshService.triggerRefresh('vistaPaciente');
       this.turnoService.refreshTurnos();
       
+      // Recargar horarios ocupados para reflejar el turno confirmado
+      this.loadOccupiedSlots();
+      if (this.selectedDate) {
+        this.generateTimeSlots();
+        // Forzar actualización de la vista
+        setTimeout(() => {
+          this.generateTimeSlots();
+        }, 500);
+      }
+      
       console.log('✅ Turno confirmado exitosamente');
       this.notificationService.showSuccess('¡Turno confirmado exitosamente! El pago se procesó correctamente.');
       
@@ -1132,6 +1252,16 @@ export class ReservarComponent implements OnInit {
       this.dataRefreshService.triggerRefresh('vistaPaciente');
       this.turnoService.refreshTurnos();
       
+      // Recargar horarios ocupados para reflejar el turno confirmado
+      this.loadOccupiedSlots();
+      if (this.selectedDate) {
+        this.generateTimeSlots();
+        // Forzar actualización de la vista
+        setTimeout(() => {
+          this.generateTimeSlots();
+        }, 500);
+      }
+      
       this.notificationService.showSuccess('¡Pago procesado exitosamente! Tu turno está confirmado.');
     } else {
       console.log('⚠️ No se encontró información de pago, intentando registrar turno');
@@ -1159,6 +1289,17 @@ export class ReservarComponent implements OnInit {
           this.isLoading = false;
           this.currentStep = this.shouldSelectPaciente ? 6 : 5;
           this.paymentSuccess = true;
+          
+          // Recargar horarios ocupados para reflejar el turno registrado
+          this.loadOccupiedSlots();
+          if (this.selectedDate) {
+            this.generateTimeSlots();
+            // Forzar actualización de la vista
+            setTimeout(() => {
+              this.generateTimeSlots();
+            }, 500);
+          }
+          
           this.notificationService.showSuccess('¡Turno registrado exitosamente!');
         },
         error: (error) => {
@@ -1180,6 +1321,10 @@ export class ReservarComponent implements OnInit {
   selectDentista(dentista: any) {
     this.selectedDentista = dentista;
     this.turnoForm.dentistaId = dentista._id || dentista.id;
+    
+    // Recargar horarios ocupados para el dentista seleccionado
+    this.loadOccupiedSlots();
+    
     this.nextStep();
   }
 }
