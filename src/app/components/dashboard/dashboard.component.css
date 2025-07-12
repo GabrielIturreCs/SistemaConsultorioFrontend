@@ -2645,3 +2645,1458 @@ body {
     padding: 6px;
   }
 }
+
+/* Estilos para las mejoras del dashboard */
+.stat-icon {
+  opacity: 0.9;
+  transition: all 0.3s ease;
+}
+
+.stat-trend {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 0.5rem;
+}
+
+.stat-trend i {
+  margin-right: 0.25rem;
+}
+
+/* Estilos para las tarjetas de turnos */
+.turno-card {
+  transition: all 0.3s ease;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.turno-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 191, 255, 0.2);
+}
+
+.turno-number {
+  font-weight: bold;
+}
+
+.priority-indicator {
+  font-size: 1.2rem;
+}
+
+.patient-info {
+  background: rgba(0, 191, 255, 0.05);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.avatar-circle {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.turno-details {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.detail-item i {
+  width: 20px;
+  text-align: center;
+}
+
+.turno-actions {
+  background: rgba(248, 249, 250, 0.8);
+}
+
+.turno-actions .btn {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+}
+
+/* Estilos para la tabla de próximos turnos */
+.table-responsive {
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.table thead th {
+  background: linear-gradient(135deg, #00bfff 0%, #7ff6ff 100%);
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  border: none;
+  padding: 1rem 0.75rem;
+}
+
+.table tbody tr {
+  transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(0, 191, 255, 0.05);
+  transform: scale(1.01);
+}
+
+.table tbody td {
+  padding: 1rem 0.75rem;
+  vertical-align: middle;
+  border-color: rgba(0, 191, 255, 0.1);
+}
+
+/* Estilos para estados de turnos */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Responsive para las mejoras */
+@media (max-width: 768px) {
+  .turno-card {
+    margin-bottom: 1rem;
+  }
+
+  .detail-item {
+    font-size: 0.8rem;
+  }
+
+  .turno-actions .btn {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .stat-icon {
+    font-size: 1.5rem !important;
+  }
+
+  .turno-details {
+    padding: 0.5rem;
+  }
+
+  .patient-info {
+    padding: 0.5rem;
+  }
+}
+
+/* ===== ESTILOS PARA BOTONES DE ACCIÓN ===== */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-width: 120px;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.action-btn:hover::before {
+  left: 100%;
+}
+
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.action-btn:active {
+  transform: translateY(-1px);
+}
+
+.action-btn-large {
+  padding: 0.75rem 1rem !important;
+  font-size: 0.9rem !important;
+  min-width: 120px !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.action-btn-large:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.action-btn-success {
+  background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.action-btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34) !important;
+  color: white !important;
+}
+
+.action-btn-warning {
+  background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+  color: #212529 !important;
+  border: none !important;
+}
+
+.action-btn-warning:hover {
+  background: linear-gradient(135deg, #e0a800, #d39e00) !important;
+  color: #212529 !important;
+}
+
+.action-btn-info {
+  background: linear-gradient(135deg, #17a2b8, #138496) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.action-btn-info:hover {
+  background: linear-gradient(135deg, #138496, #117a8b) !important;
+  color: white !important;
+}
+
+.action-btn-danger {
+  background: linear-gradient(135deg, #dc3545, #c82333) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.action-btn-danger:hover {
+  background: linear-gradient(135deg, #c82333, #bd2130) !important;
+  color: white !important;
+}
+
+.action-btn-outline {
+  background: transparent !important;
+  color: #6c757d !important;
+  border: 2px solid #6c757d !important;
+}
+
+.action-btn-outline:hover {
+  background: #6c757d !important;
+  color: white !important;
+}
+
+.action-btn-disabled {
+  background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+  color: white !important;
+  border: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
+.action-btn-disabled:hover {
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.icon-action {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.btn-text {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Mejoras para el botón Ver Agenda */
+.btn-success {
+  background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+  color: white !important;
+}
+
+/* Mejoras para los botones del header */
+.card-header.bg-gradient-primary .btn-success {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #28a745 !important;
+  border: 2px solid #28a745 !important;
+  font-weight: 600 !important;
+}
+
+.card-header.bg-gradient-primary .btn-success:hover {
+  background: #28a745 !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Responsive para botones grandes */
+@media (max-width: 768px) {
+  .action-btn-large {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+    min-width: 100px !important;
+  }
+  
+  .btn-text {
+    display: none;
+  }
+  
+  .icon-action {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Estilos para la sección de Próximos Turnos */
+.proximos-turnos-container {
+  padding: 1rem;
+}
+
+.proximo-turno-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #e9ecef;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.proximo-turno-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.proximo-turno-card.urgente {
+  border-color: #dc3545;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+}
+
+.proximo-turno-card.proximo {
+  border-color: #ffc107;
+  background: linear-gradient(135deg, #fffbf0 0%, #fff3cd 100%);
+}
+
+.proximo-turno-card.normal {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #f0fff4 0%, #d4edda 100%);
+}
+
+.turno-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.turno-priority-indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: white;
+  margin-right: 1rem;
+}
+
+.turno-priority-indicator.priority-high {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  animation: pulse 2s infinite;
+}
+
+.turno-priority-indicator.priority-medium {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.turno-priority-indicator.priority-low {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.turno-info {
+  flex: 1;
+}
+
+.turno-number {
+  margin-bottom: 0.5rem;
+}
+
+.turno-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.turno-time-remaining {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.turno-time-remaining.time-high {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.turno-time-remaining.time-medium {
+  background: rgba(255, 193, 7, 0.1);
+  color: #856404;
+}
+
+.turno-time-remaining.time-low {
+  background: rgba(40, 167, 69, 0.1);
+  color: #155724;
+}
+
+.patient-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+}
+
+.patient-avatar {
+  margin-right: 1rem;
+}
+
+.patient-avatar .avatar-circle {
+  width: 50px;
+  height: 50px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.patient-details {
+  flex: 1;
+}
+
+.patient-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: #2c3e50;
+}
+
+.patient-phone {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.turno-details {
+  margin-bottom: 1.5rem;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.detail-row:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.detail-row i {
+  width: 20px;
+  margin-right: 0.75rem;
+  text-align: center;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #495057;
+  margin-right: 0.5rem;
+  min-width: 80px;
+}
+
+.detail-value {
+  color: #2c3e50;
+  flex: 1;
+}
+
+.turno-actions {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  min-width: 40px;
+  justify-content: center;
+}
+
+.action-btn-large {
+  padding: 0.75rem 1rem !important;
+  font-size: 0.9rem !important;
+  min-width: 120px !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.action-btn-large:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.action-btn-success {
+  background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.action-btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34) !important;
+  color: white !important;
+}
+
+.action-btn-warning {
+  background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+  color: #212529 !important;
+  border: none !important;
+}
+
+.action-btn-warning:hover {
+  background: linear-gradient(135deg, #e0a800, #d39e00) !important;
+  color: #212529 !important;
+}
+
+.action-btn-info {
+  background: linear-gradient(135deg, #17a2b8, #138496) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.action-btn-info:hover {
+  background: linear-gradient(135deg, #138496, #117a8b) !important;
+  color: white !important;
+}
+
+.action-btn-danger {
+  background: linear-gradient(135deg, #dc3545, #c82333) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.action-btn-danger:hover {
+  background: linear-gradient(135deg, #c82333, #bd2130) !important;
+  color: white !important;
+}
+
+.action-btn-outline {
+  background: transparent !important;
+  color: #6c757d !important;
+  border: 2px solid #6c757d !important;
+}
+
+.action-btn-outline:hover {
+  background: #6c757d !important;
+  color: white !important;
+}
+
+.action-btn-disabled {
+  background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+  color: white !important;
+  border: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
+.action-btn-disabled:hover {
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.icon-action {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.btn-text {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Estilos para notificaciones amigables */
+.friendly-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 400px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideInRight 0.5s ease-out;
+  overflow: hidden;
+}
+
+.friendly-notification.success {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  border-left: 5px solid #28a745;
+}
+
+.friendly-notification.error {
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+  border-left: 5px solid #dc3545;
+}
+
+.friendly-notification.warning {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  border-left: 5px solid #ffc107;
+}
+
+.friendly-notification.info {
+  background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+  border-left: 5px solid #17a2b8;
+}
+
+.notification-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem 0.5rem;
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  font-size: 1.2rem;
+  color: white;
+}
+
+.notification-icon.success {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+.notification-icon.error {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.notification-icon.warning {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.notification-icon.info {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.notification-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.notification-message {
+  padding: 0 1.5rem 1rem;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.notification-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.notification-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #495057;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Mejoras para el header de próximos turnos */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3) !important;
+}
+
+/* Mejoras para el botón Ver Agenda */
+.btn-success {
+  background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+  color: white !important;
+}
+
+/* Mejoras para los botones del header */
+.card-header.bg-gradient-primary .btn-success {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #28a745 !important;
+  border: 2px solid #28a745 !important;
+  font-weight: 600 !important;
+}
+
+.card-header.bg-gradient-primary .btn-success:hover {
+  background: #28a745 !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Responsive para botones grandes */
+@media (max-width: 768px) {
+  .action-btn-large {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+    min-width: 100px !important;
+  }
+  
+  .btn-text {
+    display: none;
+  }
+  
+  .icon-action {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Estilos para la sección de Próximos Turnos */
+.proximos-turnos-container {
+  padding: 1rem;
+}
+
+.proximo-turno-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #e9ecef;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.proximo-turno-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.proximo-turno-card.urgente {
+  border-color: #dc3545;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+}
+
+.proximo-turno-card.proximo {
+  border-color: #ffc107;
+  background: linear-gradient(135deg, #fffbf0 0%, #fff3cd 100%);
+}
+
+.proximo-turno-card.normal {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #f0fff4 0%, #d4edda 100%);
+}
+
+.turno-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.turno-priority-indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: white;
+  margin-right: 1rem;
+}
+
+.turno-priority-indicator.priority-high {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  animation: pulse 2s infinite;
+}
+
+.turno-priority-indicator.priority-medium {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.turno-priority-indicator.priority-low {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.turno-info {
+  flex: 1;
+}
+
+.turno-number {
+  margin-bottom: 0.5rem;
+}
+
+.turno-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.turno-time-remaining {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.turno-time-remaining.time-high {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.turno-time-remaining.time-medium {
+  background: rgba(255, 193, 7, 0.1);
+  color: #856404;
+}
+
+.turno-time-remaining.time-low {
+  background: rgba(40, 167, 69, 0.1);
+  color: #155724;
+}
+
+.patient-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+}
+
+.patient-avatar {
+  margin-right: 1rem;
+}
+
+.patient-avatar .avatar-circle {
+  width: 50px;
+  height: 50px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.patient-details {
+  flex: 1;
+}
+
+.patient-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: #2c3e50;
+}
+
+.patient-phone {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.turno-details {
+  margin-bottom: 1.5rem;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.detail-row:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.detail-row i {
+  width: 20px;
+  margin-right: 0.75rem;
+  text-align: center;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #495057;
+  margin-right: 0.5rem;
+  min-width: 80px;
+}
+
+.detail-value {
+  color: #2c3e50;
+  flex: 1;
+}
+
+.turno-actions {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  min-width: 40px;
+  justify-content: center;
+}
+
+.action-btn-large {
+  padding: 0.75rem 1rem !important;
+  font-size: 0.9rem !important;
+  min-width: 120px !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.action-btn-large:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.action-btn-success {
+  background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.action-btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34) !important;
+  color: white !important;
+}
+
+.action-btn-warning {
+  background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+  color: #212529 !important;
+  border: none !important;
+}
+
+.action-btn-warning:hover {
+  background: linear-gradient(135deg, #e0a800, #d39e00) !important;
+  color: #212529 !important;
+}
+
+.action-btn-info {
+  background: linear-gradient(135deg, #17a2b8, #138496) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.action-btn-info:hover {
+  background: linear-gradient(135deg, #138496, #117a8b) !important;
+  color: white !important;
+}
+
+.action-btn-danger {
+  background: linear-gradient(135deg, #dc3545, #c82333) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.action-btn-danger:hover {
+  background: linear-gradient(135deg, #c82333, #bd2130) !important;
+  color: white !important;
+}
+
+.action-btn-outline {
+  background: transparent !important;
+  color: #6c757d !important;
+  border: 2px solid #6c757d !important;
+}
+
+.action-btn-outline:hover {
+  background: #6c757d !important;
+  color: white !important;
+}
+
+.action-btn-disabled {
+  background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+  color: white !important;
+  border: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
+.action-btn-disabled:hover {
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.icon-action {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.btn-text {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Estilos para notificaciones amigables */
+.friendly-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 400px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideInRight 0.5s ease-out;
+  overflow: hidden;
+}
+
+.friendly-notification.success {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  border-left: 5px solid #28a745;
+}
+
+.friendly-notification.error {
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+  border-left: 5px solid #dc3545;
+}
+
+.friendly-notification.warning {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  border-left: 5px solid #ffc107;
+}
+
+.friendly-notification.info {
+  background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+  border-left: 5px solid #17a2b8;
+}
+
+.notification-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem 0.5rem;
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  font-size: 1.2rem;
+  color: white;
+}
+
+.notification-icon.success {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+.notification-icon.error {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.notification-icon.warning {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.notification-icon.info {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.notification-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.notification-message {
+  padding: 0 1.5rem 1rem;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.notification-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.notification-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #495057;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Mejoras para el header de próximos turnos */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3) !important;
+}
+
+/* Mejoras para el botón Ver Agenda */
+.btn-success {
+  background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+  color: white !important;
+}
+
+/* Mejoras para los botones del header */
+.card-header.bg-gradient-primary {
+  border-bottom: none;
+}
+
+.card-header.bg-gradient-primary h5 {
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.card-header.bg-gradient-primary .btn-success {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #28a745 !important;
+  border: 2px solid #28a745 !important;
+  font-weight: 600 !important;
+}
+
+.card-header.bg-gradient-primary .btn-success:hover {
+  background: #28a745 !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header.bg-gradient-primary .btn-light {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  color: #007bff;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.card-header.bg-gradient-primary .btn-light:hover {
+  background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive design para próximos turnos */
+@media (max-width: 768px) {
+  .proximo-turno-card {
+    padding: 1rem;
+  }
+  
+  .turno-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .turno-time-remaining {
+    align-self: flex-end;
+  }
+  
+  .patient-section {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .patient-avatar {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .action-buttons {
+    justify-content: center;
+  }
+  
+  .action-btn-large {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+    min-width: 100px !important;
+  }
+  
+  .btn-text {
+    display: none;
+  }
+  
+  .icon-action {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Estilos para botones del header */
+.btn-info {
+  background: linear-gradient(135deg, #17a2b8, #138496) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(23, 162, 184, 0.2) !important;
+}
+
+.btn-info:hover {
+  background: linear-gradient(135deg, #138496, #117a8b) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3) !important;
+  color: white !important;
+}
+
+/* Mejoras para los botones del header de próximos turnos */
+.card-header.bg-gradient-primary .btn-info {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #17a2b8 !important;
+  border: 2px solid #17a2b8 !important;
+  font-weight: 600 !important;
+}
+
+.card-header.bg-gradient-primary .btn-info:hover {
+  background: #17a2b8 !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Mejoras para los botones del header de turnos recientes */
+.card-header .btn-success {
+  background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
+}
+
+.card-header .btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+  color: white !important;
+}
+
+.card-header .btn-outline-primary {
+  background: transparent !important;
+  color: #007bff !important;
+  border: 2px solid #007bff !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+}
+
+.card-header .btn-outline-primary:hover {
+  background: #007bff !important;
+  color: white !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3) !important;
+}

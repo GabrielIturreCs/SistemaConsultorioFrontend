@@ -186,6 +186,11 @@
                   <strong>{{ turno.tratamiento }}</strong>
                   <br>
                   <small class="text-muted">{{ turno.duracion }} min</small>
+                  <br>
+                  <small class="text-info">
+                    <i class="fas fa-hourglass-half me-1"></i>
+                    {{ getTurnoTimeRemaining(turno) }}
+                  </small>
                 </div>
               </td>
               <td>
@@ -218,7 +223,16 @@
                   </small>
                 </div>
               </td>
-              <td><strong>${{ turno.precioFinal }}</strong></td>
+              <td>
+                <div>
+                  <strong class="text-success">${{ turno.precioFinal }}</strong>
+                  <br>
+                  <small class="text-muted">
+                    <i class="fas fa-credit-card me-1"></i>
+                    {{ getPaymentMethod(turno) }}
+                  </small>
+                </div>
+              </td>
               <td>
                 <div class="action-buttons">
                   <!-- Botón para marcar como pagado (solo si está reservado o pendiente) -->

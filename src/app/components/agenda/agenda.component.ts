@@ -597,5 +597,52 @@ export class AgendaComponent implements OnInit {
     }
     return '';
   }
+
+  // Función para calcular el tiempo restante del turno
+  getTurnoTimeRemaining(turno: Turno): string {
+    const now = new Date();
+    const turnoDate = new Date(turno.fecha);
+    const [hourStr, minuteStr] = turno.hora.split(':');
+    turnoDate.setHours(parseInt(hourStr), parseInt(minuteStr), 0, 0);
+    
+    const diff = turnoDate.getTime() - now.getTime();
+    
+    if (diff < 0) {
+      return 'Pasado';
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (days > 0) {
+      return `${days}d ${hours}h`;
+    } else if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m`;
+    } else {
+      return 'Ahora';
+    }
+  }
+
+  // Función para obtener el método de pago
+  getPaymentMethod(turno: Turno): string {
+    if (turno.metodoPago) {
+      switch (turno.metodoPago) {
+        case 'efectivo':
+          return 'Efectivo';
+        case 'tarjeta':
+          return 'Tarjeta';
+        case 'transferencia':
+          return 'Transferencia';
+        case 'mercadopago':
+          return 'MercadoPago';
+        default:
+          return 'No especificado';
+      }
+    }
+    return 'No especificado';
+  }
 }
 
