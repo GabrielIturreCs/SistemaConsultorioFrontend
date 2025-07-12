@@ -957,9 +957,16 @@ body {
 }
 
 .alert-time {
-  font-size: 0.75rem;
-  color: #adb5bd;
+  font-size: 0.85rem;
+  color: #495057;
+  font-weight: 500;
+  background: rgba(0, 123, 255, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  display: inline-block;
+  border: 1px solid rgba(0, 123, 255, 0.2);
   white-space: nowrap;
+  margin-top: 0.5rem;
 }
 
 /* Admin Action Buttons */
@@ -1080,8 +1087,16 @@ body {
 }
 
 .activity-time {
-  font-size: 0.75rem;
-  color: #adb5bd;
+  font-size: 0.85rem;
+  color: #495057;
+  font-weight: 500;
+  background: rgba(0, 123, 255, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  display: inline-block;
+  border: 1px solid rgba(0, 123, 255, 0.2);
+  white-space: nowrap;
+  margin-top: 0.5rem;
 }
 
 /* Upcoming Events */

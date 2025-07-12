@@ -179,10 +179,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadTurnosActividad();
     if (this.user?.tipoUsuario === 'administrador') {
       this.cargarRendimientoSistema();
-      this.generarAlertasSistema();
+      // Usar la versión mejorada que carga los turnos primero
+      this.turnoService.getTurnosFromAPI().subscribe((turnos) => {
+        this.generarAlertasSistemaMejorado(turnos);
+      });
       this.loadReviews();
       this.alertaInterval = interval(600000).subscribe(() => { // cada 10 minutos
-        this.generarAlertasSistema();
+        // Usar la versión mejorada que carga los turnos primero
+        this.turnoService.getTurnosFromAPI().subscribe((turnos) => {
+          this.generarAlertasSistemaMejorado(turnos);
+        });
         this.loadDentistasActividad();
         this.loadPacientesActividad();
         this.loadTratamientosActividad();
@@ -251,6 +257,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadRealAdminStats(): void {
+    console.log('🔄 Cargando estadísticas reales del admin...');
+    
     // Cargar turnos para estadísticas
     this.turnoService.getTurnosFromAPI().subscribe({
       next: (turnos) => {
@@ -263,16 +271,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
           return turnoDate.getMonth() === currentMonth && turnoDate.getFullYear() === currentYear;
         });
         
-        // Ingresos de este mes (solo turnos completados)
+        // Ingresos de este mes (solo turnos completados y pagados)
         const ingresosEsteMes = turnosEsteMes
-          .filter(turno => turno.estado === 'completado')
+          .filter(turno => ['completado', 'pagado'].includes(turno.estado))
           .reduce((total, turno) => total + (Number(turno.precioFinal) || 0), 0);
+        
+        // Calcular ocupación de turnos (completados vs total)
+        const turnosCompletados = turnos.filter(turno => turno.estado === 'completado').length;
+        const ocupacionTurnos = turnos.length > 0 ? Math.round((turnosCompletados / turnos.length) * 100) : 0;
+        
+        // Calcular satisfacción de pacientes (basado en reviews)
+        const reviews = this.reviewService.getAllReviews();
+        const reviewsAprobadas = reviews.filter(r => r.estado === 'aprobado').length;
+        const satisfaccionPacientes = reviews.length > 0 ? Math.round((reviewsAprobadas / reviews.length) * 100) : 85; // Default 85%
+        
+        // Calcular eficiencia del sistema (turnos completados vs cancelados)
+        const turnosCancelados = turnos.filter(turno => turno.estado === 'cancelado').length;
+        const eficienciaSistema = turnos.length > 0 ? Math.round(((turnos.length - turnosCancelados) / turnos.length) * 100) : 90; // Default 90%
         
         this.adminStats.turnosEsteMes = turnosEsteMes.length;
         this.adminStats.ingresosEsteMes = ingresosEsteMes;
+        this.adminStats.ocupacionTurnos = ocupacionTurnos;
+        this.adminStats.satisfaccionPacientes = satisfaccionPacientes;
+        this.adminStats.eficienciaSistema = eficienciaSistema;
+        
+        // Generar alertas y actividad reciente con datos reales
+        this.generarAlertasSistemaMejorado(turnos);
+        
+        console.log('✅ Estadísticas de turnos cargadas:', {
+          turnosEsteMes: turnosEsteMes.length,
+          ingresosEsteMes: ingresosEsteMes,
+          ocupacionTurnos: ocupacionTurnos,
+          satisfaccionPacientes: satisfaccionPacientes,
+          eficienciaSistema: eficienciaSistema
+        });
       },
       error: (error) => {
-        console.error('Error cargando estadísticas de turnos:', error);
+        console.error('❌ Error cargando estadísticas de turnos:', error);
       }
     });
 
@@ -280,9 +315,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.pacienteService.getPacientes().subscribe({
       next: (pacientes) => {
         this.adminStats.totalUsuarios = pacientes.length;
+        console.log('✅ Total de usuarios (pacientes):', pacientes.length);
       },
       error: (error) => {
-        console.error('Error cargando pacientes:', error);
+        console.error('❌ Error cargando pacientes:', error);
       }
     });
 
@@ -290,9 +326,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.dentistaService.getDentistas().subscribe({
       next: (dentistas) => {
         this.adminStats.dentistasActivos = dentistas.length;
+        console.log('✅ Dentistas activos:', dentistas.length);
       },
       error: (error) => {
-        console.error('Error cargando dentistas:', error);
+        console.error('❌ Error cargando dentistas:', error);
       }
     });
   }
@@ -708,7 +745,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.user?.tipoUsuario === 'administrador') {
       this.loadRealAdminStats();
       this.cargarRendimientoSistema();
-      this.generarAlertasSistema();
+      // Usar la versión mejorada que carga los turnos primero
+      this.turnoService.getTurnosFromAPI().subscribe((turnos) => {
+        this.generarAlertasSistemaMejorado(turnos);
+      });
       this.loadDentistasActividad();
       this.loadPacientesActividad();
       this.loadTratamientosActividad();
@@ -989,124 +1029,539 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   generarAlertasSistema(): void {
     this.cargandoAlertas = true;
+    console.log('🔄 Generando alertas del sistema...');
+    
+    // Combinar todas las fuentes de alertas
+    const alertasCombinadas: any[] = [];
+    
+    // Alertas de turnos - usar fecha de creación real
     this.turnoService.getTurnosFromAPI().subscribe((turnos: any[]) => {
-      const recientes = turnos
-        .slice(-5)
+      const turnosRecientes = turnos
+        .slice(-3)
         .reverse()
-        .map((t: any) => ({
-          tipo: t.estado === 'completado' ? 'success' : t.estado === 'cancelado' ? 'warning' : 'info',
-          titulo: t.estado === 'completado' ? 'Turno Completado' : t.estado === 'cancelado' ? 'Turno Cancelado' : 'Nuevo Turno',
-          descripcion: `Turno #${t.nroTurno} para ${t.nombre} ${t.apellido}`,
-          tiempo: t.fecha
-        }));
+        .map((t: any) => {
+          const emoji = t.estado === 'completado' ? '✅' : t.estado === 'cancelado' ? '❌' : t.estado === 'pagado' ? '💰' : '📅';
+          // Usar fecha de creación real, no fecha agendada
+          const fechaCreacion = new Date(t.createdAt || t.fechaCreacion || Date.now());
+          return {
+            tipo: t.estado === 'completado' ? 'success' : t.estado === 'cancelado' ? 'warning' : 'info',
+            titulo: `${emoji} ${t.estado === 'completado' ? 'Turno Completado' : t.estado === 'cancelado' ? 'Turno Cancelado' : 'Nuevo Turno'}`,
+            descripcion: `Turno #${t.nroTurno || 'N/A'} para ${t.nombre} ${t.apellido}`,
+            tiempo: this.getTimeAgo(fechaCreacion)
+          };
+        });
+      
+      alertasCombinadas.push(...turnosRecientes);
 
+      // Alertas de pacientes
       this.pacienteService.getPacientes().subscribe((pacientes: any[]) => {
-        const nuevosPacientes = pacientes
-          .slice(-5)
+        const pacientesRecientes = pacientes
+          .slice(-2)
           .reverse()
           .map((p: any) => ({
             tipo: 'info',
-            titulo: 'Nuevo Paciente Registrado',
+            titulo: '👤 Nuevo Paciente Registrado',
             descripcion: `${p.nombre} ${p.apellido} se registró en el sistema`,
-            tiempo: ''
+            tiempo: this.getTimeAgo(new Date(p.createdAt || Date.now()))
           }));
 
-        this.alertas = [...recientes, ...nuevosPacientes];
-        this.cargandoAlertas = false;
+        alertasCombinadas.push(...pacientesRecientes);
+
+        // Alertas de dentistas
+        this.dentistaService.getDentistas().subscribe((dentistas: any[]) => {
+          const dentistasRecientes = dentistas
+            .slice(-2)
+            .reverse()
+            .map((d: any) => ({
+              tipo: 'info',
+              titulo: '🦷 Nuevo Dentista Registrado',
+              descripcion: `Dr. ${d.nombre} ${d.apellido} se unió al sistema`,
+              tiempo: this.getTimeAgo(new Date(d.createdAt || Date.now()))
+            }));
+
+          alertasCombinadas.push(...dentistasRecientes);
+
+          // Alertas de tratamientos
+          this.tratamientoService.getTratamientos().subscribe((tratamientos: any[]) => {
+            const tratamientosRecientes = tratamientos
+              .slice(-2)
+              .reverse()
+              .map((t: any) => ({
+                tipo: 'info',
+                titulo: '🦷 Nuevo Tratamiento Creado',
+                descripcion: `${t.descripcion} - $${t.precio}`,
+                tiempo: this.getTimeAgo(new Date(t.createdAt || Date.now()))
+              }));
+
+            alertasCombinadas.push(...tratamientosRecientes);
+
+            // Ordenar por tiempo y limitar a 15 alertas
+            this.alertas = alertasCombinadas
+              .sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+              .slice(0, 15);
+
+            // Usar las mismas alertas para actividad reciente
+            this.adminStats.actividadReciente = alertasCombinadas
+              .sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+              .slice(0, 20);
+
+            console.log('✅ Alertas generadas:', this.alertas.length);
+            console.log('✅ Actividad reciente generada:', this.adminStats.actividadReciente.length);
+            this.cargandoAlertas = false;
+          }, () => this.cargandoAlertas = false);
+        }, () => this.cargandoAlertas = false);
       }, () => this.cargandoAlertas = false);
     }, () => this.cargandoAlertas = false);
   }
 
+  // Nueva función mejorada para generar alertas del sistema
+  generarAlertasSistemaMejorado(turnos: any[]): void {
+    console.log('🔄 Generando alertas mejoradas del sistema...');
+    console.log('📊 Total de turnos recibidos:', turnos.length);
+    
+    // Debug: verificar fechas de creación
+    const turnosConFecha = turnos.filter(t => t.createdAt || t.fechaCreacion);
+    const turnosSinFecha = turnos.filter(t => !t.createdAt && !t.fechaCreacion);
+    console.log('📅 Turnos con fecha de creación:', turnosConFecha.length);
+    console.log('❌ Turnos sin fecha de creación:', turnosSinFecha.length);
+    
+    const alertasCombinadas: any[] = [];
+    const actividadCombinada: any[] = [];
+    
+    // Procesar turnos recientes - usar fecha de creación real
+    const turnosRecientes = turnos
+      .filter(turno => {
+        // Solo incluir si tiene fecha de creación válida
+        if (!turno.createdAt && !turno.fechaCreacion) {
+          return false;
+        }
+        const turnoDate = new Date(turno.createdAt || turno.fechaCreacion);
+        const treintaDiasAtras = new Date();
+        treintaDiasAtras.setDate(treintaDiasAtras.getDate() - 30);
+        return turnoDate >= treintaDiasAtras;
+      })
+      .sort((a, b) => new Date(b.createdAt || b.fechaCreacion).getTime() - 
+                     new Date(a.createdAt || a.fechaCreacion).getTime())
+      .slice(0, 15); // Mostrar turnos recientes
+
+    turnosRecientes.forEach(turno => {
+      const emoji = turno.estado === 'completado' ? '✅' : 
+                   turno.estado === 'cancelado' ? '❌' : 
+                   turno.estado === 'pagado' ? '💰' : '📅';
+      
+      const tipo = turno.estado === 'completado' ? 'success' : 
+                  turno.estado === 'cancelado' ? 'warning' : 
+                  turno.estado === 'pagado' ? 'info' : 'info';
+      
+      const titulo = turno.estado === 'completado' ? 'Turno Completado' : 
+                    turno.estado === 'cancelado' ? 'Turno Cancelado' : 
+                    turno.estado === 'pagado' ? 'Turno Pagado' : 'Nuevo Turno Reservado';
+      
+      // Usar fecha de creación real para el tiempo
+      const fechaCreacion = new Date(turno.createdAt || turno.fechaCreacion);
+      
+      const alerta = {
+        tipo: tipo,
+        titulo: `${emoji} ${titulo}`,
+        descripcion: `Turno #${turno.nroTurno || 'N/A'} para ${turno.nombre} ${turno.apellido} - ${turno.tratamiento}`,
+        tiempo: this.getTimeAgoWithHour(fechaCreacion),
+        fecha: fechaCreacion
+      };
+      
+      alertasCombinadas.push(alerta);
+      actividadCombinada.push(alerta);
+    });
+
+    // Procesar pacientes recientes - evitar duplicados
+    this.pacienteService.getPacientes().subscribe((pacientes: any[]) => {
+      console.log('👥 Total de pacientes recibidos:', pacientes.length);
+      
+      // Usar Map para evitar duplicados por ID
+      const pacientesUnicos = new Map();
+      pacientes.forEach(paciente => {
+        if (!pacientesUnicos.has(paciente.id)) {
+          pacientesUnicos.set(paciente.id, paciente);
+        }
+      });
+      
+      console.log('👥 Pacientes únicos después de deduplicación:', pacientesUnicos.size);
+      
+      const pacientesRecientes = Array.from(pacientesUnicos.values())
+        .filter(paciente => {
+          // Solo incluir si tiene fecha de creación válida
+          if (!paciente.createdAt && !paciente.fechaCreacion) {
+            return false;
+          }
+          const pacienteDate = new Date(paciente.createdAt || paciente.fechaCreacion);
+          const treintaDiasAtras = new Date();
+          treintaDiasAtras.setDate(treintaDiasAtras.getDate() - 30);
+          return pacienteDate >= treintaDiasAtras;
+        })
+        .sort((a, b) => new Date(b.createdAt || b.fechaCreacion).getTime() - 
+                        new Date(a.createdAt || a.fechaCreacion).getTime())
+        .slice(0, 8); // Mostrar pacientes recientes únicos
+
+      pacientesRecientes.forEach(paciente => {
+        const alerta = {
+          tipo: 'info',
+          titulo: '👤 Nuevo Paciente Registrado',
+          descripcion: `${paciente.nombre} ${paciente.apellido} se registró en el sistema`,
+          tiempo: this.getTimeAgoWithHour(new Date(paciente.createdAt || paciente.fechaCreacion)),
+          fecha: new Date(paciente.createdAt || paciente.fechaCreacion)
+        };
+        
+        alertasCombinadas.push(alerta);
+        actividadCombinada.push(alerta);
+      });
+
+      // Procesar dentistas recientes - evitar duplicados
+      this.dentistaService.getDentistas().subscribe((dentistas: any[]) => {
+        console.log('🦷 Total de dentistas recibidos:', dentistas.length);
+        
+        // Usar Map para evitar duplicados por ID
+        const dentistasUnicos = new Map();
+        dentistas.forEach(dentista => {
+          if (!dentistasUnicos.has(dentista.id)) {
+            dentistasUnicos.set(dentista.id, dentista);
+          }
+        });
+        
+        console.log('🦷 Dentistas únicos después de deduplicación:', dentistasUnicos.size);
+        
+        const dentistasRecientes = Array.from(dentistasUnicos.values())
+          .filter(dentista => {
+            // Solo incluir si tiene fecha de creación válida
+            if (!dentista.createdAt && !dentista.fechaCreacion) {
+              return false;
+            }
+            const dentistaDate = new Date(dentista.createdAt || dentista.fechaCreacion);
+            const treintaDiasAtras = new Date();
+            treintaDiasAtras.setDate(treintaDiasAtras.getDate() - 30);
+            return dentistaDate >= treintaDiasAtras;
+          })
+          .sort((a, b) => new Date(b.createdAt || b.fechaCreacion).getTime() - 
+                          new Date(a.createdAt || a.fechaCreacion).getTime())
+          .slice(0, 5); // Mostrar dentistas recientes únicos
+
+        dentistasRecientes.forEach(dentista => {
+          const alerta = {
+            tipo: 'info',
+            titulo: '🦷 Nuevo Dentista Registrado',
+            descripcion: `Dr. ${dentista.nombre} ${dentista.apellido} se unió al sistema`,
+            tiempo: this.getTimeAgoWithHour(new Date(dentista.createdAt || dentista.fechaCreacion)),
+            fecha: new Date(dentista.createdAt || dentista.fechaCreacion)
+          };
+          
+          alertasCombinadas.push(alerta);
+          actividadCombinada.push(alerta);
+        });
+
+        // Procesar tratamientos recientes - evitar duplicados
+        this.tratamientoService.getTratamientos().subscribe((tratamientos: any[]) => {
+          console.log('🦷 Total de tratamientos recibidos:', tratamientos.length);
+          
+          // Usar Map para evitar duplicados por ID
+          const tratamientosUnicos = new Map();
+          tratamientos.forEach(tratamiento => {
+            if (!tratamientosUnicos.has(tratamiento.id)) {
+              tratamientosUnicos.set(tratamiento.id, tratamiento);
+            }
+          });
+          
+          console.log('🦷 Tratamientos únicos después de deduplicación:', tratamientosUnicos.size);
+          
+          const tratamientosRecientes = Array.from(tratamientosUnicos.values())
+            .filter(tratamiento => {
+              // Solo incluir si tiene fecha de creación válida
+              if (!tratamiento.createdAt && !tratamiento.fechaCreacion) {
+                return false;
+              }
+              const tratamientoDate = new Date(tratamiento.createdAt || tratamiento.fechaCreacion);
+              const treintaDiasAtras = new Date();
+              treintaDiasAtras.setDate(treintaDiasAtras.getDate() - 30);
+              return tratamientoDate >= treintaDiasAtras;
+            })
+            .sort((a, b) => new Date(b.createdAt || b.fechaCreacion).getTime() - 
+                            new Date(a.createdAt || a.fechaCreacion).getTime())
+            .slice(0, 5); // Mostrar tratamientos recientes únicos
+
+          tratamientosRecientes.forEach(tratamiento => {
+            const alerta = {
+              tipo: 'info',
+              titulo: '🦷 Nuevo Tratamiento Creado',
+              descripcion: `${tratamiento.descripcion} - $${tratamiento.precio}`,
+              tiempo: this.getTimeAgoWithHour(new Date(tratamiento.createdAt || tratamiento.fechaCreacion)),
+              fecha: new Date(tratamiento.createdAt || tratamiento.fechaCreacion)
+            };
+            
+            alertasCombinadas.push(alerta);
+            actividadCombinada.push(alerta);
+          });
+
+          // Ordenar por fecha (más reciente primero) y limitar
+          this.adminStats.alertas = alertasCombinadas
+            .sort((a, b) => b.fecha.getTime() - a.fecha.getTime())
+            .slice(0, 15)
+            .map(alerta => ({
+              tipo: alerta.tipo,
+              titulo: alerta.titulo,
+              descripcion: alerta.descripcion,
+              tiempo: alerta.tiempo
+            }));
+
+          this.adminStats.actividadReciente = actividadCombinada
+            .sort((a, b) => b.fecha.getTime() - a.fecha.getTime())
+            .slice(0, 20)
+            .map(actividad => ({
+              tipo: actividad.tipo,
+              titulo: actividad.titulo,
+              descripcion: actividad.descripcion,
+              tiempo: actividad.tiempo
+            }));
+
+          console.log('✅ Alertas y actividad mejoradas generadas:', {
+            alertas: this.adminStats.alertas.length,
+            actividad: this.adminStats.actividadReciente.length
+          });
+        });
+      });
+    });
+  }
+
   loadDentistasActividad(): void {
     this.dentistaService.getDentistas().subscribe((dentistas) => {
-      // Toma los últimos 3 dentistas creados
-      const recientes = dentistas.slice(-3).reverse().map((d: any) => ({
-        tipo: 'dentist-purple',
-        titulo: '🦷 Nuevo Dentista Registrado',
-        descripcion: `Dr. ${d.nombre} ${d.apellido} | DNI: ${d.dni} | Especialidad: ${d.especialidad || 'General'} | Matrícula: ${d.matricula || 'N/A'}`,
-        tiempo: 'Recientemente'
-      }));
-      // Agrega a actividad reciente
-      this.adminStats.actividadReciente = [
-        ...recientes,
-        ...this.adminStats.actividadReciente
-      ].slice(0, 10);
-      // Agrega a alertas
+      // Filtrar dentistas recientes (últimos 7 días)
+      const dentistasRecientes = dentistas
+        .filter((d: any) => {
+          const dentistaDate = new Date(d.createdAt || d.fechaCreacion || Date.now());
+          const sieteDiasAtras = new Date();
+          sieteDiasAtras.setDate(sieteDiasAtras.getDate() - 7);
+          return dentistaDate >= sieteDiasAtras;
+        })
+        .sort((a: any, b: any) => new Date(b.createdAt || b.fechaCreacion || Date.now()).getTime() - 
+                        new Date(a.createdAt || a.fechaCreacion || Date.now()).getTime())
+        .slice(0, 5)
+        .map((d: any) => ({
+          tipo: 'dentist-purple',
+          titulo: '🦷 Nuevo Dentista Registrado',
+          descripcion: `Dr. ${d.nombre} ${d.apellido} | DNI: ${d.dni} | Especialidad: ${d.especialidad || 'General'} | Matrícula: ${d.matricula || 'N/A'}`,
+          tiempo: this.getTimeAgoWithHour(new Date(d.createdAt || d.fechaCreacion || Date.now())),
+          fecha: new Date(d.createdAt || d.fechaCreacion || Date.now())
+        }));
+      
+      // Agregar estadísticas de dentistas
+      const totalDentistas = dentistas.length;
+      const dentistasConConfiguracion = dentistas.filter((d: any) => d.configuracionPersonalizada).length;
+      
+      if (totalDentistas > 0) {
+        const estadisticasDentistas = {
+          tipo: 'info',
+          titulo: '📊 Estadísticas de Dentistas',
+          descripcion: `Total: ${totalDentistas} | Con configuración: ${dentistasConConfiguracion} | Sin configurar: ${totalDentistas - dentistasConConfiguracion}`,
+          tiempo: 'Actualizado',
+          fecha: new Date()
+        };
+        
+        this.adminStats.actividadReciente = [
+          estadisticasDentistas,
+          ...dentistasRecientes,
+          ...this.adminStats.actividadReciente
+        ].slice(0, 15);
+      } else {
+        this.adminStats.actividadReciente = [
+          ...dentistasRecientes,
+          ...this.adminStats.actividadReciente
+        ].slice(0, 15);
+      }
+      
+      // Agregar a alertas
       this.adminStats.alertas = [
-        ...recientes,
+        ...dentistasRecientes,
         ...this.adminStats.alertas
-      ].slice(0, 10);
+      ].slice(0, 15);
     });
   }
 
   loadPacientesActividad(): void {
     this.pacienteService.getPacientes().subscribe((pacientes) => {
-      // Toma los últimos 3 pacientes creados
-      const recientes = pacientes.slice(-3).reverse().map((p: any) => ({
-        tipo: 'user',
-        titulo: '👤 Nuevo Paciente Registrado',
-        descripcion: `${p.nombre} ${p.apellido} | DNI: ${p.dni} | Obra Social: ${p.obraSocial}`,
-        tiempo: 'Recientemente'
-      }));
-      // Agrega a actividad reciente
-      this.adminStats.actividadReciente = [
-        ...recientes,
-        ...this.adminStats.actividadReciente
-      ].slice(0, 10);
-      // Agrega a alertas
+      // Filtrar pacientes recientes (últimos 7 días)
+      const pacientesRecientes = pacientes
+        .filter((p: any) => {
+          const pacienteDate = new Date(p.createdAt || p.fechaCreacion || Date.now());
+          const sieteDiasAtras = new Date();
+          sieteDiasAtras.setDate(sieteDiasAtras.getDate() - 7);
+          return pacienteDate >= sieteDiasAtras;
+        })
+        .sort((a: any, b: any) => new Date(b.createdAt || b.fechaCreacion || Date.now()).getTime() - 
+                        new Date(a.createdAt || a.fechaCreacion || Date.now()).getTime())
+        .slice(0, 5)
+        .map((p: any) => ({
+          tipo: 'user',
+          titulo: '👤 Nuevo Paciente Registrado',
+          descripcion: `${p.nombre} ${p.apellido} | DNI: ${p.dni} | Obra Social: ${p.obraSocial || 'Sin obra social'}`,
+          tiempo: this.getTimeAgoWithHour(new Date(p.createdAt || p.fechaCreacion || Date.now())),
+          fecha: new Date(p.createdAt || p.fechaCreacion || Date.now())
+        }));
+      
+      // Agregar estadísticas de pacientes
+      const totalPacientes = pacientes.length;
+      const pacientesConObraSocial = pacientes.filter((p: any) => p.obraSocial && p.obraSocial !== 'Sin obra social').length;
+      
+      if (totalPacientes > 0) {
+        const estadisticasPacientes = {
+          tipo: 'info',
+          titulo: '📊 Estadísticas de Pacientes',
+          descripcion: `Total: ${totalPacientes} | Con obra social: ${pacientesConObraSocial} | Sin obra social: ${totalPacientes - pacientesConObraSocial}`,
+          tiempo: 'Actualizado',
+          fecha: new Date()
+        };
+        
+        this.adminStats.actividadReciente = [
+          estadisticasPacientes,
+          ...pacientesRecientes,
+          ...this.adminStats.actividadReciente
+        ].slice(0, 15);
+      } else {
+        this.adminStats.actividadReciente = [
+          ...pacientesRecientes,
+          ...this.adminStats.actividadReciente
+        ].slice(0, 15);
+      }
+      
+      // Agregar a alertas
       this.adminStats.alertas = [
-        ...recientes,
+        ...pacientesRecientes,
         ...this.adminStats.alertas
-      ].slice(0, 10);
+      ].slice(0, 15);
     });
   }
 
   loadTratamientosActividad(): void {
     this.tratamientoService.getTratamientos().subscribe((tratamientos) => {
-      // Toma los últimos 3 tratamientos creados
-      const recientes = tratamientos.slice(-3).reverse().map((t: any) => ({
-        tipo: 'system',
-        titulo: '🦷 Nuevo Tratamiento Creado',
-        descripcion: `${t.descripcion} | Duración: ${t.duracion} | Precio: $${t.precio || 'N/A'}`,
-        tiempo: 'Recientemente'
-      }));
-      // Agrega a actividad reciente
-      this.adminStats.actividadReciente = [
-        ...recientes,
-        ...this.adminStats.actividadReciente
-      ].slice(0, 10);
-      // Agrega a alertas
+      // Filtrar tratamientos recientes (últimos 7 días)
+      const tratamientosRecientes = tratamientos
+        .filter((t: any) => {
+          const tratamientoDate = new Date(t.createdAt || t.fechaCreacion || Date.now());
+          const sieteDiasAtras = new Date();
+          sieteDiasAtras.setDate(sieteDiasAtras.getDate() - 7);
+          return tratamientoDate >= sieteDiasAtras;
+        })
+        .sort((a: any, b: any) => new Date(b.createdAt || b.fechaCreacion || Date.now()).getTime() - 
+                        new Date(a.createdAt || a.fechaCreacion || Date.now()).getTime())
+        .slice(0, 3)
+        .map((t: any) => ({
+          tipo: 'system',
+          titulo: '🦷 Nuevo Tratamiento Creado',
+          descripcion: `${t.descripcion} | Duración: ${t.duracion} | Precio: $${t.precio || 'N/A'}`,
+          tiempo: this.getTimeAgoWithHour(new Date(t.createdAt || t.fechaCreacion || Date.now())),
+          fecha: new Date(t.createdAt || t.fechaCreacion || Date.now())
+        }));
+      
+      // Agregar estadísticas de tratamientos
+      const totalTratamientos = tratamientos.length;
+      const tratamientosActivos = tratamientos.filter((t: any) => t.activo !== false).length;
+      
+      if (totalTratamientos > 0) {
+        const estadisticasTratamientos = {
+          tipo: 'info',
+          titulo: '📊 Estadísticas de Tratamientos',
+          descripcion: `Total: ${totalTratamientos} | Activos: ${tratamientosActivos} | Inactivos: ${totalTratamientos - tratamientosActivos}`,
+          tiempo: 'Actualizado',
+          fecha: new Date()
+        };
+        
+        this.adminStats.actividadReciente = [
+          estadisticasTratamientos,
+          ...tratamientosRecientes,
+          ...this.adminStats.actividadReciente
+        ].slice(0, 15);
+      } else {
+        this.adminStats.actividadReciente = [
+          ...tratamientosRecientes,
+          ...this.adminStats.actividadReciente
+        ].slice(0, 15);
+      }
+      
+      // Agregar a alertas
       this.adminStats.alertas = [
-        ...recientes,
+        ...tratamientosRecientes,
         ...this.adminStats.alertas
-      ].slice(0, 10);
+      ].slice(0, 15);
     });
   }
 
   loadTurnosActividad(): void {
     this.turnoService.getTurnosFromAPI().subscribe((turnos) => {
-      // Toma los últimos 5 turnos creados
-      const recientes = turnos.slice(-5).reverse().map((t: any) => {
-        const emoji = t.estado === 'completado' ? '✅' : t.estado === 'cancelado' ? '❌' : '📅';
-        const titulo = t.estado === 'completado' ? 'Turno Completado' : t.estado === 'cancelado' ? 'Turno Cancelado' : 'Nuevo Turno Reservado';
-        
-        return {
-          tipo: t.estado === 'completado' ? 'success' : t.estado === 'cancelado' ? 'danger' : 'info',
-          titulo: `${emoji} ${titulo}`,
-          descripcion: `Turno #${t.nroTurno} | ${t.nombre} ${t.apellido} | ${t.tratamiento} | $${t.precioFinal}`,
-          tiempo: 'Recientemente'
+      // Filtrar turnos recientes - usar fecha de creación real
+      const turnosRecientes = turnos
+        .filter((t: any) => {
+          // Solo incluir si tiene fecha de creación válida
+          if (!t.createdAt && !t.fechaCreacion) {
+            return false;
+          }
+          const turnoDate = new Date(t.createdAt || t.fechaCreacion);
+          const treintaDiasAtras = new Date();
+          treintaDiasAtras.setDate(treintaDiasAtras.getDate() - 30);
+          return turnoDate >= treintaDiasAtras;
+        })
+        .sort((a: any, b: any) => new Date(b.createdAt || b.fechaCreacion).getTime() - 
+                                   new Date(a.createdAt || a.fechaCreacion).getTime())
+        .slice(0, 12) // Mostrar turnos recientes
+        .map((t: any) => {
+          const emoji = t.estado === 'completado' ? '✅' : 
+                       t.estado === 'cancelado' ? '❌' : 
+                       t.estado === 'pagado' ? '💰' : '📅';
+          const titulo = t.estado === 'completado' ? 'Turno Completado' : 
+                        t.estado === 'cancelado' ? 'Turno Cancelado' : 
+                        t.estado === 'pagado' ? 'Turno Pagado' : 'Nuevo Turno Reservado';
+          
+          // Usar fecha de creación real para el tiempo
+          const fechaCreacion = new Date(t.createdAt || t.fechaCreacion);
+          
+          return {
+            tipo: t.estado === 'completado' ? 'success' : 
+                  t.estado === 'cancelado' ? 'danger' : 
+                  t.estado === 'pagado' ? 'warning' : 'info',
+            titulo: `${emoji} ${titulo}`,
+            descripcion: `Turno #${t.nroTurno || 'N/A'} | ${t.nombre} ${t.apellido} | ${t.tratamiento} | $${t.precioFinal || 0}`,
+            tiempo: this.getTimeAgoWithHour(fechaCreacion),
+            fecha: fechaCreacion
+          };
+        });
+      
+      // Agregar estadísticas de turnos
+      const totalTurnos = turnos.length;
+      const turnosCompletados = turnos.filter((t: any) => t.estado === 'completado').length;
+      const turnosCancelados = turnos.filter((t: any) => t.estado === 'cancelado').length;
+      const turnosPagados = turnos.filter((t: any) => t.estado === 'pagado').length;
+      const turnosReservados = turnos.filter((t: any) => t.estado === 'reservado').length;
+      
+      if (totalTurnos > 0) {
+        const estadisticasTurnos = {
+          tipo: 'info',
+          titulo: '📊 Estadísticas de Turnos',
+          descripcion: `Total: ${totalTurnos} | Completados: ${turnosCompletados} | Pagados: ${turnosPagados} | Reservados: ${turnosReservados} | Cancelados: ${turnosCancelados}`,
+          tiempo: 'Actualizado',
+          fecha: new Date()
         };
-      });
-      // Agrega a actividad reciente
-      this.adminStats.actividadReciente = [
-        ...recientes,
-        ...this.adminStats.actividadReciente
-      ].slice(0, 10);
-      // Agrega a alertas
+        
+        this.adminStats.actividadReciente = [
+          estadisticasTurnos,
+          ...turnosRecientes,
+          ...this.adminStats.actividadReciente
+        ].slice(0, 15);
+      } else {
+        this.adminStats.actividadReciente = [
+          ...turnosRecientes,
+          ...this.adminStats.actividadReciente
+        ].slice(0, 15);
+      }
+      
+      // Agregar a alertas
       this.adminStats.alertas = [
-        ...recientes,
+        ...turnosRecientes,
         ...this.adminStats.alertas
-      ].slice(0, 10);
+      ].slice(0, 15);
     });
   }
 
@@ -1966,5 +2421,107 @@ export class DashboardComponent implements OnInit, OnDestroy {
       franjasBloqueadas: this.franjasNoDisponibles.length,
       pausas: this.pausas.length
     };
+  }
+
+  // Función para obtener tiempo relativo
+  getTimeAgo(date: Date): string {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return 'Hace un momento';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `Hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
+    } else if (diffInSeconds < 2592000) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `Hace ${days} día${days > 1 ? 's' : ''}`;
+    } else {
+      const months = Math.floor(diffInSeconds / 2592000);
+      return `Hace ${months} mes${months > 1 ? 'es' : ''}`;
+    }
+  }
+
+  // Función mejorada para obtener tiempo relativo más preciso
+  getTimeAgoMejorado(date: Date): string {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 0) {
+      return 'En el futuro';
+    } else if (diffInSeconds < 60) {
+      return 'Hace un momento';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `Hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
+    } else if (diffInSeconds < 2592000) {
+      const days = Math.floor(diffInSeconds / 86400);
+      if (days === 1) {
+        return 'Ayer';
+      } else if (days === 2) {
+        return 'Anteayer';
+      } else {
+        return `Hace ${days} día${days > 1 ? 's' : ''}`;
+      }
+    } else if (diffInSeconds < 31536000) {
+      const months = Math.floor(diffInSeconds / 2592000);
+      return `Hace ${months} mes${months > 1 ? 'es' : ''}`;
+    } else {
+      const years = Math.floor(diffInSeconds / 31536000);
+      return `Hace ${years} año${years > 1 ? 's' : ''}`;
+    }
+  }
+
+  // Nueva función para obtener tiempo relativo con hora específica
+  getTimeAgoWithHour(date: Date): string {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    // Formatear la hora de la acción
+    const horaAccion = date.toLocaleTimeString('es-AR', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
+    
+    // Formatear la fecha de la acción
+    const fechaAccion = date.toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    
+    if (diffInSeconds < 0) {
+      return `En el futuro (${fechaAccion} ${horaAccion})`;
+    } else if (diffInSeconds < 60) {
+      return `Hace un momento (${horaAccion})`;
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `Hace ${minutes} minuto${minutes > 1 ? 's' : ''} (${horaAccion})`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `Hace ${hours} hora${hours > 1 ? 's' : ''} (${horaAccion})`;
+    } else if (diffInSeconds < 2592000) {
+      const days = Math.floor(diffInSeconds / 86400);
+      if (days === 1) {
+        return `Ayer a las ${horaAccion}`;
+      } else if (days === 2) {
+        return `Anteayer a las ${horaAccion}`;
+      } else {
+        return `Hace ${days} día${days > 1 ? 's' : ''} (${fechaAccion} ${horaAccion})`;
+      }
+    } else if (diffInSeconds < 31536000) {
+      const months = Math.floor(diffInSeconds / 2592000);
+      return `Hace ${months} mes${months > 1 ? 'es' : ''} (${fechaAccion} ${horaAccion})`;
+    } else {
+      const years = Math.floor(diffInSeconds / 31536000);
+      return `Hace ${years} año${years > 1 ? 's' : ''} (${fechaAccion} ${horaAccion})`;
+    }
   }
 }
