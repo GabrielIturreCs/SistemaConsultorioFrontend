@@ -65,41 +65,70 @@
             <div class="alert alert-info mb-4">
               <i class="fas fa-info-circle"></i> Elige el paciente para el cual vas a reservar el turno.
             </div>
-            <div class="patients-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 justify-content-center">
+            
+            <!-- Buscador inteligente de pacientes -->
+            <div class="search-container mb-4">
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-search"></i>
+                </span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Buscar por nombre, DNI o obra social..."
+                  [(ngModel)]="searchTerm"
+                  (input)="filterPacientes()"
+                  (keyup.enter)="filterPacientes()">
+                <button 
+                  class="btn btn-outline-secondary" 
+                  type="button"
+                  (click)="clearSearch()"
+                  *ngIf="searchTerm">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <small class="text-muted mt-2 d-block">
+                <i class="fas fa-lightbulb"></i> 
+                Puedes buscar por nombre, apellido, DNI o obra social del paciente
+              </small>
+            </div>
+
+            <!-- Resultados de búsqueda -->
+            <div class="patients-grid">
               <div 
-                *ngFor="let paciente of pacientes" 
-                class="col"
+                *ngFor="let paciente of filteredPacientes" 
+                class="patient-card"
+                [class.selected]="selectedPaciente?._id === paciente._id || selectedPaciente?.id === paciente.id"
+                (click)="selectPaciente(paciente)"
               >
-                <div 
-                  class="patient-card card h-100 text-center p-3 shadow-sm"
-                  [class.selected]="selectedPaciente?._id === paciente._id || selectedPaciente?.id === paciente.id"
-                  (click)="selectPaciente(paciente)"
-                  style="cursor:pointer; transition: box-shadow 0.2s, border 0.2s;"
-                >
-                  <div class="d-flex flex-column align-items-center justify-content-center mb-3">
-                    <div class="patient-avatar mb-2">
-                      <div class="avatar-circle bg-info text-white d-flex align-items-center justify-content-center" style="width:80px;height:80px;font-size:2rem;">
-                        {{ paciente.nombre.charAt(0) }}{{ paciente.apellido.charAt(0) }}
-                      </div>
+                <div class="patient-info">
+                  <div class="patient-avatar">
+                    {{ paciente.nombre.charAt(0) }}{{ paciente.apellido.charAt(0) }}
+                  </div>
+                  <div class="patient-details">
+                    <h6>{{ paciente.nombre }} {{ paciente.apellido }}</h6>
+                    <div class="patient-meta">
+                      <i class="fas fa-id-card"></i> DNI: {{ paciente.dni }}
                     </div>
-                    <h5 class="fw-bold mb-1">{{ paciente.nombre }} {{ paciente.apellido }}</h5>
-                    <div class="text-muted mb-2">
-                      <i class="fas fa-id-card me-1"></i> DNI: {{ paciente.dni }}
+                    <div class="patient-meta">
+                      <i class="fas fa-shield-alt"></i> {{ paciente.obraSocial || 'Sin obra social' }}
                     </div>
-                    <div class="text-muted mb-2">
-                      <i class="fas fa-shield-alt me-1"></i> {{ paciente.obraSocial || 'Sin obra social' }}
-                    </div>
-                    <button 
-                      class="btn btn-outline-info btn-sm mt-2 d-none d-md-inline-block"
-                      [class.active]="selectedPaciente?._id === paciente._id || selectedPaciente?.id === paciente.id"
-                      (click)="$event.stopPropagation(); selectPaciente(paciente)"
-                    >
-                      Elegir
-                    </button>
                   </div>
                 </div>
               </div>
             </div>
+            
+            <!-- Mensaje cuando no hay resultados -->
+            <div class="text-center py-4" *ngIf="filteredPacientes.length === 0 && pacientes.length > 0">
+              <i class="fas fa-search fa-3x text-muted mb-3"></i>
+              <h6 class="text-muted">No se encontraron pacientes</h6>
+              <p class="text-muted">Intenta con otros términos de búsqueda</p>
+              <button type="button" class="btn btn-outline-primary" (click)="clearSearch()">
+                <i class="fas fa-refresh"></i> Limpiar búsqueda
+              </button>
+            </div>
+            
+            <!-- Mensaje cuando no hay pacientes -->
             <div class="text-center py-4" *ngIf="pacientes.length === 0">
               <div class="spinner-border text-primary mb-3" role="status"></div>
               <p>Cargando pacientes disponibles...</p>
@@ -107,6 +136,7 @@
                 <i class="fas fa-refresh"></i> Reintentar
               </button>
             </div>
+            
             <div class="wizard-navigation mt-4">
               <button class="btn btn-outline-danger" (click)="cancelarReserva()">
                 <i class="fas fa-times"></i> Cancelar Reserva
@@ -496,17 +526,32 @@
                 </button>
               </div>
               
-              <!-- Botón de confirmar (para dentistas/administradores) -->
-              <div *ngIf="user?.tipoUsuario !== 'paciente'" class="d-flex gap-3 justify-content-center">
+              <!-- Opciones para dentistas/administradores -->
+              <div *ngIf="user?.tipoUsuario !== 'paciente'" class="d-flex gap-3 justify-content-center flex-wrap">
+                <!-- Solo Reservar (sin pago inmediato) -->
                 <button 
                   type="button"
-                  class="btn btn-success btn-lg" 
-                  (click)="confirmarTurnoAdmin()"
+                  class="btn btn-primary btn-lg" 
+                  (click)="soloReservar()"
                   [disabled]="isLoading">
                   <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                  <i class="fas fa-check me-2" *ngIf="!isLoading"></i>
-                  {{ isLoading ? 'Confirmando...' : 'Confirmar Turno' }}
+                  <i class="fas fa-calendar-plus me-2" *ngIf="!isLoading"></i>
+                  {{ isLoading ? 'Reservando...' : 'Solo Reservar' }}
                 </button>
+              </div>
+              
+              <!-- Información adicional para dentistas -->
+              <div *ngIf="user?.tipoUsuario !== 'paciente'" class="mt-3">
+                <div class="alert alert-info">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <h6><i class="fas fa-calendar-plus text-primary"></i> Solo Reservar</h6>
+                      <small class="text-muted">
+                        El paciente pagará al momento de la consulta. Estado: <strong>Reservado</strong>
+                      </small>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <button type="button" class="btn btn-secondary mt-3" (click)="prevStep()" [disabled]="isLoading">

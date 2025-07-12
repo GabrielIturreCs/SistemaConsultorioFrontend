@@ -947,11 +947,66 @@ body {
   justify-content: center;
 }
 
+/* Buscador de pacientes */
+.search-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
+}
+
+.search-container:focus-within {
+  border-color: #00bfff;
+  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.2);
+}
+
+.search-container .input-group {
+  position: relative;
+}
+
+.search-container .input-group-text {
+  background: linear-gradient(135deg, #00bfff, #7ff6ff);
+  border: none;
+  color: white;
+  font-weight: 600;
+}
+
+.search-container .form-control {
+  border: 2px solid #e9ecef;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-container .form-control:focus {
+  border-color: #00bfff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 191, 255, 0.25);
+}
+
+.search-container .btn-outline-secondary {
+  border: 2px solid #e9ecef;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  color: #6c757d;
+  transition: all 0.3s ease;
+}
+
+.search-container .btn-outline-secondary:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
 /* Patient Selection Styles */
 .patients-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
@@ -959,34 +1014,57 @@ body {
   background: white;
   border: 2px solid #e9ecef;
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.patient-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #00bfff, #7ff6ff);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.patient-card:hover::before {
+  transform: scaleX(1);
 }
 
 .patient-card:hover {
   border-color: #00bfff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 191, 255, 0.2);
 }
 
 .patient-card.selected {
-  border-color: #00bfff;
-  background: linear-gradient(135deg, #e3f2fd, #f8f9fa);
+  border-color: #28a745;
+  background: linear-gradient(135deg, #f8fff9, #e8f5e8);
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 191, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+}
+
+.patient-card.selected::before {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  transform: scaleX(1);
 }
 
 .patient-info {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .patient-avatar {
-  width: 50px;
-  height: 50px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   background: linear-gradient(135deg, #00bfff, #7ff6ff);
   color: white;
@@ -994,23 +1072,44 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   flex-shrink: 0;
+  border: 3px solid white;
+  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.patient-card:hover .patient-avatar {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+}
+
+.patient-card.selected .patient-avatar {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.patient-details {
+  flex: 1;
 }
 
 .patient-details h6 {
   margin: 0 0 0.5rem 0;
   font-weight: 600;
   color: #333;
+  font-size: 1.1rem;
 }
 
 .patient-meta {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.25rem;
 }
 
 .patient-meta i {
   width: 16px;
-  margin-right: 0.25rem;
+  margin-right: 0.5rem;
+  color: #00bfff;
 }
 
 /* Responsive Design */
@@ -1098,16 +1197,34 @@ body {
   
   .patients-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
   
   .patient-info {
-    gap: 0.75rem;
+    gap: 1rem;
   }
   
   .patient-avatar {
-    width: 45px;
-    height: 45px;
+    width: 60px;
+    height: 60px;
+    font-size: 1.3rem;
+  }
+  
+  .patient-details h6 {
     font-size: 1rem;
+  }
+  
+  .patient-meta {
+    font-size: 0.85rem;
+  }
+  
+  .search-container {
+    padding: 1rem;
+  }
+  
+  .search-container .form-control {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem;
   }
 }
 

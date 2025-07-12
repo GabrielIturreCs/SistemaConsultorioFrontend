@@ -60,6 +60,8 @@ export class ReservarComponent implements OnInit {
   
   // Para dentistas/administradores - selección de paciente
   selectedPaciente: Paciente | null = null;
+  searchTerm: string = '';
+  filteredPacientes: Paciente[] = [];
   
   // Calendar and booking data
   selectedDate: string = '';
@@ -138,10 +140,32 @@ export class ReservarComponent implements OnInit {
     this.loadChatHistory();
     this.addWelcomeMessage();
     
+    // Cargar configuración personalizada del dentista si es dentista
+    if (this.user?.tipoUsuario === 'dentista') {
+      console.log('🦷 Usuario es dentista, cargando configuración personalizada...');
+      // Establecer el dentista seleccionado como el usuario actual
+      this.selectedDentista = {
+        _id: this.user.id.toString(),
+        id: this.user.id,
+        nombre: this.user.nombre,
+        apellido: this.user.apellido
+      };
+      
+      // Cargar disponibilidad personalizada del dentista
+      this.cargarDisponibilidadDentista(this.user.id.toString());
+    }
+    
     // Solo generar calendario si no es paciente (para dentistas/administradores)
     // Los pacientes necesitan seleccionar un dentista primero
     if (this.user?.tipoUsuario !== 'paciente') {
-      this.generateCalendar();
+      // Para dentistas, esperar a que se cargue la configuración personalizada
+      if (this.user?.tipoUsuario === 'dentista') {
+        setTimeout(() => {
+          this.generateCalendar();
+        }, 1500); // Dar tiempo a que se cargue la disponibilidad
+      } else {
+        this.generateCalendar();
+      }
     }
     
     this.loadOccupiedSlots();
@@ -387,9 +411,40 @@ export class ReservarComponent implements OnInit {
 
   loadPacientes(): void {
     this.pacienteService.getPacientes().subscribe({
-      next: (pacientes) => this.pacientes = pacientes,
-      error: () => this.pacientes = []
+      next: (pacientes) => {
+        this.pacientes = pacientes;
+        this.filteredPacientes = pacientes;
+        console.log('Pacientes cargados:', pacientes);
+      },
+      error: (error) => {
+        console.error('Error al cargar pacientes:', error);
+        this.notificationService.showError('Error al cargar la lista de pacientes');
+        this.pacientes = [];
+        this.filteredPacientes = [];
+      }
     });
+  }
+
+  // Función para filtrar pacientes
+  filterPacientes(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredPacientes = this.pacientes;
+      return;
+    }
+
+    const term = this.searchTerm.toLowerCase();
+    this.filteredPacientes = this.pacientes.filter(paciente => 
+      paciente.nombre.toLowerCase().includes(term) ||
+      paciente.apellido.toLowerCase().includes(term) ||
+      paciente.dni.toLowerCase().includes(term) ||
+      (paciente.obraSocial && paciente.obraSocial.toLowerCase().includes(term))
+    );
+  }
+
+  // Función para limpiar búsqueda
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filteredPacientes = this.pacientes;
   }
 
   loadTratamientos(): void {
@@ -628,7 +683,18 @@ export class ReservarComponent implements OnInit {
   generateTimeSlots(): void {
     if (!this.selectedDate) return;
 
-    const dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
+    // Obtener el ID del dentista correcto
+    let dentistaId = '';
+    if (this.user?.tipoUsuario === 'dentista') {
+      // Si es dentista, usar su propio ID
+      dentistaId = this.user.id.toString();
+    } else {
+      // Si es paciente, usar el dentista seleccionado
+      dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
+    }
+    
+    console.log('🦷 generateTimeSlots - dentistaId:', dentistaId);
+    console.log('🦷 generateTimeSlots - user tipo:', this.user?.tipoUsuario);
     
     // Cargar horarios ocupados desde el backend
     this.turnoService.getHorariosOcupados(this.selectedDate, dentistaId).subscribe({
@@ -662,6 +728,7 @@ export class ReservarComponent implements OnInit {
         this.availableTimeSlots = slots;
         console.log('✅ Slots de tiempo generados con configuración personalizada:', {
           fecha: this.selectedDate,
+          dentistaId: dentistaId,
           totalSlots: slots.length,
           ocupados: horasOcupadas.length,
           disponibles: slots.filter(s => s.available).length,
@@ -720,6 +787,16 @@ export class ReservarComponent implements OnInit {
   // Método para seleccionar paciente (solo para dentistas/administradores)
   selectPaciente(paciente: Paciente): void {
     this.selectedPaciente = paciente;
+    
+    // Si es dentista, regenerar el calendario con su configuración personalizada
+    if (this.user?.tipoUsuario === 'dentista') {
+      console.log('🦷 Dentista seleccionó paciente, regenerando calendario con configuración personalizada...');
+      setTimeout(() => {
+        this.generateCalendar();
+        this.loadOccupiedSlots();
+      }, 500);
+    }
+    
     this.nextStep();
   }
 
@@ -764,7 +841,19 @@ export class ReservarComponent implements OnInit {
     // Cargar horarios ocupados desde el backend
     const mes = (this.currentMonth.getMonth() + 1).toString().padStart(2, '0');
     const anio = this.currentMonth.getFullYear().toString();
-    const dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
+    
+    // Obtener el ID del dentista correcto
+    let dentistaId = '';
+    if (this.user?.tipoUsuario === 'dentista') {
+      // Si es dentista, usar su propio ID
+      dentistaId = this.user.id.toString();
+    } else {
+      // Si es paciente, usar el dentista seleccionado
+      dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
+    }
+    
+    console.log('🦷 loadOccupiedSlots - dentistaId:', dentistaId);
+    console.log('🦷 loadOccupiedSlots - user tipo:', this.user?.tipoUsuario);
 
     this.turnoService.getDisponibilidadFechas(mes, anio, dentistaId).subscribe({
       next: (response) => {
@@ -1590,17 +1679,36 @@ export class ReservarComponent implements OnInit {
 
     this.isLoading = true;
 
+    // Asegurar que los IDs sean strings
+    const pacienteId = String(this.selectedPaciente._id || this.selectedPaciente.id);
+    
+    // Obtener el _id correcto del dentista
+    let dentistaId = '';
+    if (this.user?.tipoUsuario === 'dentista') {
+      // Si es dentista, usar el userId como dentistaId (el backend lo manejará)
+      dentistaId = String(this.user.id);
+    } else {
+      dentistaId = String(this.user?.id || this.user?.patientId);
+    }
+    
+    const tratamientoId = String(this.selectedTreatment._id || this.selectedTreatment.id);
+
     const turnoData: any = {
-      pacienteId: this.selectedPaciente._id || this.selectedPaciente.id,
-      dentistaId: this.user?.id || this.user?.patientId, // El dentista actual
+      pacienteId: pacienteId,
+      dentistaId: dentistaId,
       fecha: this.selectedDate,
       hora: this.selectedTime,
-      tratamientoId: this.selectedTreatment._id || this.selectedTreatment.id,
+      tratamientoId: tratamientoId,
       estado: 'reservado',
-      metodoPago: 'efectivo' // Por defecto para admin/dentista
+      metodoPago: 'efectivo',
+      precio: this.selectedTreatment.precio,
+      descripcion: this.selectedTreatment.descripcion
     };
 
     console.log('🦷 confirmarTurnoAdmin - turnoData:', turnoData);
+    console.log('🦷 confirmarTurnoAdmin - pacienteId:', pacienteId);
+    console.log('🦷 confirmarTurnoAdmin - dentistaId:', dentistaId);
+    console.log('🦷 confirmarTurnoAdmin - tratamientoId:', tratamientoId);
 
     this.turnoService.createTurno(turnoData).subscribe({
       next: (response) => {
@@ -1623,7 +1731,76 @@ export class ReservarComponent implements OnInit {
       error: (error) => {
         this.isLoading = false;
         console.error('❌ Error al crear turno:', error);
+        console.error('❌ Error details:', error.error);
         const errorMessage = error.error?.msg || 'Error al registrar el turno';
+        this.notificationService.showError(errorMessage);
+      }
+    });
+  }
+
+  // Función para solo reservar turno (sin pago inmediato)
+  async soloReservar(): Promise<void> {
+    if (!this.selectedDate || !this.selectedTime || !this.selectedTreatment || !this.selectedPaciente) {
+      this.notificationService.showError('Por favor completa todos los campos requeridos');
+      return;
+    }
+
+    this.isLoading = true;
+
+    // Asegurar que los IDs sean strings
+    const pacienteId = String(this.selectedPaciente._id || this.selectedPaciente.id);
+    
+    // Obtener el _id correcto del dentista
+    let dentistaId = '';
+    if (this.user?.tipoUsuario === 'dentista') {
+      // Si es dentista, usar el userId como dentistaId (el backend lo manejará)
+      dentistaId = String(this.user.id);
+    } else {
+      dentistaId = String(this.user?.id || this.user?.patientId);
+    }
+    
+    const tratamientoId = String(this.selectedTreatment._id || this.selectedTreatment.id);
+
+    const turnoData: any = {
+      pacienteId: pacienteId,
+      dentistaId: dentistaId,
+      fecha: this.selectedDate,
+      hora: this.selectedTime,
+      tratamientoId: tratamientoId,
+      estado: 'reservado',
+      metodoPago: 'efectivo',
+      precio: this.selectedTreatment.precio,
+      descripcion: this.selectedTreatment.descripcion
+    };
+
+    console.log('📅 soloReservar - turnoData:', turnoData);
+    console.log('📅 soloReservar - pacienteId:', pacienteId);
+    console.log('📅 soloReservar - dentistaId:', dentistaId);
+    console.log('📅 soloReservar - tratamientoId:', tratamientoId);
+
+    this.turnoService.createTurno(turnoData).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        console.log('✅ Turno reservado exitosamente:', response);
+        
+        // Recargar horarios ocupados
+        this.loadOccupiedSlots();
+        
+        // Guardar información del turno creado para el paso 6
+        this.turnoCreado = response;
+        
+        // Ir al paso de éxito
+        this.currentStep = 6;
+        this.paymentSuccess = true;
+        this.metodoPago = 'efectivo';
+        
+        this.notificationService.showSuccess('¡Turno reservado exitosamente! El paciente pagará al momento de la consulta.');
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('❌ Error al reservar turno:', error);
+        console.error('❌ Error details:', error.error);
+        const errorMessage = error.error?.msg || 'Error al reservar el turno';
         this.notificationService.showError(errorMessage);
       }
     });

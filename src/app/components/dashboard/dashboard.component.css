@@ -4100,3 +4100,61 @@ body {
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3) !important;
 }
+
+/* ===== ESTILOS PARA CONFIGURACIÓN PERSONALIZADA ===== */
+
+.bg-gradient-info {
+  background: linear-gradient(90deg, #17a2b8 0%, #6f42c1 100%) !important;
+}
+
+.config-info {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 15px;
+  border-left: 4px solid #17a2b8;
+  transition: all 0.3s ease;
+}
+
+.config-info:hover {
+  background: #e3f2fd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.15);
+}
+
+.config-info h6 {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.config-info p {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.config-info strong {
+  color: #495057;
+  font-weight: 600;
+}
+
+.config-info .text-info {
+  color: #17a2b8 !important;
+}
+
+.config-info .text-success {
+  color: #28a745 !important;
+}
+
+/* Responsive para configuración personalizada */
+@media (max-width: 768px) {
+  .config-info {
+    margin-bottom: 15px;
+  }
+  
+  .config-info h6 {
+    font-size: 0.95rem;
+  }
+  
+  .config-info p {
+    font-size: 0.85rem;
+  }
+}

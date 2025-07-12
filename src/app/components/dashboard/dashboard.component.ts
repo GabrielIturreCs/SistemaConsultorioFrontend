@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { User, Turno, Paciente } from '../../interfaces';
+import { User, Turno, Paciente, Disponibilidad } from '../../interfaces';
 import { ChatbotService } from '../../services/ChatBot.service';
 import { ChatMessage, QuickQuestion } from '../../interfaces/chatbot.interface';
 import { ActionButton } from '../../interfaces/message.interface';
@@ -18,6 +18,7 @@ import { ReviewService, Review } from '../../services/review.service';
 import { PdfExportService } from '../../services/pdf-export.service';
 import { AuthService } from '../../services/auth.service';
 import { DataRefreshService } from '../../services/data-refresh.service';
+import { DisponibilidadService } from '../../services/disponibilidad.service';
 
 interface AdminStats {
   totalUsuarios: number;
@@ -120,6 +121,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   confirmarReactivacionContent: string = '';
   turnoSeleccionado: Turno | null = null;
 
+  // Propiedades para configuración personalizada del dentista
+  disponibilidadDentista: Disponibilidad | null = null;
+  horariosPersonalizados: string[] = [];
+  diasNoDisponibles: string[] = [];
+  franjasNoDisponibles: any[] = [];
+  pausas: any[] = [];
+
   private refreshSubscription?: Subscription;
 
   constructor(
@@ -136,8 +144,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private reviewService: ReviewService,
     private pdfExportService: PdfExportService,
-    private authService: AuthService, // <--- INYECTAR
-    private dataRefreshService: DataRefreshService
+    private authService: AuthService,
+    private dataRefreshService: DataRefreshService,
+    private disponibilidadService: DisponibilidadService
   ) {
     this.chatForm = this.fb.group({
       message: ['', [Validators.required, Validators.minLength(1)]]
@@ -161,6 +170,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.user?.tipoUsuario === 'dentista') {
       this.loadChatHistory();
       this.addWelcomeMessage();
+      // Cargar configuración personalizada del dentista
+      this.cargarDisponibilidadDentista();
     }
     this.loadDentistasActividad();
     this.loadPacientesActividad();
@@ -586,6 +597,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   navigateToAgenda(): void {
     this.router.navigate(['/agenda']);
+  }
+
+  navigateToConfiguracion(): void {
+    this.router.navigate(['/configuracion-disponibilidad']);
   }
 
   volverAPacientes(): void {
@@ -1754,5 +1769,202 @@ export class DashboardComponent implements OnInit, OnDestroy {
         );
       }
     });
+  }
+
+  // ===== MÉTODOS PARA CONFIGURACIÓN PERSONALIZADA DEL DENTISTA =====
+
+  // Cargar configuración personalizada del dentista
+  cargarDisponibilidadDentista(): void {
+    if (!this.user?.id || this.user?.tipoUsuario !== 'dentista') {
+      console.log('⚠️ No es dentista o no tiene ID, no se carga configuración personalizada');
+      return;
+    }
+
+    console.log('🦷 Cargando configuración personalizada del dentista:', this.user.id);
+    
+    this.disponibilidadService.getDisponibilidad(this.user.id.toString()).subscribe({
+      next: (response) => {
+        console.log('✅ Configuración personalizada cargada:', response);
+        
+        if (response && response.disponibilidad) {
+          this.disponibilidadDentista = response.disponibilidad;
+          this.generarHorariosPersonalizados();
+          this.procesarConfiguracionPersonalizada();
+          
+          console.log('📅 Configuración aplicada:', {
+            horarios: this.horariosPersonalizados.length,
+            diasLaborables: this.disponibilidadDentista?.diasLaborables,
+            diasNoDisponibles: this.diasNoDisponibles.length,
+            franjasNoDisponibles: this.franjasNoDisponibles.length,
+            pausas: this.pausas.length,
+            horarioInicio: this.disponibilidadDentista?.horarioInicio,
+            horarioFin: this.disponibilidadDentista?.horarioFin
+          });
+        } else {
+          console.log('⚠️ No se encontró configuración personalizada, usando configuración por defecto');
+          this.disponibilidadDentista = this.disponibilidadService.getConfiguracionPorDefecto();
+          this.generarHorariosPersonalizados();
+          this.procesarConfiguracionPersonalizada();
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error al cargar disponibilidad:', error);
+        console.log('🔄 Usando configuración por defecto');
+        this.disponibilidadDentista = this.disponibilidadService.getConfiguracionPorDefecto();
+        this.generarHorariosPersonalizados();
+        this.procesarConfiguracionPersonalizada();
+      }
+    });
+  }
+
+  // Generar horarios personalizados basados en la configuración del dentista
+  generarHorariosPersonalizados(): void {
+    if (!this.disponibilidadDentista) {
+      console.log('⚠️ No hay configuración de disponibilidad, usando horarios por defecto');
+      this.horariosPersonalizados = [
+        '08:00', '08:20', '08:40', '09:00', '09:20', '09:40',
+        '10:00', '10:20', '10:40', '11:00', '11:20', '11:40',
+        '12:00', '12:20', '12:40', '13:00', '13:20', '13:40',
+        '14:00', '14:20', '14:40', '15:00', '15:20', '15:40',
+        '16:00', '16:20', '16:40', '17:00', '17:20', '17:40',
+        '18:00'
+      ];
+      return;
+    }
+
+    this.horariosPersonalizados = this.disponibilidadService.generarHorarios(this.disponibilidadDentista);
+    console.log('⏰ Horarios personalizados generados:', this.horariosPersonalizados);
+  }
+
+  // Procesar configuración personalizada
+  procesarConfiguracionPersonalizada(): void {
+    if (!this.disponibilidadDentista) return;
+
+    // Procesar días no disponibles
+    this.diasNoDisponibles = this.disponibilidadDentista.diasNoLaborables.map(dia => dia.fecha);
+    
+    // Procesar franjas no disponibles
+    this.franjasNoDisponibles = this.disponibilidadDentista.franjasNoDisponibles || [];
+    
+    // Procesar pausas
+    this.pausas = this.disponibilidadDentista.pausas || [];
+    
+    console.log('📅 Configuración procesada:', {
+      diasNoDisponibles: this.diasNoDisponibles.length,
+      franjasNoDisponibles: this.franjasNoDisponibles.length,
+      pausas: this.pausas.length
+    });
+  }
+
+  // Verificar si una fecha es disponible según la configuración del dentista
+  esFechaDisponible(fecha: string): boolean {
+    if (!this.disponibilidadDentista) {
+      console.log('📅 No hay configuración de disponibilidad, fecha disponible:', fecha);
+      return true;
+    }
+
+    const date = new Date(fecha);
+    const diaSemana = date.getDay();
+    const nombreDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][diaSemana];
+    
+    console.log(`📅 Verificando fecha ${fecha} (${nombreDia} - día ${diaSemana}):`);
+    console.log('📅 Días laborables configurados:', this.disponibilidadDentista.diasLaborables);
+    
+    // Verificar si es un día laborable
+    const esDiaLaborable = this.disponibilidadService.esDiaLaborable(diaSemana, this.disponibilidadDentista);
+    console.log('📅 ¿Es día laborable?', esDiaLaborable);
+    
+    if (!esDiaLaborable) {
+      console.log('❌ Fecha no disponible: No es día laborable');
+      return false;
+    }
+    
+    // Verificar si es un día no laborable específico
+    const esDiaNoLaborable = this.disponibilidadService.esDiaNoLaborable(fecha, this.disponibilidadDentista);
+    console.log('📅 ¿Es día no laborable específico?', esDiaNoLaborable);
+    
+    if (esDiaNoLaborable) {
+      console.log('❌ Fecha no disponible: Es día no laborable específico');
+      return false;
+    }
+    
+    console.log('✅ Fecha disponible según configuración');
+    return true;
+  }
+
+  // Verificar si un horario está disponible según la configuración del dentista
+  esHorarioDisponible(hora: string, fecha: string): boolean {
+    if (!this.disponibilidadDentista) return true;
+
+    // Obtener el día de la semana de la fecha
+    const selectedDate = new Date(fecha);
+    const diaSemana = selectedDate.getDay();
+
+    // Verificar si está en las franjas no disponibles para este día de la semana
+    for (const franja of this.franjasNoDisponibles) {
+      if (franja.diaSemana === diaSemana && 
+          hora >= franja.horaInicio && hora < franja.horaFin) {
+        return false;
+      }
+    }
+    
+    // Verificar si está en las pausas para este día de la semana
+    for (const pausa of this.pausas) {
+      if (pausa.diaSemana === diaSemana && 
+          hora >= pausa.horaInicio && hora < pausa.horaFin) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  // Verificar si tiene configuración personalizada
+  tieneConfiguracionPersonalizada(): boolean {
+    return this.disponibilidadDentista !== null && 
+           this.disponibilidadDentista !== undefined &&
+           this.horariosPersonalizados.length > 0;
+  }
+
+  // Obtener información de disponibilidad
+  getDisponibilidadInfo(): string {
+    if (!this.disponibilidadDentista) {
+      return 'Configuración por defecto';
+    }
+
+    const diasLaborables = this.disponibilidadDentista.diasLaborables.map(dia => 
+      ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][dia]
+    ).join(', ');
+
+    return `${this.disponibilidadDentista.horarioInicio} - ${this.disponibilidadDentista.horarioFin} | ${diasLaborables}`;
+  }
+
+  // Obtener información detallada de configuración
+  getConfiguracionDetallada(): any {
+    if (!this.disponibilidadDentista) {
+      return {
+        horarioInicio: '08:00',
+        horarioFin: '18:00',
+        intervaloMinutos: 20,
+        diasLaborables: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+        diasNoDisponibles: 0,
+        franjasBloqueadas: 0,
+        pausas: 0
+      };
+    }
+
+    const diasLaborables = this.disponibilidadDentista.diasLaborables.map(dia => 
+      ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][dia]
+    );
+
+    return {
+      horarioInicio: this.disponibilidadDentista.horarioInicio || '08:00',
+      horarioFin: this.disponibilidadDentista.horarioFin || '18:00',
+      intervaloMinutos: this.disponibilidadDentista.intervaloMinutos || 20,
+      diasLaborables: diasLaborables,
+      diasNoDisponibles: this.diasNoDisponibles.length,
+      franjasBloqueadas: this.franjasNoDisponibles.length,
+      pausas: this.pausas.length
+    };
   }
 }
