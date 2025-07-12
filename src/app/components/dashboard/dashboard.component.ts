@@ -139,7 +139,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadUserData();
     this.checkPacienteView();
-    this.loadTurnosData();
+    // loadTurnosData() se llamará desde loadUserData después de cargar el usuario
     this.loadAdminStats();
     // Suscribirse a refresh global de turnos
     this.refreshSubscription = this.dataRefreshService?.refresh$?.subscribe((component) => {
@@ -448,6 +448,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.router.navigate(['/vistaPaciente']);
           return;
         }
+        // Cargar turnos después de cargar el usuario
+        this.loadTurnosData();
       } else {
         console.log('Dashboard: No se encontró usuario en localStorage');
         this.router.navigate(['/login']);
@@ -488,17 +490,49 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadTurnosData(): void {
-    this.turnoService.getTurnosFromAPI().subscribe({
-      next: (turnos) => {
-        // Solo filtra por paciente si está en modo vista de paciente
-        if (this.isPacienteView && this.selectedPaciente) {
-          this.turnos = turnos.filter(turno => String(turno.pacienteId) === String(this.selectedPaciente!.id));
-        } else {
-          this.turnos = turnos; // TODOS los turnos
+    console.log('🔍 loadTurnosData() - Usuario actual:', this.user);
+    console.log('🔍 loadTurnosData() - Tipo de usuario:', this.user?.tipoUsuario);
+    console.log('🔍 loadTurnosData() - ID del usuario:', this.user?.id);
+    
+    // Si es un dentista, cargar solo sus turnos
+    if (this.user?.tipoUsuario === 'dentista' && this.user?.id) {
+      console.log('🦷 Cargando turnos del dentista:', this.user.id);
+      this.turnoService.getTurnosByDentista(this.user.id.toString()).subscribe({
+        next: (turnos) => {
+          console.log('✅ Turnos del dentista cargados:', turnos);
+          // Solo filtra por paciente si está en modo vista de paciente
+          if (this.isPacienteView && this.selectedPaciente) {
+            this.turnos = turnos.filter(turno => String(turno.pacienteId) === String(this.selectedPaciente!.id));
+          } else {
+            this.turnos = turnos; // Solo los turnos del dentista
+          }
+          console.log('📊 Turnos finales asignados:', this.turnos);
+        },
+        error: (error) => { 
+          console.error('❌ Error cargando turnos del dentista:', error);
+          this.turnos = []; 
         }
-      },
-      error: () => { this.turnos = []; }
-    });
+      });
+    } else {
+      console.log('👥 Cargando todos los turnos (no es dentista o no tiene ID)');
+      // Para administradores y pacientes, cargar todos los turnos (comportamiento original)
+      this.turnoService.getTurnosFromAPI().subscribe({
+        next: (turnos) => {
+          console.log('✅ Todos los turnos cargados:', turnos);
+          // Solo filtra por paciente si está en modo vista de paciente
+          if (this.isPacienteView && this.selectedPaciente) {
+            this.turnos = turnos.filter(turno => String(turno.pacienteId) === String(this.selectedPaciente!.id));
+          } else {
+            this.turnos = turnos; // TODOS los turnos
+          }
+          console.log('📊 Turnos finales asignados:', this.turnos);
+        },
+        error: (error) => { 
+          console.error('❌ Error cargando todos los turnos:', error);
+          this.turnos = []; 
+        }
+      });
+    }
   }
 
   logout(): void {

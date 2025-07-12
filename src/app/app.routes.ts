@@ -14,6 +14,7 @@ import { PacientesComponent } from './components/pacientes/pacientes.component';
 import { DentistaComponent } from './components/dentista/dentista.component';
 import { TratamientoComponent } from './components/tratamiento/tratamiento.component';
 import { CompleteProfileComponent } from './components/complete-profile/complete-profile.component';
+import { ConfiguracionDisponibilidadComponent } from './components/configuracion-disponibilidad/configuracion-disponibilidad.component';
 
 
 import { PaymentCallbackComponent } from './components/payment-callback/payment-callback.component';
@@ -39,6 +40,7 @@ export const routes: Routes = [
   { path: 'pacientes', component: PacientesComponent, canActivate: [authGuard(['dentista', 'administrador'])] },
   { path: 'dentista', component: DentistaComponent, canActivate: [authGuard('administrador')] },
   { path: 'tratamiento', component: TratamientoComponent, canActivate: [authGuard('administrador')] },
+  { path: 'configuracion-disponibilidad', component: ConfiguracionDisponibilidadComponent, canActivate: [authGuard('dentista')] },
   
   // Rutas para callbacks de MercadoPago (sin restricciones de auth)
   { path: 'payment/success', component: PaymentCallbackComponent },

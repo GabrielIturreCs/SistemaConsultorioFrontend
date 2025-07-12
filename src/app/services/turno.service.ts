@@ -67,7 +67,12 @@ export class TurnoService {
 
   // Obtener turnos por dentista
   getTurnosByDentista(dentistaId: string): Observable<Turno[]> {
-    return this.http.get<Turno[]>(`${this.apiUrl}/dentista/${dentistaId}`, { headers: this.getHeaders() });
+    const url = `${this.apiUrl}/dentista/${dentistaId}`;
+    console.log('🔗 getTurnosByDentista - URL llamada:', url);
+    console.log('🔗 getTurnosByDentista - dentistaId:', dentistaId);
+    console.log('🔗 getTurnosByDentista - headers:', this.getHeaders());
+    
+    return this.http.get<Turno[]>(url, { headers: this.getHeaders() });
   }
 
   // Crear nuevo turno
@@ -209,13 +214,36 @@ export class TurnoService {
 
   // Obtener agenda de un dentista específico
   getAgendaDentista(dentistaId: string, fecha?: string): Observable<any> {
+    let url = `${this.apiUrl}/agenda-dentista/${dentistaId}`;
     const params: any = {};
+    
     if (fecha) params.fecha = fecha;
     
-    return this.http.get<any>(`${this.apiUrl}/agenda-dentista/${dentistaId}`, {
+    return this.http.get(url, { 
       headers: this.getHeaders(),
-      params
+      params 
     });
   }
 
+  // Reprogramar turno usando el endpoint específico
+  reprogramarTurno(id: string, nuevaFecha: string, nuevaHora: string, motivo?: string): Observable<Turno> {
+    const datos = {
+      nuevaFecha,
+      nuevaHora,
+      motivo: motivo || 'Reprogramación solicitada'
+    };
+    
+    return this.http.put<Turno>(`${this.apiUrl}/${id}/reprogramar`, datos, { 
+      headers: this.getHeaders() 
+    }).pipe(
+      // Actualizar la lista local después de reprogramar
+      tap((turnoReprogramado) => {
+        const currentTurnos = this.turnosSubject.value;
+        const updatedTurnos = currentTurnos.map(turno => 
+          String(turno.id) === String(turnoReprogramado.id) ? turnoReprogramado : turno
+        );
+        this.turnosSubject.next(updatedTurnos);
+      })
+    );
+  }
 } 

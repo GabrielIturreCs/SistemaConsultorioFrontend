@@ -5,45 +5,116 @@
       <!-- Wizard Progress -->
       <div class="col-12 mb-4">
         <div class="wizard-progress">
-          <!-- Para dentistas/administradores: Paso 1 - Seleccionar Paciente -->
+          <!-- Paso 1: Seleccionar Paciente (solo para dentistas/administradores) -->
           <div *ngIf="shouldSelectPaciente" class="step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
             <div class="step-number">1</div>
             <div class="step-title">Seleccionar Paciente</div>
           </div>
           <div *ngIf="shouldSelectPaciente" class="progress-line" [class.completed]="currentStep > 1"></div>
           
-          <!-- Paso para Elegir Fecha -->
-          <div class="step" [class.active]="currentStep >= (shouldSelectPaciente ? 2 : 1)" [class.completed]="currentStep > (shouldSelectPaciente ? 2 : 1)">
-            <div class="step-number">{{ shouldSelectPaciente ? 2 : 1 }}</div>
+          <!-- Paso 1: Seleccionar Dentista (solo para pacientes) -->
+          <div *ngIf="!shouldSelectPaciente" class="step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+            <div class="step-number">1</div>
+            <div class="step-title">Seleccionar Dentista</div>
+          </div>
+          <div *ngIf="!shouldSelectPaciente" class="progress-line" [class.completed]="currentStep > 1"></div>
+          
+          <!-- Paso 2: Elegir Fecha -->
+          <div class="step" [class.active]="currentStep >= (shouldSelectPaciente ? 2 : 2)" [class.completed]="currentStep > (shouldSelectPaciente ? 2 : 2)">
+            <div class="step-number">2</div>
             <div class="step-title">Elegir Fecha</div>
           </div>
-          <div class="progress-line" [class.completed]="currentStep > (shouldSelectPaciente ? 2 : 1)"></div>
+          <div class="progress-line" [class.completed]="currentStep > (shouldSelectPaciente ? 2 : 2)"></div>
           
-          <!-- Paso para Elegir Hora -->
-          <div class="step" [class.active]="currentStep >= (shouldSelectPaciente ? 3 : 2)" [class.completed]="currentStep > (shouldSelectPaciente ? 3 : 2)">
-            <div class="step-number">{{ shouldSelectPaciente ? 3 : 2 }}</div>
+          <!-- Paso 3: Elegir Hora -->
+          <div class="step" [class.active]="currentStep >= (shouldSelectPaciente ? 3 : 3)" [class.completed]="currentStep > (shouldSelectPaciente ? 3 : 3)">
+            <div class="step-number">3</div>
             <div class="step-title">Elegir Hora</div>
           </div>
-          <div class="progress-line" [class.completed]="currentStep > (shouldSelectPaciente ? 3 : 2)"></div>
+          <div class="progress-line" [class.completed]="currentStep > (shouldSelectPaciente ? 3 : 3)"></div>
           
-          <!-- Paso para Elegir Tratamiento -->
-          <div class="step" [class.active]="currentStep >= (shouldSelectPaciente ? 4 : 3)" [class.completed]="currentStep > (shouldSelectPaciente ? 4 : 3)">
-            <div class="step-number">{{ shouldSelectPaciente ? 4 : 3 }}</div>
+          <!-- Paso 4: Elegir Tratamiento -->
+          <div class="step" [class.active]="currentStep >= (shouldSelectPaciente ? 4 : 4)" [class.completed]="currentStep > (shouldSelectPaciente ? 4 : 4)">
+            <div class="step-number">4</div>
             <div class="step-title">Elegir Tratamiento</div>
           </div>
-          <div class="progress-line" [class.completed]="currentStep > (shouldSelectPaciente ? 4 : 3)"></div>
+          <div class="progress-line" [class.completed]="currentStep > (shouldSelectPaciente ? 4 : 4)"></div>
           
-          <!-- Paso para Confirmar -->
-          <div class="step" [class.active]="currentStep >= (shouldSelectPaciente ? 5 : 4)" [class.completed]="currentStep > (shouldSelectPaciente ? 5 : 4)">
-            <div class="step-number">{{ shouldSelectPaciente ? 5 : 4 }}</div>
-            <div class="step-title">Confirmar</div>
+          <!-- Paso 5: Confirmar y Pagar -->
+          <div class="step" [class.active]="currentStep >= (shouldSelectPaciente ? 5 : 5)" [class.completed]="currentStep > (shouldSelectPaciente ? 5 : 5)">
+            <div class="step-number">5</div>
+            <div class="step-title">Confirmar y Pagar</div>
           </div>
-          <div class="progress-line" [class.completed]="currentStep > (shouldSelectPaciente ? 5 : 4)"></div>
+          <div class="progress-line" [class.completed]="currentStep > (shouldSelectPaciente ? 5 : 5)"></div>
           
-          <!-- Paso final -->
-          <div class="step" [class.active]="currentStep >= (shouldSelectPaciente ? 6 : 5)">
-            <div class="step-number">{{ shouldSelectPaciente ? 6 : 5 }}</div>
+          <!-- Paso 6: Éxito -->
+          <div class="step" [class.active]="currentStep >= (shouldSelectPaciente ? 6 : 6)">
+            <div class="step-number">6</div>
             <div class="step-title">¡Listo!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 1: Selección de paciente (solo para dentistas/administradores) -->
+      <div *ngIf="currentStep === 1 && shouldSelectPaciente" class="col-12">
+        <div class="card shadow">
+          <div class="card-header">
+            <h5><i class="fas fa-user"></i> Paso 1: Selecciona el paciente</h5>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info mb-4">
+              <i class="fas fa-info-circle"></i> Elige el paciente para el cual vas a reservar el turno.
+            </div>
+            <div class="patients-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 justify-content-center">
+              <div 
+                *ngFor="let paciente of pacientes" 
+                class="col"
+              >
+                <div 
+                  class="patient-card card h-100 text-center p-3 shadow-sm"
+                  [class.selected]="selectedPaciente?._id === paciente._id || selectedPaciente?.id === paciente.id"
+                  (click)="selectPaciente(paciente)"
+                  style="cursor:pointer; transition: box-shadow 0.2s, border 0.2s;"
+                >
+                  <div class="d-flex flex-column align-items-center justify-content-center mb-3">
+                    <div class="patient-avatar mb-2">
+                      <div class="avatar-circle bg-info text-white d-flex align-items-center justify-content-center" style="width:80px;height:80px;font-size:2rem;">
+                        {{ paciente.nombre.charAt(0) }}{{ paciente.apellido.charAt(0) }}
+                      </div>
+                    </div>
+                    <h5 class="fw-bold mb-1">{{ paciente.nombre }} {{ paciente.apellido }}</h5>
+                    <div class="text-muted mb-2">
+                      <i class="fas fa-id-card me-1"></i> DNI: {{ paciente.dni }}
+                    </div>
+                    <div class="text-muted mb-2">
+                      <i class="fas fa-shield-alt me-1"></i> {{ paciente.obraSocial || 'Sin obra social' }}
+                    </div>
+                    <button 
+                      class="btn btn-outline-info btn-sm mt-2 d-none d-md-inline-block"
+                      [class.active]="selectedPaciente?._id === paciente._id || selectedPaciente?.id === paciente.id"
+                      (click)="$event.stopPropagation(); selectPaciente(paciente)"
+                    >
+                      Elegir
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="text-center py-4" *ngIf="pacientes.length === 0">
+              <div class="spinner-border text-primary mb-3" role="status"></div>
+              <p>Cargando pacientes disponibles...</p>
+              <button type="button" class="btn btn-outline-primary" (click)="loadPacientes()">
+                <i class="fas fa-refresh"></i> Reintentar
+              </button>
+            </div>
+            <div class="wizard-navigation mt-4">
+              <button class="btn btn-outline-danger" (click)="cancelarReserva()">
+                <i class="fas fa-times"></i> Cancelar Reserva
+              </button>
+              <button class="btn btn-success ms-2" (click)="nextStep()" [disabled]="!selectedPaciente">
+                Siguiente <i class="fas fa-arrow-right ms-2"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -114,13 +185,23 @@
         </div>
       </div>
 
-      <!-- Paso 2: Selección de fecha (solo para pacientes) -->
-      <div *ngIf="currentStep === 2 && user?.tipoUsuario === 'paciente'" class="col-12">
+      <!-- Paso 2: Selección de fecha (para todos los usuarios) -->
+      <div *ngIf="currentStep === 2" class="col-12">
         <div class="card shadow">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <h5><i class="fas fa-calendar-alt"></i> Paso 2: Selecciona la fecha para tu turno</h5>
-            <div class="selected-info" *ngIf="selectedDentista">
-              <i class="fas fa-user-md"></i> {{ selectedDentista.nombre }} {{ selectedDentista.apellido }}
+            <h5><i class="fas fa-calendar-alt"></i> Paso 2: Selecciona la fecha del turno</h5>
+            <div class="selected-info">
+              <div class="d-flex flex-column">
+                <div *ngIf="selectedDentista">
+                  <i class="fas fa-user-md"></i> {{ selectedDentista.nombre }} {{ selectedDentista.apellido }}
+                </div>
+                <div *ngIf="selectedPaciente">
+                  <i class="fas fa-user"></i> {{ selectedPaciente.nombre }} {{ selectedPaciente.apellido }}
+                </div>
+                <small class="text-muted" *ngIf="tieneConfiguracionPersonalizada()">
+                  <i class="fas fa-clock"></i> {{ getDisponibilidadInfo() }}
+                </small>
+              </div>
             </div>
           </div>
           <div class="card-body">
@@ -178,6 +259,32 @@
                   <div class="legend-color today"></div>
                   <span>Hoy</span>
                 </div>
+                <div class="legend-item" *ngIf="tieneConfiguracionPersonalizada()">
+                  <div class="legend-color custom-config"></div>
+                  <span>Configuración personalizada</span>
+                </div>
+              </div>
+              
+              <!-- Mensaje informativo sobre días no disponibles -->
+              <div class="alert alert-info mt-3" *ngIf="tieneConfiguracionPersonalizada()">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-info-circle me-2"></i>
+                  <div>
+                    <strong>Información:</strong> Los días marcados con 🔒 no están disponibles según la configuración del dentista.
+                    <br>
+                    <small class="text-muted">
+                      <i class="fas fa-calendar-check me-1"></i>
+                      Solo puedes seleccionar días marcados con 📅 (días laborables del dentista).
+                    </small>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Información adicional sobre configuración personalizada -->
+              <div class="alert alert-info mt-3" *ngIf="tieneConfiguracionPersonalizada()">
+                <i class="fas fa-info-circle"></i>
+                <strong>Configuración personalizada aplicada:</strong> 
+                {{ getDisponibilidadInfo() }}
               </div>
             </div>
             
@@ -194,16 +301,21 @@
         </div>
       </div>
 
-      <!-- Paso 3: Selección de hora (solo para pacientes) -->
-      <div *ngIf="currentStep === 3 && user?.tipoUsuario === 'paciente'" class="col-12">
+      <!-- Paso 3: Selección de hora (para todos los usuarios) -->
+      <div *ngIf="currentStep === 3" class="col-12">
         <div class="card shadow">
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5><i class="fas fa-clock"></i> Paso 3: Selecciona la hora</h5>
             <div class="selected-info">
-              <i class="fas fa-calendar"></i> {{ formatSelectedDate() }}
-              <span *ngIf="selectedDentista" class="ms-3">
-                <i class="fas fa-user-md"></i> {{ selectedDentista.nombre }} {{ selectedDentista.apellido }}
-              </span>
+              <div class="d-flex flex-column">
+                <div><i class="fas fa-calendar"></i> {{ formatSelectedDate() }}</div>
+                <div *ngIf="selectedDentista">
+                  <i class="fas fa-user-md"></i> {{ selectedDentista.nombre }} {{ selectedDentista.apellido }}
+                  <small class="text-muted ms-2" *ngIf="tieneConfiguracionPersonalizada()">
+                    <i class="fas fa-cog"></i> Horarios personalizados
+                  </small>
+                </div>
+              </div>
             </div>
           </div>
           <div class="card-body">
@@ -230,6 +342,30 @@
                 <span>Ocupado</span>
               </div>
             </div>
+            
+            <!-- Estadísticas de disponibilidad -->
+            <div class="availability-stats mt-3 p-3 bg-light rounded">
+              <div class="row text-center">
+                <div class="col-md-4">
+                  <div class="stat-item">
+                    <span class="stat-number text-success">{{ getAvailableSlotsCount() }}</span>
+                    <span class="stat-label">Disponibles</span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="stat-item">
+                    <span class="stat-number text-danger">{{ getOccupiedSlotsCount() }}</span>
+                    <span class="stat-label">Ocupados</span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="stat-item">
+                    <span class="stat-number text-info">{{ availableTimeSlots.length }}</span>
+                    <span class="stat-label">Total</span>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="wizard-navigation mt-4">
               <button class="btn btn-secondary" (click)="prevStep()">
                 <i class="fas fa-arrow-left"></i> Anterior
@@ -242,8 +378,8 @@
         </div>
       </div>
 
-      <!-- Paso 4: Selección de tratamiento (solo para pacientes) -->
-      <div *ngIf="currentStep === 4 && user?.tipoUsuario === 'paciente'" class="col-12">
+      <!-- Paso 4: Selección de tratamiento (para todos los usuarios) -->
+      <div *ngIf="currentStep === 4" class="col-12">
         <div class="card shadow">
           <div class="card-header">
             <h5><i class="fas fa-tooth"></i> Paso 4: Selecciona el tratamiento</h5>
@@ -300,19 +436,23 @@
         </div>
       </div>
 
-      <!-- Paso 5: Confirmar turno (solo para pacientes) -->
-      <div *ngIf="currentStep === 5 && user?.tipoUsuario === 'paciente'" class="col-12">
+      <!-- Paso 5: Confirmar turno (para todos los usuarios) -->
+      <div *ngIf="currentStep === 5" class="col-12">
         <div class="card shadow">
           <div class="card-header">
-            <h5><i class="fas fa-check-circle"></i> Paso 5: Confirma tu turno</h5>
+            <h5><i class="fas fa-check-circle"></i> Paso 5: Confirma el Turno</h5>
           </div>
           <div class="card-body text-center">
             <h4 class="mb-4">Revisa los detalles de tu turno</h4>
             
             <div class="booking-summary">
-              <div class="summary-item">
+              <div class="summary-item" *ngIf="selectedDentista">
                 <i class="fas fa-user-md text-primary"></i>
-                <strong>Dentista:</strong> {{ selectedDentista?.nombre }} {{ selectedDentista?.apellido }}
+                <strong>Dentista:</strong> {{ selectedDentista.nombre }} {{ selectedDentista.apellido }}
+              </div>
+              <div class="summary-item" *ngIf="selectedPaciente">
+                <i class="fas fa-user text-primary"></i>
+                <strong>Paciente:</strong> {{ selectedPaciente.nombre }} {{ selectedPaciente.apellido }}
               </div>
               <div class="summary-item">
                 <i class="fas fa-calendar text-primary"></i>
@@ -333,8 +473,8 @@
             </div>
 
             <div class="confirmation-actions mt-4">
-              <!-- Opciones de pago -->
-              <div class="d-flex gap-3 justify-content-center">
+              <!-- Opciones de pago (solo para pacientes) -->
+              <div *ngIf="user?.tipoUsuario === 'paciente'" class="d-flex gap-3 justify-content-center">
                 <button 
                   type="button"
                   class="btn btn-warning btn-lg" 
@@ -356,6 +496,19 @@
                 </button>
               </div>
               
+              <!-- Botón de confirmar (para dentistas/administradores) -->
+              <div *ngIf="user?.tipoUsuario !== 'paciente'" class="d-flex gap-3 justify-content-center">
+                <button 
+                  type="button"
+                  class="btn btn-success btn-lg" 
+                  (click)="confirmarTurnoAdmin()"
+                  [disabled]="isLoading">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  <i class="fas fa-check me-2" *ngIf="!isLoading"></i>
+                  {{ isLoading ? 'Confirmando...' : 'Confirmar Turno' }}
+                </button>
+              </div>
+              
               <button type="button" class="btn btn-secondary mt-3" (click)="prevStep()" [disabled]="isLoading">
                 <i class="fas fa-arrow-left"></i> Anterior
               </button>
@@ -364,8 +517,8 @@
         </div>
       </div>
 
-      <!-- Paso 6: Éxito (solo para pacientes) -->
-      <div *ngIf="currentStep === 6 && user?.tipoUsuario === 'paciente'" class="col-12">
+      <!-- Paso 6: Éxito (para todos los usuarios) -->
+      <div *ngIf="currentStep === 6" class="col-12">
         <div class="card shadow">
           <div class="card-header text-center">
             <h5><i class="fas fa-check-circle text-success"></i> ¡Turno Registrado Exitosamente!</h5>
@@ -398,10 +551,14 @@
             </div>
             
             <div class="booking-summary">
-              <h5 class="mb-3">Detalles de tu turno:</h5>
-              <div class="summary-item">
+              <h5 class="mb-3">Detalles del turno:</h5>
+              <div class="summary-item" *ngIf="selectedDentista">
                 <i class="fas fa-user-md text-primary"></i>
-                <strong>Dentista:</strong> {{ selectedDentista?.nombre }} {{ selectedDentista?.apellido }}
+                <strong>Dentista:</strong> {{ selectedDentista.nombre }} {{ selectedDentista.apellido }}
+              </div>
+              <div class="summary-item" *ngIf="selectedPaciente">
+                <i class="fas fa-user text-primary"></i>
+                <strong>Paciente:</strong> {{ selectedPaciente.nombre }} {{ selectedPaciente.apellido }}
               </div>
               <div class="summary-item">
                 <i class="fas fa-calendar text-primary"></i>
@@ -427,6 +584,13 @@
                 (click)="volverAlInicio()">
                 <i class="fas fa-arrow-left me-2"></i>
                 Volver a Mi Panel
+              </button>
+              
+              <button 
+                class="btn btn-success btn-lg ms-3 px-4" 
+                (click)="descargarPDFTurno()">
+                <i class="fas fa-download me-2"></i>
+                Descargar PDF
               </button>
               
               <button 

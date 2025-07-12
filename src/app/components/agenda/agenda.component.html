@@ -3,13 +3,36 @@
   <!-- Header -->
   <div class="agenda-card mb-4">
     <div class="d-flex justify-content-between align-items-center">
-      <h2 class="agenda-title"><i class="fas fa-calendar-alt"></i> Agenda del Dentista</h2>
+      <h2 class="agenda-title">
+        <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        Agenda del Dentista
+      </h2>
       <div>
         <button class="btn-agenda me-2" (click)="navigateToReservar()">
-          <i class="fas fa-plus"></i> Nuevo Turno
+          <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Nuevo Turno
+        </button>
+        <button class="btn-agenda me-2" (click)="navigateToConfiguracion()">
+          <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+          </svg>
+          Configurar Disponibilidad
         </button>
         <button class="btn-agenda btn-outline" (click)="navigateToDashboard()">
-          <i class="fas fa-arrow-left"></i> Volver
+          <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12,19 5,12 12,5"></polyline>
+          </svg>
+          Volver
         </button>
       </div>
     </div>
@@ -18,7 +41,7 @@
   <!-- Filtros y controles -->
   <div class="agenda-card mb-4">
     <div class="row g-3 align-items-end">
-      <div class="col-md-3">
+      <div class="col-md-2">
         <label class="form-label">Fecha</label>
         <input 
           type="date" 
@@ -26,13 +49,16 @@
           [(ngModel)]="selectedDate"
           (change)="onDateChange()">
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <label class="form-label">Estado</label>
         <select class="form-select" [(ngModel)]="filterEstado">
           <option value="todos">Todos los estados</option>
           <option value="reservado">Reservados</option>
+          <option value="pagado">Pagados</option>
           <option value="completado">Completados</option>
           <option value="cancelado">Cancelados</option>
+          <option value="pendiente_pago_efectivo">Pendiente Pago Efectivo</option>
+          <option value="pendiente_pago_online">Pendiente Pago Online</option>
         </select>
       </div>
       <div class="col-md-3">
@@ -43,9 +69,25 @@
           placeholder="Buscar paciente..."
           [(ngModel)]="searchTerm">
       </div>
+      <div class="col-md-2">
+        <button class="btn-agenda w-100" (click)="refreshData()" title="Refrescar datos">
+          <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+            <path d="M3 21v-5h5"></path>
+          </svg>
+          Refrescar
+        </button>
+      </div>
       <div class="col-md-3">
         <button class="btn-agenda w-100" (click)="exportarAgenda()" title="Exportar agenda a PDF">
-          <i class="fas fa-download"></i> Exportar PDF
+          <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7,10 12,15 17,10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Exportar PDF
         </button>
       </div>
     </div>
@@ -90,14 +132,31 @@
   <!-- Lista de turnos -->
   <div class="agenda-card">
     <div class="d-flex align-items-center mb-3">
-      <h6 class="event-title mb-0"><i class="fas fa-list"></i> Turnos del {{ selectedDate | date:'dd/MM/yyyy' }}</h6>
+      <h6 class="event-title mb-0">
+        <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+        Turnos del {{ selectedDate | date:'dd/MM/yyyy' }}
+      </h6>
     </div>
     <div>
       <div *ngIf="isLoading" class="agenda-loading">
         <span class="spinner-border text-info" role="status"></span>
       </div>
       <div *ngIf="filteredTurnos.length === 0 && !isLoading" class="text-center text-muted py-4">
-        <i class="fas fa-calendar-times fa-3x mb-3"></i>
+        <svg class="icon-empty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+          <line x1="10" y1="14" x2="14" y2="18"></line>
+          <line x1="14" y1="14" x2="10" y2="18"></line>
+        </svg>
         <p>No hay turnos programados para esta fecha</p>
       </div>
       <div *ngIf="filteredTurnos.length > 0" class="table-responsive">
@@ -130,64 +189,128 @@
                 </div>
               </td>
               <td>
-                <span [class]="getStatusClass(turno.estado)">
-                  <i [class]="getStatusIcon(turno.estado)"></i>
-                  {{ getStatusText(turno.estado) }}
-                </span>
+                <div class="d-flex flex-column gap-1">
+                  <!-- Estado principal del turno -->
+                  <span [class]="getStatusClass(turno.estado)">
+                    <i [class]="getStatusIcon(turno.estado)"></i>
+                    {{ getStatusText(turno.estado) }}
+                  </span>
+                  
+                  <!-- Estado de reprogramación (si aplica) -->
+                  <span 
+                    *ngIf="turno.fueReprogramado" 
+                    [class]="getReprogramacionClass(turno)"
+                    class="badge small">
+                    <svg class="icon-badge me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                      <path d="M21 3v5h-5"></path>
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                      <path d="M3 21v-5h5"></path>
+                    </svg>
+                    {{ getReprogramacionText(turno) }}
+                  </span>
+                  
+                  <!-- Información adicional de reprogramación -->
+                  <small 
+                    *ngIf="turno.fueReprogramado && turno.fechaOriginal" 
+                    class="text-muted fst-italic">
+                    {{ getReprogramacionInfo(turno) }}
+                  </small>
+                </div>
               </td>
               <td><strong>${{ turno.precioFinal }}</strong></td>
               <td>
-                <div class="btn-group btn-group-sm event-actions" role="group">
-                  <!-- Botón para completar (solo si está reservado) -->
+                <div class="action-buttons">
+                  <!-- Botón para marcar como pagado (solo si está reservado o pendiente) -->
                   <button 
-                    *ngIf="turno.estado === 'reservado'" 
-                    class="btn-agenda btn-success me-1"
-                    (click)="completarTurno(turno)"
-                    title="✅ Marcar como completado"
-                    data-bs-toggle="tooltip">
-                    <i class="fas fa-check-circle"></i>
+                    *ngIf="turno.estado === 'reservado' || turno.estado === 'pendiente_pago_efectivo' || turno.estado === 'pendiente_pago_online'" 
+                    class="action-btn action-btn-success action-btn-large"
+                    (click)="marcarComoPagado(turno)"
+                    title="💰 Marcar como pagado">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M8 12l3 3 5-5"></path>
+                    </svg>
+                    <span class="btn-text">Pagar</span>
                   </button>
-                  <!-- Botón para reservar (solo si está cancelado) -->
+                  
+                  <!-- Botón para marcar como reservado (solo si está cancelado) -->
                   <button 
                     *ngIf="turno.estado === 'cancelado'" 
-                    class="btn-agenda btn-warning me-1"
-                    (click)="reservarTurno(turno)"
-                    title="📅 Reactivar turno"
-                    data-bs-toggle="tooltip">
-                    <i class="fas fa-calendar-check"></i>
+                    class="action-btn action-btn-warning action-btn-large"
+                    (click)="marcarComoReservado(turno)"
+                    title="📅 Reactivar turno">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                      <path d="M21 3v5h-5"></path>
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                      <path d="M3 21v-5h5"></path>
+                    </svg>
+                    <span class="btn-text">Reactivar</span>
                   </button>
-                  <!-- Botón para reprogramar (solo si está reservado) -->
+                  
+                  <!-- Botón para completar (solo si está pagado o reservado) -->
                   <button 
-                    *ngIf="turno.estado === 'reservado'" 
-                    class="btn-agenda btn-info me-1"
+                    *ngIf="turno.estado === 'pagado' || turno.estado === 'reservado'" 
+                    class="action-btn action-btn-success action-btn-large"
+                    (click)="completarTurno(turno)"
+                    title="✅ Marcar como completado">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                      <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                    </svg>
+                    <span class="btn-text">Completar</span>
+                  </button>
+                  
+                  <!-- Botón para reprogramar (solo si está reservado o pagado) -->
+                  <button 
+                    *ngIf="turno.estado === 'reservado' || turno.estado === 'pagado'" 
+                    class="action-btn action-btn-info action-btn-large"
                     (click)="reprogramarTurno(turno)"
-                    title="✏️ Reprogramar fecha/hora"
-                    data-bs-toggle="tooltip">
-                    <i class="fas fa-edit"></i>
+                    title="✏️ Reprogramar fecha/hora">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12,6 12,12 16,14"></polyline>
+                    </svg>
+                    <span class="btn-text">Reprogramar</span>
                   </button>
-                  <!-- Botón para cancelar (solo si está reservado) -->
+                  
+                  <!-- Botón para cancelar (solo si está reservado o pagado) -->
                   <button 
-                    *ngIf="turno.estado === 'reservado'" 
-                    class="btn-agenda btn-danger me-1"
+                    *ngIf="turno.estado === 'reservado' || turno.estado === 'pagado'" 
+                    class="action-btn action-btn-danger action-btn-large"
                     (click)="cancelarTurno(turno)"
-                    title="❌ Cancelar turno"
-                    data-bs-toggle="tooltip">
-                    <i class="fas fa-times-circle"></i>
+                    title="❌ Cancelar turno">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    <span class="btn-text">Cancelar</span>
                   </button>
+                  
                   <!-- Indicador para turnos completados -->
                   <span 
                     *ngIf="turno.estado === 'completado'"
-                    class="badge bg-success me-1"
+                    class="action-btn action-btn-disabled action-btn-large"
                     title="Turno completado - No se pueden realizar acciones">
-                    <i class="fas fa-lock"></i> Completado
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <circle cx="12" cy="16" r="1"></circle>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span class="btn-text">Completado</span>
                   </span>
+                  
                   <!-- Botón para ver detalles (siempre disponible) -->
                   <button 
-                    class="btn-agenda btn-outline-primary"
+                    class="action-btn action-btn-outline action-btn-large"
                     (click)="verDetalles(turno)"
-                    title="👁️ Ver información detallada"
-                    data-bs-toggle="tooltip">
-                    <i class="fas fa-eye"></i>
+                    title="👁️ Ver información detallada">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span class="btn-text">Ver</span>
                   </button>
                 </div>
               </td>
@@ -230,6 +353,116 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Reprogramación -->
+<div class="modal fade" id="reprogramarModal" tabindex="-1" aria-labelledby="reprogramarModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reprogramarModalLabel">
+          <svg class="icon-title" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12,6 12,12 16,14"></polyline>
+          </svg>
+          Reprogramar Turno
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="turnoSeleccionado" class="turno-info mb-4">
+          <h6>Información del Turno</h6>
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Paciente:</strong> {{ turnoSeleccionado.nombre }} {{ turnoSeleccionado.apellido }}</p>
+              <p><strong>Tratamiento:</strong> {{ turnoSeleccionado.tratamiento }}</p>
+              <p><strong>Precio:</strong> ${{ turnoSeleccionado.precioFinal }}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Fecha Actual:</strong> {{ turnoSeleccionado.fecha | date:'dd/MM/yyyy' }}</p>
+              <p><strong>Hora Actual:</strong> {{ turnoSeleccionado.hora }}</p>
+              <p><strong>Estado:</strong> 
+                <span [class]="getStatusClass(turnoSeleccionado.estado)">
+                  {{ getStatusText(turnoSeleccionado.estado) }}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <form #reprogramarForm="ngForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nueva Fecha</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                [(ngModel)]="nuevaFecha"
+                name="nuevaFecha"
+                [min]="fechaMinima"
+                (change)="onFechaChange()"
+                required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Nueva Hora</label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="nuevaHora"
+                name="nuevaHora"
+                required>
+                <option value="">Seleccionar hora</option>
+                <option 
+                  *ngFor="let hora of todosLosHorarios" 
+                  [value]="hora"
+                  [disabled]="horariosOcupados.includes(hora)"
+                  [class.text-danger]="horariosOcupados.includes(hora)"
+                  [class.fw-bold]="horariosOcupados.includes(hora)">
+                  {{ hora }} {{ horariosOcupados.includes(hora) ? '(Ocupado)' : '' }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="alert alert-info mt-3" *ngIf="nuevaFecha && nuevaHora">
+            <strong>Nuevo horario:</strong> {{ nuevaFecha | date:'dd/MM/yyyy' }} a las {{ nuevaHora }}
+          </div>
+
+          <div class="alert alert-warning mt-3" *ngIf="nuevaFecha && !isCheckingAvailability">
+            <div class="row">
+              <div class="col-md-6">
+                <strong>📅 Disponibilidad:</strong>
+                <br>
+                <span class="horario-disponible">✅ {{ horariosDisponibles.length }} horarios disponibles</span>
+              </div>
+              <div class="col-md-6">
+                <span class="horario-ocupado">❌ {{ horariosOcupados.length }} horarios ocupados</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-warning mt-3" *ngIf="isCheckingAvailability">
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            Verificando disponibilidad...
+          </div>
+
+          <div class="alert alert-danger mt-3" *ngIf="errorDisponibilidad">
+            <strong>Error:</strong> {{ errorDisponibilidad }}
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          [disabled]="!reprogramarForm.valid || isCheckingAvailability || isReprogramando"
+          (click)="confirmarReprogramacion()">
+          <span *ngIf="isReprogramando" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          {{ isReprogramando ? 'Reprogramando...' : 'Confirmar Reprogramación' }}
+        </button>
       </div>
     </div>
   </div>

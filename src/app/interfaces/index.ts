@@ -42,6 +42,12 @@ export interface Turno {
   montoRecibido?: number; // Monto realmente recibido
   paymentNotificationDate?: string | Date; // Fecha de notificación del webhook
   paymentDetails?: any; // Detalles adicionales del pago
+  // Campos para rastrear reprogramaciones
+  fueReprogramado?: boolean; // Indica si el turno fue reprogramado
+  fechaOriginal?: string; // Fecha original antes de la reprogramación
+  horaOriginal?: string; // Hora original antes de la reprogramación
+  fechaReprogramacion?: string | Date; // Fecha cuando se realizó la reprogramación
+  motivoReprogramacion?: string; // Motivo de la reprogramación (opcional)
 }
 
 export interface Tratamiento {
@@ -119,4 +125,63 @@ export interface Dentista {
   direccion: string;
   dni: string;
   userId: string;
+}
+
+// Interfaces para configuración de disponibilidad
+export interface DiaNoLaborable {
+  fecha: string;
+  motivo: string;
+  tipo: 'feriado' | 'vacaciones' | 'personal' | 'otro';
+}
+
+export interface FranjaNoDisponible {
+  diaSemana: number;
+  horaInicio: string;
+  horaFin: string;
+  motivo: string;
+}
+
+export interface Pausa {
+  diaSemana: number;
+  horaInicio: string;
+  horaFin: string;
+  motivo: string;
+}
+
+export interface Disponibilidad {
+  _id?: string;
+  dentistaId: string;
+  horarioInicio: string;
+  horarioFin: string;
+  intervaloMinutos: 15 | 20 | 30 | 45 | 60;
+  diasLaborables: number[];
+  diasNoLaborables: DiaNoLaborable[];
+  franjasNoDisponibles: FranjaNoDisponible[];
+  pausas: Pausa[];
+  duracionTurnoDefault: number;
+  tiempoEntreTurnos: number;
+  fechaCreacion?: Date;
+  fechaActualizacion?: Date;
+  activo?: boolean;
+}
+
+export interface DiaDisponibilidad {
+  fecha: string;
+  diaSemana: number;
+  nombreDia: string;
+  esLaborable: boolean;
+  horariosDisponibles: string[];
+  esDiaNoLaborable: boolean;
+}
+
+export interface DisponibilidadMensual {
+  mes: number;
+  anio: number;
+  disponibilidadMensual: DiaDisponibilidad[];
+  configuracion: {
+    horarioInicio: string;
+    horarioFin: string;
+    intervaloMinutos: number;
+    diasLaborables: number[];
+  };
 } 

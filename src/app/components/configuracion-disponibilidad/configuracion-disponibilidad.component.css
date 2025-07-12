@@ -1,0 +1,359 @@
+/* Estilos para la configuración de disponibilidad */
+
+.configuracion-container {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.configuracion-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.configuracion-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.configuracion-title {
+  color: #2c3e50;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.75rem;
+}
+
+.btn-configuracion {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: none;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.btn-configuracion:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-configuracion.btn-outline {
+  background: transparent;
+  border: 2px solid #007bff;
+  color: #007bff;
+}
+
+.btn-configuracion.btn-outline:hover {
+  background: #007bff;
+  color: white;
+}
+
+.btn-configuracion:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Iconos */
+.icon-title {
+  width: 28px;
+  height: 28px;
+  color: #007bff;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  flex-shrink: 0;
+}
+
+/* Títulos de sección */
+.card-title {
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+}
+
+.card-title .icon-title {
+  width: 24px;
+  height: 24px;
+  color: #6c757d;
+}
+
+/* Formularios */
+.form-label {
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 8px;
+}
+
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  padding: 10px 12px;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Días laborables */
+.dias-laborables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-check-inline {
+  margin-right: 0;
+  margin-bottom: 8px;
+}
+
+.form-check-input {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  border: 2px solid #dee2e6;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.form-check-input:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.form-check-label {
+  font-weight: 500;
+  color: #495057;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Vista previa de horarios */
+.horarios-preview {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+}
+
+.horarios-preview .badge {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* Listas de elementos */
+.dias-no-laborables-list,
+.franjas-list,
+.pausas-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.dia-no-laborable-item,
+.franja-item,
+.pausa-item {
+  padding: 12px;
+  border-bottom: 1px solid #f1f3f4;
+  transition: background-color 0.2s ease;
+}
+
+.dia-no-laborable-item:hover,
+.franja-item:hover,
+.pausa-item:hover {
+  background-color: #f8f9fa;
+}
+
+.dia-no-laborable-item:last-child,
+.franja-item:last-child,
+.pausa-item:last-child {
+  border-bottom: none;
+}
+
+/* Badges de tipo */
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge.bg-danger {
+  background: linear-gradient(135deg, #dc3545, #c82333) !important;
+}
+
+.badge.bg-warning {
+  background: linear-gradient(135deg, #ffc107, #e0a800) !important;
+  color: #212529 !important;
+}
+
+.badge.bg-info {
+  background: linear-gradient(135deg, #17a2b8, #138496) !important;
+}
+
+.badge.bg-secondary {
+  background: linear-gradient(135deg, #6c757d, #545b62) !important;
+}
+
+/* Botones de acción */
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.btn-outline-danger:hover,
+.btn-outline-warning:hover,
+.btn-outline-info:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .configuracion-container {
+    padding: 15px;
+  }
+  
+  .configuracion-card {
+    padding: 16px;
+  }
+  
+  .configuracion-title {
+    font-size: 1.5rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .dias-laborables {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .form-check-inline {
+    margin-bottom: 4px;
+  }
+  
+  .horarios-preview .badge {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  
+  .dias-no-laborables-list,
+  .franjas-list,
+  .pausas-list {
+    max-height: 200px;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.configuracion-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Estados de carga */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Scrollbar personalizado */
+.dias-no-laborables-list::-webkit-scrollbar,
+.franjas-list::-webkit-scrollbar,
+.pausas-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dias-no-laborables-list::-webkit-scrollbar-track,
+.franjas-list::-webkit-scrollbar-track,
+.pausas-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.dias-no-laborables-list::-webkit-scrollbar-thumb,
+.franjas-list::-webkit-scrollbar-thumb,
+.pausas-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.dias-no-laborables-list::-webkit-scrollbar-thumb:hover,
+.franjas-list::-webkit-scrollbar-thumb:hover,
+.pausas-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Estados de hover mejorados */
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.form-control:hover,
+.form-select:hover {
+  border-color: #adb5bd;
+}
+
+/* Mensajes informativos */
+.text-muted {
+  color: #6c757d !important;
+  font-style: italic;
+}
+
+/* Mejoras visuales adicionales */
+.row.g-4 > .col-lg-6,
+.row.g-4 > .col-12 {
+  animation: fadeIn 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.row.g-4 > .col-lg-6:nth-child(1) { animation-delay: 0.1s; }
+.row.g-4 > .col-lg-6:nth-child(2) { animation-delay: 0.2s; }
+.row.g-4 > .col-12:nth-child(3) { animation-delay: 0.3s; }
+.row.g-4 > .col-lg-6:nth-child(4) { animation-delay: 0.4s; }
+.row.g-4 > .col-lg-6:nth-child(5) { animation-delay: 0.5s; } 

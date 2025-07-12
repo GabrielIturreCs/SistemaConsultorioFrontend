@@ -78,6 +78,13 @@ export class PdfExportService {
     },
     filtroEstado?: string
   ): Promise<void> {
+    console.log('📄 Generando PDF con datos:', {
+      fecha,
+      turnosCount: turnos.length,
+      estadisticas,
+      filtroEstado
+    });
+
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
@@ -97,8 +104,20 @@ export class PdfExportService {
     pdf.text(`Generado el: ${fechaReporte}`, pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 10;
 
-    // Fecha de la agenda
-    pdf.text(`Agenda del: ${new Date(fecha).toLocaleDateString('es-ES')}`, pageWidth / 2, yPosition, { align: 'center' });
+    // Fecha de la agenda - Corregir el manejo de la fecha
+    let fechaAgenda: string;
+    try {
+      // Intentar parsear la fecha como YYYY-MM-DD
+      const fechaObj = new Date(fecha + 'T00:00:00');
+      fechaAgenda = fechaObj.toLocaleDateString('es-ES');
+      console.log('📅 Fecha parseada correctamente:', fechaAgenda);
+    } catch (error) {
+      // Si falla, usar la fecha tal como viene
+      fechaAgenda = fecha;
+      console.log('⚠️ Error parseando fecha, usando original:', fechaAgenda);
+    }
+    
+    pdf.text(`Agenda del: ${fechaAgenda}`, pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 10;
 
     // Información del filtro si aplica
@@ -121,6 +140,8 @@ export class PdfExportService {
     const nombreArchivo = filtroEstado && filtroEstado !== 'todos' 
       ? `agenda_${fecha.replace(/-/g, '')}_${filtroEstado}.pdf`
       : `agenda_${fecha.replace(/-/g, '')}.pdf`;
+    
+    console.log('💾 Guardando PDF como:', nombreArchivo);
     pdf.save(nombreArchivo);
   }
 
@@ -174,6 +195,87 @@ export class PdfExportService {
     const nombreArchivo = filtroEstado && filtroEstado !== '' 
       ? `resenas_${new Date().toISOString().split('T')[0]}_${filtroEstado}.pdf`
       : `resenas_${new Date().toISOString().split('T')[0]}.pdf`;
+    pdf.save(nombreArchivo);
+  }
+
+  async exportarTurnoPDF(
+    turnoData: {
+      paciente: { nombre: string; apellido: string; dni: string; obraSocial: string };
+      dentista: { nombre: string; apellido: string; especialidad: string };
+      fecha: string;
+      hora: string;
+      tratamiento: { descripcion: string; precio: number };
+      estado: string;
+      metodoPago: string;
+      numeroTurno?: string;
+    }
+  ): Promise<void> {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 20;
+    let yPosition = margin;
+
+    // Título principal
+    pdf.setFontSize(28);
+    pdf.setTextColor(0, 191, 255);
+    pdf.text('Comprobante de Turno', pageWidth / 2, yPosition, { align: 'center' });
+    yPosition += 20;
+
+    // Logo o icono (simulado con texto)
+    pdf.setFontSize(48);
+    pdf.setTextColor(0, 191, 255);
+    pdf.text('🦷', pageWidth / 2, yPosition, { align: 'center' });
+    yPosition += 15;
+
+    // Número de turno si existe
+    if (turnoData.numeroTurno) {
+      pdf.setFontSize(16);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Turno #${turnoData.numeroTurno}`, pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 10;
+    }
+
+    // Fecha de generación
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 100, 100);
+    const fechaGeneracion = new Date().toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    pdf.text(`Generado el: ${fechaGeneracion}`, pageWidth / 2, yPosition, { align: 'center' });
+    yPosition += 15;
+
+    // Información del paciente
+    yPosition = this.saltoSiNecesario(pdf, yPosition, 40, pageHeight, margin);
+    yPosition = this.agregarSeccionPaciente(pdf, turnoData.paciente, yPosition, pageWidth, margin);
+
+    // Información del dentista
+    yPosition = this.saltoSiNecesario(pdf, yPosition, 40, pageHeight, margin);
+    yPosition = this.agregarSeccionDentista(pdf, turnoData.dentista, yPosition, pageWidth, margin);
+
+    // Información del turno
+    yPosition = this.saltoSiNecesario(pdf, yPosition, 60, pageHeight, margin);
+    yPosition = this.agregarSeccionTurno(pdf, turnoData, yPosition, pageWidth, margin);
+
+    // Información del tratamiento
+    yPosition = this.saltoSiNecesario(pdf, yPosition, 40, pageHeight, margin);
+    yPosition = this.agregarSeccionTratamiento(pdf, turnoData.tratamiento, yPosition, pageWidth, margin);
+
+    // Información de pago
+    yPosition = this.saltoSiNecesario(pdf, yPosition, 40, pageHeight, margin);
+    yPosition = this.agregarSeccionPago(pdf, turnoData, yPosition, pageWidth, margin);
+
+    // Notas importantes
+    yPosition = this.saltoSiNecesario(pdf, yPosition, 60, pageHeight, margin);
+    this.agregarNotasImportantes(pdf, turnoData, yPosition, pageWidth, margin);
+
+    // Guardar
+    const fechaTurno = new Date(turnoData.fecha).toISOString().split('T')[0];
+    const nombreArchivo = `turno_${turnoData.paciente.apellido}_${fechaTurno}.pdf`;
     pdf.save(nombreArchivo);
   }
 
@@ -323,11 +425,24 @@ export class PdfExportService {
       return;
     }
 
+    // Función para mapear estados a texto más legible
+    const mapearEstado = (estado: string): string => {
+      switch (estado) {
+        case 'reservado': return 'Reservado';
+        case 'pagado': return 'Pagado';
+        case 'completado': return 'Completado';
+        case 'cancelado': return 'Cancelado';
+        case 'pendiente_pago_efectivo': return 'Pend. Efectivo';
+        case 'pendiente_pago_online': return 'Pend. Online';
+        default: return estado || 'Sin estado';
+      }
+    };
+
     const datosTurnos = turnos.map(turno => [
       turno.hora,
       `${turno.nombre} ${turno.apellido}`,
       turno.tratamiento,
-      turno.estado,
+      mapearEstado(turno.estado),
       `$${turno.precioFinal.toLocaleString()}`
     ]);
 
@@ -336,8 +451,8 @@ export class PdfExportService {
       ...datosTurnos
     ];
 
-    // Definir anchos de columna proporcionales para agenda
-    const columnWidths = [0.10, 0.25, 0.25, 0.15, 0.25]; // Hora, Paciente, Tratamiento, Estado, Precio
+    // Definir anchos de columna proporcionales para agenda (ajustados para estados más cortos)
+    const columnWidths = [0.12, 0.28, 0.25, 0.15, 0.20]; // Hora, Paciente, Tratamiento, Estado, Precio
     this.crearTablaFlexible(pdf, tablaCompleta, margin, yPosition, pageWidth - 2 * margin, columnWidths, margin);
   }
 
@@ -594,5 +709,200 @@ export class PdfExportService {
     }
     pdf.setDrawColor(0, 191, 255);
     pdf.rect(x, y, ancho, datos.length * filaAltura, 'S');
+  }
+
+  // Funciones auxiliares para el PDF del turno
+  private agregarSeccionPaciente(
+    pdf: jsPDF,
+    paciente: { nombre: string; apellido: string; dni: string; obraSocial: string },
+    yPosition: number,
+    pageWidth: number,
+    margin: number
+  ): number {
+    pdf.setFontSize(16);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('📋 Información del Paciente', margin, yPosition);
+    yPosition += 10;
+
+    const datosPaciente = [
+      ['Nombre Completo', `${paciente.nombre} ${paciente.apellido}`],
+      ['DNI', paciente.dni],
+      ['Obra Social', paciente.obraSocial || 'Sin obra social']
+    ];
+
+    this.crearTabla(pdf, datosPaciente, margin, yPosition, pageWidth - 2 * margin);
+    yPosition += datosPaciente.length * 8 + 15;
+
+    return yPosition;
+  }
+
+  private agregarSeccionDentista(
+    pdf: jsPDF,
+    dentista: { nombre: string; apellido: string; especialidad: string },
+    yPosition: number,
+    pageWidth: number,
+    margin: number
+  ): number {
+    pdf.setFontSize(16);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('👨‍⚕️ Información del Dentista', margin, yPosition);
+    yPosition += 10;
+
+    const datosDentista = [
+      ['Nombre Completo', `${dentista.nombre} ${dentista.apellido}`],
+      ['Especialidad', dentista.especialidad || 'Odontología General']
+    ];
+
+    this.crearTabla(pdf, datosDentista, margin, yPosition, pageWidth - 2 * margin);
+    yPosition += datosDentista.length * 8 + 15;
+
+    return yPosition;
+  }
+
+  private agregarSeccionTurno(
+    pdf: jsPDF,
+    turnoData: {
+      fecha: string;
+      hora: string;
+      estado: string;
+    },
+    yPosition: number,
+    pageWidth: number,
+    margin: number
+  ): number {
+    pdf.setFontSize(16);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('📅 Información del Turno', margin, yPosition);
+    yPosition += 10;
+
+    const fechaFormateada = new Date(turnoData.fecha).toLocaleDateString('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const datosTurno = [
+      ['Fecha', fechaFormateada],
+      ['Hora', turnoData.hora],
+      ['Estado', this.mapearEstadoTurno(turnoData.estado)]
+    ];
+
+    this.crearTabla(pdf, datosTurno, margin, yPosition, pageWidth - 2 * margin);
+    yPosition += datosTurno.length * 8 + 15;
+
+    return yPosition;
+  }
+
+  private agregarSeccionTratamiento(
+    pdf: jsPDF,
+    tratamiento: { descripcion: string; precio: number },
+    yPosition: number,
+    pageWidth: number,
+    margin: number
+  ): number {
+    pdf.setFontSize(16);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('🦷 Información del Tratamiento', margin, yPosition);
+    yPosition += 10;
+
+    const datosTratamiento = [
+      ['Tratamiento', tratamiento.descripcion],
+      ['Precio', `$${tratamiento.precio.toLocaleString()}`]
+    ];
+
+    this.crearTabla(pdf, datosTratamiento, margin, yPosition, pageWidth - 2 * margin);
+    yPosition += datosTratamiento.length * 8 + 15;
+
+    return yPosition;
+  }
+
+  private agregarSeccionPago(
+    pdf: jsPDF,
+    turnoData: {
+      metodoPago: string;
+      estado: string;
+    },
+    yPosition: number,
+    pageWidth: number,
+    margin: number
+  ): number {
+    pdf.setFontSize(16);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('💳 Información de Pago', margin, yPosition);
+    yPosition += 10;
+
+    const metodoPagoText = turnoData.metodoPago === 'efectivo' ? 'Efectivo' : 'Online';
+    const estadoPago = this.mapearEstadoPago(turnoData.estado);
+
+    const datosPago = [
+      ['Método de Pago', metodoPagoText],
+      ['Estado del Pago', estadoPago]
+    ];
+
+    this.crearTabla(pdf, datosPago, margin, yPosition, pageWidth - 2 * margin);
+    yPosition += datosPago.length * 8 + 15;
+
+    return yPosition;
+  }
+
+  private agregarNotasImportantes(
+    pdf: jsPDF,
+    turnoData: {
+      metodoPago: string;
+      fecha: string;
+      hora: string;
+    },
+    yPosition: number,
+    pageWidth: number,
+    margin: number
+  ): void {
+    pdf.setFontSize(14);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('📝 Notas Importantes', margin, yPosition);
+    yPosition += 10;
+
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 100, 100);
+
+    const notas = [
+      '• Llega 10 minutos antes de tu cita programada.',
+      '• Trae tu DNI y obra social (si corresponde).',
+      '• Si no puedes asistir, cancela con al menos 24 horas de anticipación.',
+      turnoData.metodoPago === 'efectivo' 
+        ? '• El pago se realizará en efectivo al momento de la consulta.'
+        : '• El pago ya fue procesado exitosamente.',
+      '• Para consultas, contacta al consultorio.',
+      '• Este comprobante es válido como confirmación de tu turno.'
+    ];
+
+    for (const nota of notas) {
+      pdf.text(nota, margin, yPosition);
+      yPosition += 6;
+    }
+  }
+
+  private mapearEstadoTurno(estado: string): string {
+    const estados: { [key: string]: string } = {
+      'reservado': 'Reservado',
+      'pagado': 'Pagado',
+      'completado': 'Completado',
+      'cancelado': 'Cancelado',
+      'pendiente_pago_efectivo': 'Pendiente Pago Efectivo',
+      'pendiente_pago_online': 'Pendiente Pago Online'
+    };
+    return estados[estado] || estado;
+  }
+
+  private mapearEstadoPago(estado: string): string {
+    const estados: { [key: string]: string } = {
+      'reservado': 'Pendiente',
+      'pagado': 'Pagado',
+      'completado': 'Pagado',
+      'cancelado': 'Cancelado',
+      'pendiente_pago_efectivo': 'Pendiente (Efectivo)',
+      'pendiente_pago_online': 'Pendiente (Online)'
+    };
+    return estados[estado] || estado;
   }
 }
