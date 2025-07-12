@@ -247,7 +247,7 @@
                   <td class="text-center">
                     <!-- Mostrar botón cancelar para pacientes si el turno está reservado, pendiente o pendiente_pago -->
                     <button 
-                      *ngIf="user?.tipoUsuario === 'paciente' && (turno.estado === 'reservado' || turno.estado === 'pendiente' || turno.estado === 'pendiente_pago')" 
+                      *ngIf="user?.tipoUsuario === 'paciente' && (turno.estado === 'reservado' || turno.estado === 'pendiente' || turno.estado === 'pendiente_pago' || turno.estado === 'pendiente_pago_efectivo')" 
                       class="btn btn-outline-danger btn-sm rounded-circle"
                       (click)="cancelarTurno(turno)"
                       title="Cancelar turno">

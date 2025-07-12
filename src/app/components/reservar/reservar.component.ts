@@ -53,6 +53,7 @@ export class ReservarComponent implements OnInit {
   // Estado del pago
   paymentSuccess: boolean = false;
   redirectCountdown: number = 8;
+  metodoPago: string = 'online'; // Método de pago seleccionado
   
   // Para dentistas/administradores - selección de paciente
   selectedPaciente: Paciente | null = null;
@@ -783,6 +784,71 @@ export class ReservarComponent implements OnInit {
         this.notificationService.showError(errorMessage);
       }
     });
+  }
+
+  // Pago en efectivo
+  async pagarEnEfectivo(): Promise<void> {
+    if (!this.selectedDate || !this.selectedTime || !this.selectedTreatment) {
+      this.notificationService.showError('Por favor, completa todos los datos antes de continuar');
+      return;
+    }
+
+    this.isLoading = true;
+    this.metodoPago = 'efectivo'; // Establecer método de pago
+
+    try {
+      // Obtener el pacienteId correcto
+      const pacienteId = await this.getPacienteId();
+      if (!pacienteId) {
+        this.isLoading = false;
+        this.notificationService.showError('Error: No se pudo obtener el ID del paciente');
+        return;
+      }
+
+      // Crear el turno con pago en efectivo
+      const turnoData: any = {
+        pacienteId: pacienteId,
+        dentistaId: this.selectedDentista?._id || this.selectedDentista?.id,
+        fecha: this.selectedDate,
+        hora: this.selectedTime,
+        tratamientoId: this.selectedTreatment._id || this.selectedTreatment.id,
+        estado: 'pendiente_pago_efectivo',
+        metodoPago: 'efectivo',
+        precio: this.selectedTreatment.precio,
+        descripcion: this.selectedTreatment.descripcion
+      };
+
+      this.turnoService.createTurno(turnoData).subscribe({
+        next: (turnoCreado: any) => {
+          this.isLoading = false;
+          console.log('✅ Turno creado con pago en efectivo:', turnoCreado);
+          
+          // Mostrar mensaje de éxito
+          this.notificationService.showSuccess('Turno registrado exitosamente. Pago en efectivo al momento de la consulta.');
+          
+          // Refrescar datos
+          this.dataRefreshService.triggerRefresh('vistaPaciente');
+          this.turnoService.refreshTurnos();
+          
+          // Redirigir directamente al dashboard
+          this.volverAlInicio();
+        },
+        error: (error: any) => {
+          this.isLoading = false;
+          const errorMessage = error.error?.msg || 'Error al registrar el turno con pago en efectivo.';
+          this.notificationService.showError(errorMessage);
+        }
+      });
+    } catch (error) {
+      this.isLoading = false;
+      this.notificationService.showError('Error inesperado al procesar el pago en efectivo');
+    }
+  }
+
+  // Pago online (función existente confirmBooking renombrada)
+  async pagarOnline(): Promise<void> {
+    this.metodoPago = 'online'; // Establecer método de pago
+    await this.confirmBooking();
   }
 
   // Navigate back to dashboard/home

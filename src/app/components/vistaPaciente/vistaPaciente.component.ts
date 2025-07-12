@@ -255,8 +255,8 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
       .filter(t => t.estado === 'completado' || t.estado === 'pagado')
       .reduce((total, turno) => total + Number(turno.precioFinal || 0), 0);
     
-    // Encontrar próximo turno (reservado, pagado, pendiente o pendiente_pago en el futuro)
-    const estadosProximo = ['reservado', 'pagado', 'pendiente', 'pendiente_pago'];
+    // Encontrar próximo turno (reservado, pagado, pendiente, pendiente_pago, pendiente_pago_efectivo en el futuro)
+    const estadosProximo = ['reservado', 'pagado', 'pendiente', 'pendiente_pago', 'pendiente_pago_efectivo'];
     const hoy = new Date();
     const turnosFuturos = this.misTurnos
       .filter(t => {
@@ -315,6 +315,7 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
       case 'cancelado': return 'badge bg-danger';
       case 'pendiente': return 'badge bg-secondary';
       case 'pendiente_pago': return 'badge bg-secondary text-white';
+      case 'pendiente_pago_efectivo': return 'badge bg-warning text-dark';
       case 'pagado': return 'badge bg-primary text-white';
       default: return 'badge bg-secondary';
     }
@@ -328,6 +329,7 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
       case 'cancelado': return 'Cancelado';
       case 'pendiente': return 'Pendiente';
       case 'pendiente_pago': return 'Pendiente de Pago';
+      case 'pendiente_pago_efectivo': return 'Pago en Efectivo';
       case 'pagado': return 'Pagado';
       default: return 'Sin estado';
     }

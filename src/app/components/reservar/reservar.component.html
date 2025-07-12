@@ -333,17 +333,30 @@
             </div>
 
             <div class="confirmation-actions mt-4">
-              <button 
-                type="button"
-                class="btn btn-success btn-lg me-3" 
-                (click)="confirmBooking()"
-                [disabled]="isLoading">
-                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                <i class="fas fa-check" *ngIf="!isLoading"></i>
-                {{ isLoading ? 'Registrando...' : 'Confirmar Turno' }}
-              </button>
+              <!-- Opciones de pago -->
+              <div class="d-flex gap-3 justify-content-center">
+                <button 
+                  type="button"
+                  class="btn btn-warning btn-lg" 
+                  (click)="pagarEnEfectivo()"
+                  [disabled]="isLoading">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  <i class="fas fa-money-bill-wave me-2" *ngIf="!isLoading"></i>
+                  {{ isLoading ? 'Registrando...' : 'Pagar en Efectivo' }}
+                </button>
+                
+                <button 
+                  type="button"
+                  class="btn btn-success btn-lg" 
+                  (click)="pagarOnline()"
+                  [disabled]="isLoading">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  <i class="fas fa-credit-card me-2" *ngIf="!isLoading"></i>
+                  {{ isLoading ? 'Procesando...' : 'Pagar Online' }}
+                </button>
+              </div>
               
-              <button type="button" class="btn btn-secondary" (click)="prevStep()" [disabled]="isLoading">
+              <button type="button" class="btn btn-secondary mt-3" (click)="prevStep()" [disabled]="isLoading">
                 <i class="fas fa-arrow-left"></i> Anterior
               </button>
             </div>
@@ -366,12 +379,16 @@
             
             <!-- Mensaje especial para pago exitoso -->
             <div *ngIf="paymentSuccess" class="alert alert-success border-success mb-4" role="alert">
-              <i class="fas fa-credit-card me-2"></i>
-              <strong>¡Pago procesado exitosamente!</strong> Tu reserva está completamente confirmada.
+              <i class="fas fa-credit-card me-2" *ngIf="metodoPago === 'online'"></i>
+              <i class="fas fa-money-bill-wave me-2" *ngIf="metodoPago === 'efectivo'"></i>
+              <strong *ngIf="metodoPago === 'online'">¡Pago procesado exitosamente!</strong>
+              <strong *ngIf="metodoPago === 'efectivo'">¡Turno registrado exitosamente!</strong>
+              Tu reserva está completamente confirmada.
               <br>
               <small class="text-muted">
                 <i class="fas fa-info-circle me-1"></i>
-                Tu turno está listo. Puedes volver a tu dashboard cuando gustes.
+                <span *ngIf="metodoPago === 'online'">Tu turno está listo. Puedes volver a tu dashboard cuando gustes.</span>
+                <span *ngIf="metodoPago === 'efectivo'">Pago en efectivo al momento de la consulta. Tu turno está listo.</span>
               </small>
             </div>
             

@@ -559,6 +559,7 @@ export class TurnosComponent implements OnInit {
       case 'pagado': return '✅ Pagado';
       case 'pending': return '⏳ Pago Pendiente';
       case 'pendiente_pago_online': return '⏳ Esperando Pago Online';
+      case 'pendiente_pago_efectivo': return '💵 Pago en Efectivo';
       case 'rejected': return '❌ Pago Rechazado';
       case 'cancelled': return '🚫 Pago Cancelado';
       case 'refunded': return '💰 Reembolsado';
@@ -582,6 +583,7 @@ export class TurnosComponent implements OnInit {
       case 'reservado': return 'Reservado';
       case 'reservado_pendiente_pago': return 'Reservado - Pago Pendiente';
       case 'pendiente_pago_online': return 'Esperando Pago Online';
+      case 'pendiente_pago_efectivo': return 'Pago en Efectivo';
       case 'pagado': return 'Pagado';
       case 'cancelado': return 'Cancelado';
       case 'pendiente': return 'Pendiente';
@@ -596,6 +598,7 @@ export class TurnosComponent implements OnInit {
       case 'reservado': return 'badge bg-primary text-white';
       case 'reservado_pendiente_pago': return 'badge bg-info text-white';
       case 'pendiente_pago_online': return 'badge bg-warning text-dark';
+      case 'pendiente_pago_efectivo': return 'badge bg-warning text-dark';
       case 'pagado': return 'badge bg-primary text-white';
       case 'cancelado': return 'badge bg-danger text-white';
       case 'pendiente': return 'badge bg-secondary text-white';
