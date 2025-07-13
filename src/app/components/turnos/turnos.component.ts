@@ -131,21 +131,18 @@ export class TurnosComponent implements OnInit {
       timestamp: new Date(),
       actions: [
         {
-          text: '📅 Ver Mis Turnos',
+          text: 'Ver Mis Turnos',
           action: 'navigate:/misTurnos',
-          icon: 'calendar-check',
           variant: 'primary'
         },
         {
-          text: '➕ Reservar Turno',
+          text: 'Reservar Turno',
           action: 'navigate:/reservarTurno',
-          icon: 'calendar-plus',
           variant: 'success'
         },
         {
-          text: '📞 Contactar Clínica',
+          text: 'Contactar Clínica',
           action: 'call:(011) 4567-8901',
-          icon: 'phone',
           variant: 'info'
         }
       ]
@@ -764,6 +761,7 @@ export class TurnosComponent implements OnInit {
   // Método para manejar acciones de botones del chat
   handleChatAction(action: ActionButton): void {
     console.log('Acción ejecutada:', action);
+    console.log('URL actual:', this.router.url);
     const actionType = action.action.split(':')[0];
     const actionValue = action.action.split(':').slice(1).join(':');
 
@@ -774,13 +772,13 @@ export class TurnosComponent implements OnInit {
         
         // Manejar navegación específica para "Mis Turnos"
         if (actionValue === '/misTurnos') {
-          this.navigateTo('mis-turnos');
-          // Cerrar el chat después de navegar para mejor UX
+          console.log('Ya estamos en /misTurnos, cerrando chat y mostrando mensaje');
+          // Si ya estamos en la página de turnos, solo cerrar el chat
           this.chatOpen = false;
           // Agregar mensaje de confirmación
-          this.addConfirmationMessage('🎯 **Perfecto!** Te he llevado a tu sección de turnos. Aquí puedes ver todos tus turnos y cancelar cualquiera que necesites.');
+          this.addConfirmationMessage('🎯 **¡Perfecto!** Ya estás en tu sección de turnos. Aquí puedes ver todos tus turnos y cancelar cualquiera que necesites.');
         } else if (actionValue === '/reservarTurno') {
-          this.navigateTo('registrar-turno');
+          this.router.navigate(['/reservarTurno']);
           this.chatOpen = false;
           this.addConfirmationMessage('📅 **¡Excelente!** Ahora puedes reservar tu nuevo turno. Completa el formulario y confirma tu cita.');
         } else if (actionValue === '/vistaPaciente') {

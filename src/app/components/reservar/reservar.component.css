@@ -2019,3 +2019,141 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
 }
+
+/* ========================================
+   BOTONES DEL CHATBOT - ESTILOS ÚNICOS
+   ======================================== */
+
+/* Estilos únicos para botones del chatbot - sin conflictos */
+.chatbot-action-btn {
+  /* Tamaño fijo y centrado */
+  width: 130px !important;
+  height: 40px !important;
+  min-width: 130px !important;
+  max-width: 130px !important;
+  
+  /* Tipografía */
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  
+  /* Espaciado interno */
+  padding: 0.4rem 0.8rem !important;
+  margin: 0 !important;
+  
+  /* Comportamiento del texto */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  
+  /* Layout - Centrado perfecto */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  text-align: center !important;
+  
+  /* Estilo visual */
+  border: none !important;
+  border-radius: 20px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  
+  /* Transiciones */
+  transition: all 0.2s ease !important;
+  
+  /* Posicionamiento */
+  position: relative !important;
+  box-sizing: border-box !important;
+  
+  /* Asegurar que el contenido esté centrado */
+  word-wrap: normal !important;
+  word-break: keep-all !important;
+}
+
+/* Contenedor único para botones del chatbot */
+.chatbot-actions-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.6rem !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin-top: 0.75rem !important;
+  padding: 0.25rem 0 !important;
+}
+
+/* Colores específicos para botones del chatbot */
+.chatbot-action-btn.chatbot-primary {
+  background: #007bff !important;
+  color: white !important;
+}
+
+.chatbot-action-btn.chatbot-success {
+  background: #28a745 !important;
+  color: white !important;
+}
+
+.chatbot-action-btn.chatbot-info {
+  background: #17a2b8 !important;
+  color: white !important;
+}
+
+.chatbot-action-btn.chatbot-warning {
+  background: #ffc107 !important;
+  color: #212529 !important;
+}
+
+.chatbot-action-btn.chatbot-secondary {
+  background: #6c757d !important;
+  color: white !important;
+}
+
+/* Hover sin expansión */
+.chatbot-action-btn:hover,
+.chatbot-action-btn:focus {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* Estilos específicos para el texto dentro de los botones */
+.chatbot-action-btn {
+  margin: 0 !important;
+  padding: 0.4rem 0.8rem !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Responsive para móvil */
+@media (max-width: 480px) {
+  .chatbot-action-btn {
+    width: 110px !important;
+    height: 38px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+    font-size: 0.75rem !important;
+    padding: 0.4rem 0.7rem !important;
+  }
+  
+  .chatbot-actions-container {
+    gap: 0.5rem !important;
+  }
+}
+
+/* Responsive para pantallas muy pequeñas */
+@media (max-width: 360px) {
+  .chatbot-action-btn {
+    width: 100px !important;
+    height: 36px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    font-size: 0.7rem !important;
+    padding: 0.35rem 0.6rem !important;
+  }
+  
+  .chatbot-actions-container {
+    gap: 0.4rem !important;
+  }
+}

@@ -356,7 +356,116 @@ export class ReservarComponent implements OnInit {
     }
   }
 
+  // Método para manejar acciones de botones del chat
+  handleChatAction(action: any): void {
+    console.log('Acción ejecutada:', action);
+    const actionType = action.action.split(':')[0];
+    const actionValue = action.action.split(':').slice(1).join(':');
 
+    switch (actionType) {
+      case 'navigate':
+        // Navegar a una ruta específica
+        console.log('Navegando a:', actionValue);
+        
+        // Manejar navegación específica
+        if (actionValue === '/misTurnos') {
+          this.router.navigate(['/misTurnos']);
+          this.chatOpen = false;
+          // Agregar mensaje de confirmación
+          this.addConfirmationMessage('🎯 **Perfecto!** Te he llevado a tu sección de turnos. Aquí puedes ver todos tus turnos y cancelar cualquiera que necesites.');
+        } else if (actionValue === '/reservarTurno') {
+          // Ya estamos en la página de reserva, solo cerrar el chat
+          this.chatOpen = false;
+          this.addConfirmationMessage('📅 **¡Perfecto!** Ya estás en la página de reserva. Completa el formulario para agendar tu turno.');
+        } else if (actionValue === '/vistaPaciente') {
+          this.router.navigate(['/vistaPaciente']);
+          this.chatOpen = false;
+        } else {
+          // Navegación general
+          this.router.navigate([actionValue]);
+          this.chatOpen = false;
+        }
+        break;
+        
+      case 'call':
+        // Iniciar llamada telefónica
+        if (typeof window !== 'undefined') {
+          window.open(`tel:${actionValue}`, '_self');
+          this.addConfirmationMessage(`📞 **Llamada iniciada** al ${actionValue}. Si no se abre automáticamente, puedes marcar este número desde tu teléfono.`);
+        }
+        break;
+        
+      case 'whatsapp':
+        // Abrir WhatsApp
+        if (typeof window !== 'undefined') {
+          const whatsappUrl = `https://wa.me/${actionValue.replace(/\D/g, '')}`;
+          window.open(whatsappUrl, '_blank');
+          this.addConfirmationMessage(`💬 **WhatsApp abierto** para contactar al ${actionValue}. Puedes escribir tu consulta directamente.`);
+        }
+        break;
+        
+      case 'email':
+        // Abrir cliente de email
+        if (typeof window !== 'undefined') {
+          window.open(`mailto:${actionValue}`, '_self');
+          this.addConfirmationMessage(`📧 **Email abierto** para contactar a ${actionValue}. Describe tu consulta en el mensaje.`);
+        }
+        break;
+        
+      case 'map':
+        // Abrir mapa con la dirección
+        if (typeof window !== 'undefined') {
+          const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(actionValue)}`;
+          window.open(mapUrl, '_blank');
+          this.addConfirmationMessage(`🗺️ **Mapa abierto** con la ubicación de la clínica. Puedes ver las indicaciones para llegar.`);
+        }
+        break;
+        
+      case 'show-schedule':
+        // Mostrar horarios (agregar lógica específica)
+        this.showScheduleInfo();
+        break;
+        
+      default:
+        console.warn('Acción no reconocida:', action.action);
+    }
+  }
+
+  // Método auxiliar para agregar mensajes de confirmación
+  private addConfirmationMessage(text: string): void {
+    setTimeout(() => {
+      this.messages.push({
+        text: text,
+        isUser: false,
+        timestamp: new Date()
+      });
+      this.scrollToBottom();
+    }, 500);
+  }
+
+  // Método auxiliar para mostrar información de horarios
+  private showScheduleInfo(): void {
+    const scheduleMessage: ChatMessage = {
+      text: `📅 **Horarios de atención:**\n\n• Lunes a Viernes: 8:00 - 20:00\n• Sábados: 8:00 - 14:00\n• Domingos: Cerrado\n\n📞 Emergencias 24/7: (011) 4567-8901`,
+      isUser: false,
+      timestamp: new Date()
+    };
+    
+    this.messages.push(scheduleMessage);
+    this.scrollToBottom();
+  }
+
+  // Método para formatear el texto del mensaje
+  formatMessageText(text: string): string {
+    return text
+      .replace(/\n/g, '<br>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/###\s(.*?)(?=\n|$)/g, '<h4>$1</h4>')
+      .replace(/##\s(.*?)(?=\n|$)/g, '<h3>$1</h3>')
+      .replace(/#\s(.*?)(?=\n|$)/g, '<h2>$1</h2>');
+  }
 
   private scrollToBottom(): void {
     setTimeout(() => {

@@ -99,7 +99,7 @@
   justify-content: center;
   margin: 0 auto 1.5rem;
   font-size: 2.5rem;
-  color: #fff;
+  color: #2c3e50;
   background: linear-gradient(135deg, #143a5a 0%, #4fd1ff 100%);
   box-shadow: 0 2px 8px #4fd1ff;
   transition: transform 0.3s, box-shadow 0.3s;
@@ -120,7 +120,7 @@
   font-size: 0.95rem;
 }
 .quick-action-card i {
-  color: #fff !important;
+  color: #2c3e50 !important;
 }
 
 /* ======================
@@ -2005,7 +2005,7 @@ h6 {
 
 .action-icon .material-icons {
   font-size: 2rem;
-  color: white;
+  color: #2c3e50;
 }
 
 .action-content h4 {
@@ -2041,6 +2041,7 @@ h6 {
 
 .feature-tag .material-icons {
   font-size: 1rem;
+  color: #28a745;
 }
 
 .action-arrow {
@@ -2615,6 +2616,7 @@ h6 {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: #2c3e50;
 }
 
 .chat-toggle-btn-modern.open {
@@ -2854,45 +2856,16 @@ h6 {
 }
 
 .message-actions-modern {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.6rem !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin-top: 0.75rem !important;
+  padding: 0.25rem 0 !important;
 }
 
-.btn-action-modern {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-}
 
-.btn-action-modern.btn-primary {
-  background: #007bff;
-  color: white;
-}
-
-.btn-action-modern.btn-success {
-  background: #28a745;
-  color: white;
-}
-
-.btn-action-modern.btn-info {
-  background: #17a2b8;
-  color: white;
-}
-
-.btn-action-modern:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
 
 .message-time-modern {
   font-size: 0.7rem;
@@ -3041,5 +3014,500 @@ h6 {
   .section-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* --- MEJORAS DE RESPONSIVIDAD PARA EL CHATBOT MODERNO --- */
+
+/* Evitar desbordes de texto en los mensajes */
+.message-content-modern {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%; /* Permite que el mensaje use todo el ancho disponible en móvil */
+  box-sizing: border-box;
+}
+
+/* Ajustar el ancho de los mensajes en pantallas pequeñas */
+@media (max-width: 480px) {
+  .chat-window-modern {
+    width: 100vw !important;
+    min-width: 0;
+    max-width: 100vw;
+    left: 0 !important;
+    right: 0 !important;
+    border-radius: 0 0 20px 20px;
+  }
+  .welcome-bubble-modern {
+    width: 95vw !important;
+    min-width: 0;
+    max-width: 95vw;
+    right: 0 !important;
+    left: 0 !important;
+    border-radius: 20px;
+  }
+  .message-content-modern {
+    max-width: 95vw;
+    padding: 0.75rem;
+    font-size: 0.97rem;
+  }
+  .chat-header-modern, .chat-footer-modern {
+    padding: 0.75rem;
+  }
+  .chat-form-modern {
+    gap: 0.5rem;
+  }
+}
+
+
+
+
+/* ========================================
+   BOTONES DEL CHATBOT - SOLUCIÓN DEFINITIVA
+   ======================================== */
+
+/* Reset completo de estilos anteriores */
+.btn-action-modern {
+  /* Tamaño fijo y compacto */
+  width: 85px !important;
+  height: 32px !important;
+  min-width: 85px !important;
+  max-width: 85px !important;
+  
+  /* Tipografía */
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  
+  /* Espaciado interno */
+  padding: 0.25rem 0.5rem !important;
+  margin: 0 !important;
+  
+  /* Comportamiento del texto */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  
+  /* Layout */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  
+  /* Estilo visual */
+  border: none !important;
+  border-radius: 16px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  
+  /* Transiciones */
+  transition: all 0.2s ease !important;
+  
+  /* Posicionamiento para tooltip */
+  position: relative !important;
+}
+
+/* Contenedor de botones */
+.message-actions-modern {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.4rem !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin-top: 0.5rem !important;
+}
+
+/* Colores de botones */
+.btn-action-modern.btn-primary {
+  background: #007bff !important;
+  color: white !important;
+}
+
+.btn-action-modern.btn-success {
+  background: #28a745 !important;
+  color: white !important;
+}
+
+.btn-action-modern.btn-info {
+  background: #17a2b8 !important;
+  color: white !important;
+}
+
+.btn-action-modern.btn-warning {
+  background: #ffc107 !important;
+  color: #212529 !important;
+}
+
+.btn-action-modern.btn-secondary {
+  background: #6c757d !important;
+  color: white !important;
+}
+
+/* Hover sin expansión */
+.btn-action-modern:hover,
+.btn-action-modern:focus {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* Tooltip para texto largo */
+.btn-action-modern:hover::before {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: 0.3rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+/* Flecha del tooltip */
+.btn-action-modern:hover::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #333;
+  margin-bottom: 0.1rem;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Responsive para móvil */
+@media (max-width: 480px) {
+  .btn-action-modern {
+    width: 75px !important;
+    height: 28px !important;
+    min-width: 75px !important;
+    max-width: 75px !important;
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.4rem !important;
+  }
+  
+  .message-actions-modern {
+    gap: 0.3rem !important;
+  }
+}
+
+/* Responsive para pantallas muy pequeñas */
+@media (max-width: 360px) {
+  .btn-action-modern {
+    width: 65px !important;
+    height: 26px !important;
+    min-width: 65px !important;
+    max-width: 65px !important;
+    font-size: 0.65rem !important;
+    padding: 0.15rem 0.3rem !important;
+  }
+  
+  .message-actions-modern {
+    gap: 0.25rem !important;
+  }
+}
+
+/* ========================================
+   BOTONES DEL CHATBOT - TEXTO COMPLETO Y CENTRADO
+   ======================================== */
+
+/* Reset completo de estilos anteriores */
+.btn-action-modern {
+  /* Tamaño optimizado para texto completo */
+  width: 110px !important;
+  height: 38px !important;
+  min-width: 110px !important;
+  max-width: 110px !important;
+  
+  /* Tipografía */
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  
+  /* Espaciado interno */
+  padding: 0.35rem 0.7rem !important;
+  margin: 0 !important;
+  
+  /* Comportamiento del texto */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  
+  /* Layout - Centrado perfecto */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  text-align: center !important;
+  
+  /* Estilo visual */
+  border: none !important;
+  border-radius: 19px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  
+  /* Transiciones */
+  transition: all 0.2s ease !important;
+  
+  /* Posicionamiento para tooltip */
+  position: relative !important;
+  
+  /* Asegurar que el texto esté centrado */
+  box-sizing: border-box !important;
+}
+
+/* Contenedor de botones mejorado */
+.message-actions-modern {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin-top: 0.75rem !important;
+  padding: 0.25rem 0 !important;
+}
+
+/* Colores de botones */
+.btn-action-modern.btn-primary {
+  background: #007bff !important;
+  color: white !important;
+}
+
+.btn-action-modern.btn-success {
+  background: #28a745 !important;
+  color: white !important;
+}
+
+.btn-action-modern.btn-info {
+  background: #17a2b8 !important;
+  color: white !important;
+}
+
+.btn-action-modern.btn-warning {
+  background: #ffc107 !important;
+  color: #212529 !important;
+}
+
+.btn-action-modern.btn-secondary {
+  background: #6c757d !important;
+  color: white !important;
+}
+
+/* Hover sin expansión */
+.btn-action-modern:hover,
+.btn-action-modern:focus {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* Tooltip para texto muy largo (solo si es necesario) */
+.btn-action-modern:hover::before {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-bottom: 0.3rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+/* Flecha del tooltip */
+.btn-action-modern:hover::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #333;
+  margin-bottom: 0.1rem;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Responsive para móvil */
+@media (max-width: 480px) {
+  .btn-action-modern {
+    width: 100px !important;
+    height: 36px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    font-size: 0.78rem !important;
+    padding: 0.3rem 0.6rem !important;
+  }
+  
+  .message-actions-modern {
+    gap: 0.4rem !important;
+  }
+}
+
+/* Responsive para pantallas muy pequeñas */
+@media (max-width: 360px) {
+  .btn-action-modern {
+    width: 90px !important;
+    height: 34px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  .message-actions-modern {
+    gap: 0.3rem !important;
+  }
+}
+
+/* ========================================
+   BOTONES DEL CHATBOT - ESTILOS ÚNICOS
+   ======================================== */
+
+/* Estilos únicos para botones del chatbot - sin conflictos */
+.chatbot-action-btn {
+  /* Tamaño fijo y centrado */
+  width: 130px !important;
+  height: 40px !important;
+  min-width: 130px !important;
+  max-width: 130px !important;
+  
+  /* Tipografía */
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  
+  /* Espaciado interno */
+  padding: 0.4rem 0.8rem !important;
+  margin: 0 !important;
+  
+  /* Comportamiento del texto */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  
+  /* Layout - Centrado perfecto */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  text-align: center !important;
+  
+  /* Estilo visual */
+  border: none !important;
+  border-radius: 20px !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  
+  /* Transiciones */
+  transition: all 0.2s ease !important;
+  
+  /* Posicionamiento */
+  position: relative !important;
+  box-sizing: border-box !important;
+  
+  /* Asegurar que el contenido esté centrado */
+  word-wrap: normal !important;
+  word-break: keep-all !important;
+}
+
+/* Contenedor único para botones del chatbot */
+.chatbot-actions-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.6rem !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  margin-top: 0.75rem !important;
+  padding: 0.25rem 0 !important;
+}
+
+/* Colores específicos para botones del chatbot */
+.chatbot-action-btn.chatbot-primary {
+  background: #007bff !important;
+  color: white !important;
+}
+
+.chatbot-action-btn.chatbot-success {
+  background: #28a745 !important;
+  color: white !important;
+}
+
+.chatbot-action-btn.chatbot-info {
+  background: #17a2b8 !important;
+  color: white !important;
+}
+
+.chatbot-action-btn.chatbot-warning {
+  background: #ffc107 !important;
+  color: #212529 !important;
+}
+
+.chatbot-action-btn.chatbot-secondary {
+  background: #6c757d !important;
+  color: white !important;
+}
+
+/* Hover sin expansión */
+.chatbot-action-btn:hover,
+.chatbot-action-btn:focus {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* Estilos específicos para el texto dentro de los botones */
+.chatbot-action-btn {
+  margin: 0 !important;
+  padding: 0.4rem 0.8rem !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Responsive para móvil */
+@media (max-width: 480px) {
+  .chatbot-action-btn {
+    width: 110px !important;
+    height: 38px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+    font-size: 0.75rem !important;
+    padding: 0.4rem 0.7rem !important;
+  }
+  
+  .chatbot-actions-container {
+    gap: 0.5rem !important;
+  }
+}
+
+/* Responsive para pantallas muy pequeñas */
+@media (max-width: 360px) {
+  .chatbot-action-btn {
+    width: 100px !important;
+    height: 36px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    font-size: 0.7rem !important;
+    padding: 0.35rem 0.6rem !important;
+  }
+  
+  .chatbot-actions-container {
+    gap: 0.4rem !important;
   }
 }

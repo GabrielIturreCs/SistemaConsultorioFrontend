@@ -259,41 +259,37 @@ export class ChatService {
       if (step === 1) {
         const actions: ActionButton[] = [
           {
-            text: '🗓️ Ir a Mis Turnos',
+            text: 'Mis Turnos',
             action: 'navigate:/misTurnos',
-            icon: 'calendar-check',
             variant: 'primary'
           },
           {
-            text: '📞 Llamar a la Clínica',
+            text: 'Llamar',
             action: 'call:' + this.clinicContext.phone,
-            icon: 'phone',
             variant: 'secondary'
           }
         ];
         
         return {
-          content: `❌ **¿Necesitas cancelar un turno?**\n\n**Te ayudo paso a paso:**\n\n**✅ Método más rápido:**\n1. Haz clic en "🗓️ Ir a Mis Turnos" aquí abajo\n2. Encuentra tu turno programado\n3. Presiona el botón rojo "❌ Cancelar"\n4. Confirma la cancelación\n\n**📋 Política de cancelación:**\n- ⏰ Cancela hasta 24 horas antes\n- 💰 Reembolso automático si pagaste\n- 🆓 Sin penalización por cancelación\n- 📧 Confirmación por email\n\n**¿Deseas cancelar un turno específico?** Haz clic en el botón de arriba para acceder a tus turnos directamente.`,
+          content: `❌ **¿Necesitas cancelar un turno?**\n\n**Te ayudo paso a paso:**\n\n**✅ Método más rápido:**\n1. Haz clic en "Mis Turnos" aquí abajo\n2. Encuentra tu turno programado\n3. Presiona el botón rojo "❌ Cancelar"\n4. Confirma la cancelación\n\n**📋 Política de cancelación:**\n- ⏰ Cancela hasta 24 horas antes\n- 💰 Reembolso automático si pagaste\n- 🆓 Sin penalización por cancelación\n- 📧 Confirmación por email\n\n**¿Deseas cancelar un turno específico?** Haz clic en el botón de arriba para acceder a tus turnos directamente.`,
           actions
         };
       } else if (step === 2) {
         const actions: ActionButton[] = [
           {
-            text: '🗓️ Acceder a Mis Turnos',
+            text: 'Mis Turnos',
             action: 'navigate:/misTurnos',
-            icon: 'calendar-check',
             variant: 'success'
           },
           {
-            text: '📞 Asistencia Telefónica',
+            text: 'Asistencia',
             action: 'call:' + this.clinicContext.phone,
-            icon: 'phone',
             variant: 'info'
           }
         ];
         
         return {
-          content: `**🔧 Ayuda adicional para cancelar:**\n\n**Si ya encontraste tu turno:**\n- ✅ Haz clic en el botón rojo ❌\n- ✅ Confirma la cancelación\n- ✅ Recibirás confirmación por email\n\n**Si tienes dificultades:**\n- 🔍 Verifica la fecha del turno\n- 🔄 Actualiza la página\n- 📞 Contacta al ${this.clinicContext.phone}\n\n**Después de cancelar:**\n- 💳 Reembolso procesado en 24-48 horas\n- 🆓 Turno disponible para otros pacientes\n- 📅 Puedes reservar uno nuevo cuando quieras\n\n**¿Necesitas que te guíe directamente?** Usa el botón de arriba.`,
+          content: `🔧 **Ayuda adicional para cancelar:**\n\n**Si ya encontraste tu turno:**\n- ✅ Haz clic en el botón rojo ❌\n- ✅ Confirma la cancelación\n- ✅ Recibirás confirmación por email\n\n**Si tienes dificultades:**\n- 🔍 Verifica la fecha del turno\n- 🔄 Actualiza la página\n- 📞 Contacta al ${this.clinicContext.phone}\n\n**Después de cancelar:**\n- 💳 Reembolso procesado en 24-48 horas\n- 🆓 Turno disponible para otros pacientes\n- 📅 Puedes reservar uno nuevo cuando quieras\n\n**¿Necesitas que te guíe directamente?** Usa el botón de arriba.`,
           actions
         };
       }
@@ -310,15 +306,13 @@ export class ChatService {
       if (step === 1) {
         const actions: ActionButton[] = [
           {
-            text: '📅 Ver Mis Turnos',
+            text: 'Ver Turnos',
             action: 'navigate:/misTurnos',
-            icon: 'calendar-week',
             variant: 'primary'
           },
           {
-            text: '➕ Reservar Nuevo Turno',
+            text: 'Nuevo Turno',
             action: 'navigate:/reservarTurno',
-            icon: 'plus-circle',
             variant: 'success'
           }
         ];
@@ -341,15 +335,13 @@ export class ChatService {
       if (step === 1) {
         const actions: ActionButton[] = [
           {
-            text: '📅 Reservar Turno Ahora',
+            text: 'Reservar',
             action: 'navigate:/reservarTurno',
-            icon: 'calendar-plus',
             variant: 'success'
           },
           {
-            text: '🕐 Ver Horarios',
+            text: 'Horarios',
             action: 'show-schedule',
-            icon: 'clock',
             variant: 'info'
           }
         ];
@@ -369,15 +361,13 @@ export class ChatService {
       
       const actions: ActionButton[] = [
         {
-          text: '📋 Ver Mis Turnos',
+          text: 'Mis Turnos',
           action: 'navigate:/misTurnos',
-          icon: 'list-ul',
           variant: 'primary'
         },
         {
-          text: '🏠 Panel Principal',
+          text: 'Inicio',
           action: 'navigate:/vistaPaciente',
-          icon: 'home',
           variant: 'secondary'
         }
       ];
@@ -396,15 +386,13 @@ export class ChatService {
       
       const actions: ActionButton[] = [
         {
-          text: 'Ver Estado de Pagos',
+          text: 'Pagos',
           action: 'navigate:/misTurnos',
-          icon: 'credit-card',
           variant: 'primary'
         },
         {
-          text: 'Contactar Soporte',
+          text: 'Soporte',
           action: 'call:' + this.clinicContext.phone,
-          icon: 'help-circle',
           variant: 'warning'
         }
       ];
@@ -424,21 +412,18 @@ export class ChatService {
       
       const actions: ActionButton[] = [
         {
-          text: 'Llamar Ahora',
+          text: 'Llamar',
           action: 'call:' + this.clinicContext.phone,
-          icon: 'phone',
           variant: 'success'
         },
         {
           text: 'WhatsApp',
           action: 'whatsapp:' + this.clinicContext.whatsapp,
-          icon: 'message-circle',
           variant: 'success'
         },
         {
-          text: 'Cómo Llegar',
+          text: 'Ubicación',
           action: 'map:' + this.clinicContext.address,
-          icon: 'map-pin',
           variant: 'info'
         }
       ];
@@ -457,9 +442,8 @@ export class ChatService {
       
       const actions: ActionButton[] = [
         {
-          text: 'Editar Mi Perfil',
+          text: 'Perfil',
           action: 'navigate:/vistaPaciente',
-          icon: 'user',
           variant: 'primary'
         }
       ];

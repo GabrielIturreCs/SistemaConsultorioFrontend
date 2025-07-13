@@ -393,26 +393,23 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
 
   addWelcomeMessage(): void {
     const welcomeMessage: ChatMessage = {
-      text: '👋 **¡Hola! Soy tu asistente virtual inteligente.**\n\n🎯 **Estoy aquí para ayudarte con:**\n\n• 📅 **Gestionar tus turnos** (cancelar, reprogramar, ver historial)\n• 💳 **Consultas sobre pagos** y facturación\n• 📞 **Contactar la clínica** por WhatsApp o teléfono\n• 🏥 **Información de tratamientos** y servicios\n• 📋 **Actualizar tus datos** personales\n\n💬 **Puedes escribir consultas como:**\n• "Quiero cancelar un turno"\n• "¿Cuánto cuesta una limpieza?"\n• "Necesito reprogramar mi cita"\n\n**¿En qué puedo ayudarte hoy?**',
+      text: '¡Hola! Soy tu asistente virtual inteligente.\n\nEstoy aquí para ayudarte con:\n- Gestionar tus turnos (cancelar, reprogramar, ver historial)\n- Consultas sobre pagos y facturación\n- Contactar la clínica\n- Información de tratamientos y servicios\n- Actualizar tus datos personales\n\n¿En qué puedo ayudarte hoy?',
       isUser: false,
       timestamp: new Date(),
       actions: [
         {
-          text: '📅 Ver Mis Turnos',
+          text: 'Ver Mis Turnos',
           action: 'navigate:/misTurnos',
-          icon: 'calendar-check',
           variant: 'primary'
         },
         {
-          text: '➕ Reservar Turno',
+          text: 'Reservar Turno',
           action: 'navigate:/reservarTurno',
-          icon: 'calendar-plus',
           variant: 'success'
         },
         {
-          text: '📞 Contactar Clínica',
+          text: 'Contactar Clínica',
           action: 'call:(011) 4567-8901',
-          icon: 'phone',
           variant: 'info'
         }
       ]
@@ -524,6 +521,7 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
   // Método para manejar acciones de botones del chat
   handleChatAction(action: ActionButton): void {
     console.log('Acción ejecutada:', action);
+    console.log('URL actual:', this.router.url);
     const actionType = action.action.split(':')[0];
     const actionValue = action.action.split(':').slice(1).join(':');
 
@@ -534,10 +532,15 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
         
         // Manejar navegación específica para "Mis Turnos"
         if (actionValue === '/misTurnos') {
-          this.router.navigate(['/misTurnos']);
-          this.chatOpen = false;
-          // Agregar mensaje de confirmación
-          this.addConfirmationMessage('🎯 **Perfecto!** Te he llevado a tu sección de turnos. Aquí puedes ver todos tus turnos y cancelar cualquiera que necesites.');
+          console.log('Intentando navegar a /misTurnos desde:', this.router.url);
+          this.router.navigate(['/misTurnos']).then(success => {
+            console.log('Navegación a /misTurnos exitosa:', success);
+            this.chatOpen = false;
+            // Agregar mensaje de confirmación
+            this.addConfirmationMessage('🎯 **Perfecto!** Te he llevado a tu sección de turnos. Aquí puedes ver todos tus turnos y cancelar cualquiera que necesites.');
+          }).catch(error => {
+            console.error('Error navegando a /misTurnos:', error);
+          });
         } else if (actionValue === '/reservarTurno') {
           this.router.navigate(['/reservarTurno']);
           this.chatOpen = false;

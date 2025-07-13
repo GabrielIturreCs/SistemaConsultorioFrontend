@@ -399,7 +399,7 @@
                 </div>
               </div>
               <div class="contact-method">
-                <i class="material-icons">whatsapp</i>
+                <i class="material-icons">chat</i>
                 <div>
                   <strong>WhatsApp</strong>
                   <p>+54 9 11 1234-5678</p>
@@ -479,15 +479,14 @@
             <div class="message-content-modern">
               <div class="message-text-modern" [innerHTML]="formatMessageText(message.text)"></div>
               
-              <!-- Botones de acción mejorados -->
-              <div class="message-actions-modern" *ngIf="message.actions && message.actions.length > 0">
+              <!-- Botones de acción únicos del chatbot -->
+              <div class="chatbot-actions-container" *ngIf="message.actions && message.actions.length > 0">
                 <button 
                   *ngFor="let action of message.actions" 
-                  class="btn btn-action-modern"
-                  [class]="'btn-' + (action.variant || 'primary')"
+                  class="chatbot-action-btn"
+                  [class]="'chatbot-' + (action.variant || 'primary')"
                   (click)="handleChatAction(action)"
                   [title]="action.text">
-                  <i class="material-icons">{{action.icon}}</i>
                   {{action.text}}
                 </button>
               </div>

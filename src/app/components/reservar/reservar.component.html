@@ -708,7 +708,20 @@
         <div class="chat-messages" #chatMessages>
           <div *ngFor="let message of messages" class="message" [class.user]="message.isUser" [class.bot]="!message.isUser">
             <div class="message-content">
-              <div class="message-text">{{ message.text }}</div>
+              <div class="message-text" [innerHTML]="formatMessageText(message.text)"></div>
+              
+              <!-- Botones de acción únicos del chatbot -->
+              <div class="chatbot-actions-container" *ngIf="message.actions && message.actions.length > 0">
+                <button 
+                  *ngFor="let action of message.actions" 
+                  class="chatbot-action-btn"
+                  [class]="'chatbot-' + (action.variant || 'primary')"
+                  (click)="handleChatAction(action)"
+                  [title]="action.text">
+                  {{action.text}}
+                </button>
+              </div>
+              
               <div class="message-time">{{ message.timestamp | date:'HH:mm' }}</div>
             </div>
           </div>
