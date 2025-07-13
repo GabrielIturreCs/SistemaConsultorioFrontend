@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,7 +18,8 @@ import { LoggerService, LogCategory } from '../../utils/logger.service';
   selector: 'app-turnos',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, PatientNavbarComponent],
   templateUrl: './turnos.component.html',
-  styleUrl: './turnos.component.css'
+  styleUrl: './turnos.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TurnosComponent implements OnInit {
   currentView: string = 'turnos';
@@ -79,7 +80,8 @@ export class TurnosComponent implements OnInit {
     private pacienteService: PacienteService,
     private notificationService: NotificationService,
     private dentistaService: DentistaService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private cdr: ChangeDetectorRef
   ) {
     this.chatForm = this.fb.group({
       message: ['', [Validators.required, Validators.minLength(1)]]
@@ -341,6 +343,8 @@ export class TurnosComponent implements OnInit {
       next: (response) => {
         this.turnos = response.turnos;
         this.isLoading = false;
+        // Forzar detección de cambios con OnPush
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.logger.error('Error cargando turnos', LogCategory.API, error);
@@ -377,39 +381,24 @@ export class TurnosComponent implements OnInit {
       return;
     }
     
-    console.log('👤 Cargando datos del paciente para userId:', this.user.id);
-    
     this.pacienteService.getPacientes().subscribe({
       next: (pacientes) => {
-        console.log('📋 Pacientes disponibles:', pacientes.length);
-        
         // Buscar el paciente que corresponde al usuario logueado
         this.pacienteActual = pacientes.find(p => p.userId === this.user?.id.toString()) || null;
         
         if (this.pacienteActual) {
-          console.log('✅ Paciente encontrado:', {
-            id: this.pacienteActual._id || this.pacienteActual.id,
-            nombre: this.pacienteActual.nombre,
-            apellido: this.pacienteActual.apellido,
-            userId: this.pacienteActual.userId
-          });
           
           // Configurar el formulario con el pacienteId correcto
           this.turnoForm.pacienteId = this.pacienteActual._id || this.pacienteActual.id?.toString() || '';
           
           // Recargar turnos después de obtener los datos del paciente
           if (this.currentView === 'mis-turnos') {
-            console.log('🔄 Recargando turnos después de obtener datos del paciente...');
             this.loadTurnosData();
           }
+          // Forzar detección de cambios con OnPush
+          this.cdr.detectChanges();
         } else {
           console.warn('⚠️ No se encontró información del paciente para el usuario:', this.user?.id);
-          console.log('📋 Pacientes disponibles para debug:', pacientes.map(p => ({
-            id: p._id || p.id,
-            nombre: p.nombre,
-            apellido: p.apellido,
-            userId: p.userId
-          })));
         }
       },
       error: (error) => {
@@ -433,9 +422,10 @@ export class TurnosComponent implements OnInit {
     
     // Si navegamos a mis-turnos, recargar los datos para asegurar que estén actualizados
     if (view === 'mis-turnos') {
-      console.log('🔄 Navegando a Mis Turnos - recargando datos...');
       this.loadTurnosData();
     }
+    // Forzar detección de cambios con OnPush
+    this.cdr.detectChanges();
   }
 
   getCurrentDate(): string {
@@ -454,7 +444,6 @@ export class TurnosComponent implements OnInit {
     };
     this.turnoService.createTurno(turnoData).subscribe({
       next: (response) => {
-        console.log('Turno creado exitosamente:', response);
         this.isLoading = false;
         this.notificationService.showSuccess('Turno registrado exitosamente');
         
@@ -610,14 +599,6 @@ export class TurnosComponent implements OnInit {
   get filteredTurnos(): Turno[] {
     let filtered = this.turnos;
 
-    // Debug: mostrar información inicial
-    if (this.user?.tipoUsuario === 'paciente') {
-      console.log('Filtrando turnos para paciente:');
-      console.log('- Usuario:', this.user);
-      console.log('- Paciente actual:', this.pacienteActual);
-      console.log('- Total turnos:', this.turnos.length);
-    }
-
     // Filtrar por búsqueda
     if (this.searchTerm.trim() !== '') {
       const search = this.searchTerm.toLowerCase();
@@ -706,12 +687,6 @@ export class TurnosComponent implements OnInit {
       }
     }
 
-    // Debug: mostrar resultado final
-    if (this.user?.tipoUsuario === 'paciente') {
-      console.log('- Turnos filtrados:', filtered.length);
-      console.log('- Turnos finales:', filtered);
-    }
-
     return filtered;
   }
 
@@ -719,19 +694,15 @@ export class TurnosComponent implements OnInit {
 
   // Método para manejar acciones de botones del chat
   handleChatAction(action: ActionButton): void {
-    console.log('Acción ejecutada:', action);
-    console.log('URL actual:', this.router.url);
     const actionType = action.action.split(':')[0];
     const actionValue = action.action.split(':').slice(1).join(':');
 
     switch (actionType) {
       case 'navigate':
         // Navegar a una ruta específica
-        console.log('Navegando a:', actionValue);
         
         // Manejar navegación específica para "Mis Turnos"
         if (actionValue === '/misTurnos') {
-          console.log('Ya estamos en /misTurnos, cerrando chat y mostrando mensaje');
           // Si ya estamos en la página de turnos, solo cerrar el chat
           this.chatOpen = false;
           // Agregar mensaje de confirmación
@@ -926,7 +897,6 @@ export class TurnosComponent implements OnInit {
 
   viewTurnoDetails(turno: Turno): void {
     // Implementar vista de detalles del turno
-    console.log('Ver detalles del turno:', turno);
     // Aquí podrías abrir un modal o navegar a una página de detalles
   }
 
