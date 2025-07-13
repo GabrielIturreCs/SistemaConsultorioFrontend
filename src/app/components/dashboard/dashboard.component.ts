@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -50,7 +50,8 @@ interface AdminStats {
   selector: 'app-dashboard',
   imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminNavbarComponent, DentistNavbarComponent, PatientNavbarComponent],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrl: './dashboard.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   user: User | null = null;
@@ -132,6 +133,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   pausas: any[] = [];
 
   private refreshSubscription?: Subscription;
+  private marcandoAusentes: boolean = false;
 
   constructor(
     private router: Router, 
@@ -149,7 +151,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private pdfExportService: PdfExportService,
     private authService: AuthService,
     private dataRefreshService: DataRefreshService,
-    private disponibilidadService: DisponibilidadService
+    private disponibilidadService: DisponibilidadService,
+    private cdr: ChangeDetectorRef
   ) {
     this.chatForm = this.fb.group({
       message: ['', [Validators.required, Validators.minLength(1)]]
@@ -183,14 +186,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.user?.tipoUsuario === 'administrador') {
       this.cargarRendimientoSistema();
       // Usar la versión mejorada que carga los turnos primero
-      this.turnoService.getTurnosFromAPI().subscribe((turnos) => {
-        this.generarAlertasSistemaMejorado(turnos);
+      this.turnoService.getTurnosFromAPI().subscribe((response) => {
+        this.generarAlertasSistemaMejorado(response.turnos);
       });
       this.loadReviews();
       this.alertaInterval = interval(600000).subscribe(() => { // cada 10 minutos
         // Usar la versión mejorada que carga los turnos primero
-        this.turnoService.getTurnosFromAPI().subscribe((turnos) => {
-          this.generarAlertasSistemaMejorado(turnos);
+        this.turnoService.getTurnosFromAPI().subscribe((response) => {
+          this.generarAlertasSistemaMejorado(response.turnos);
         });
         this.loadDentistasActividad();
         this.loadPacientesActividad();
@@ -264,7 +267,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     
     // Cargar turnos para estadísticas
     this.turnoService.getTurnosFromAPI().subscribe({
-      next: (turnos) => {
+      next: (response) => {
+        const turnos = response.turnos;
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
         
@@ -506,6 +510,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         console.log('Dashboard: Usuario cargado:', this.user);
         console.log('Dashboard: Nombre del usuario:', this.user?.nombre);
         console.log('Dashboard: Tipo de usuario:', this.user?.tipoUsuario);
+        // Forzar detección de cambios con OnPush
+        this.cdr.detectChanges();
         // Redirigir pacientes a su vista específica
         if (this.user?.tipoUsuario === 'paciente') {
           this.router.navigate(['/vistaPaciente']);
@@ -570,6 +576,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.turnos = turnos; // Solo los turnos del dentista
           }
           console.log('📊 Turnos finales asignados:', this.turnos);
+          // Forzar detección de cambios con OnPush
+          this.cdr.detectChanges();
         },
         error: (error) => { 
           console.error('❌ Error cargando turnos del dentista:', error);
@@ -580,15 +588,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
       console.log('👥 Cargando todos los turnos (no es dentista o no tiene ID)');
       // Para administradores y pacientes, cargar todos los turnos (comportamiento original)
       this.turnoService.getTurnosFromAPI().subscribe({
-        next: (turnos) => {
-          console.log('✅ Todos los turnos cargados:', turnos);
+        next: (response) => {
+          console.log('✅ Todos los turnos cargados:', response.turnos);
           // Solo filtra por paciente si está en modo vista de paciente
           if (this.isPacienteView && this.selectedPaciente) {
-            this.turnos = turnos.filter(turno => String(turno.pacienteId) === String(this.selectedPaciente!.id));
+            this.turnos = response.turnos.filter(turno => String(turno.pacienteId) === String(this.selectedPaciente!.id));
           } else {
-            this.turnos = turnos; // TODOS los turnos
+            this.turnos = response.turnos; // TODOS los turnos
           }
           console.log('📊 Turnos finales asignados:', this.turnos);
+          // Forzar detección de cambios con OnPush
+          this.cdr.detectChanges();
         },
         error: (error) => { 
           console.error('❌ Error cargando todos los turnos:', error);
@@ -749,8 +759,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.loadRealAdminStats();
       this.cargarRendimientoSistema();
       // Usar la versión mejorada que carga los turnos primero
-      this.turnoService.getTurnosFromAPI().subscribe((turnos) => {
-        this.generarAlertasSistemaMejorado(turnos);
+      this.turnoService.getTurnosFromAPI().subscribe((response) => {
+        this.generarAlertasSistemaMejorado(response.turnos);
       });
       this.loadDentistasActividad();
       this.loadPacientesActividad();
@@ -761,6 +771,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Verificar turnos ausentes después de cargar datos
     setTimeout(() => {
       this.marcarTurnosAusentes();
+      // Forzar detección de cambios con OnPush
+      this.cdr.detectChanges();
       this.showFriendlyNotification(
         'success',
         '✅ Actualización Completada',
@@ -793,17 +805,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   get proximoTurno(): Turno | null {
-    console.log('=== DEBUG: Buscando próximo turno ===');
-    console.log('Total de turnos:', this.turnos.length);
-    
     // Filtrar solo turnos futuros (no pasados) con estados válidos
     const futureTurnos = this.turnos
       .filter(turno => {
         const esFuturo = this.isTurnoFuturo(turno);
         const estadoReal = this.getTurnoEstadoReal(turno);
         const estadoValido = ['reservado', 'pagado', 'pendiente_pago_efectivo', 'pendiente_pago_online'].includes(estadoReal);
-        
-        console.log(`Turno ${turno.nroTurno} (${turno.fecha} ${turno.hora}): Es futuro: ${esFuturo}, Estado: ${estadoReal}, Válido: ${estadoValido}`);
         
         // Solo turnos futuros (no pasados)
         if (!esFuturo) {
@@ -818,11 +825,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const dateB = this.getTurnoDate(b);
         return dateA.getTime() - dateB.getTime();
       });
-    
-    console.log('Turnos futuros encontrados:', futureTurnos.length);
-    if (futureTurnos.length > 0) {
-      console.log('Próximo turno:', futureTurnos[0].nroTurno, futureTurnos[0].fecha, futureTurnos[0].hora);
-    }
     
     // Marcar turnos ausentes en segundo plano (sin bloquear la UI)
     this.marcarTurnosAusentes();
@@ -848,7 +850,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         const dateB = this.getTurnoDate(b);
         return dateA.getTime() - dateB.getTime();
       })
-      .slice(0, 5); // Solo los próximos 5 turnos
+      .slice(0, 6); // Solo los próximos 6 turnos para el dashboard
   }
 
   getStatusClass(estado: string): string {
@@ -895,12 +897,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Función para obtener la fecha actual en zona horaria de Argentina
   private getCurrentDate(): Date {
-    const now = new Date();
-    // Solo log en modo debug
-    if (this.turnos.length > 0) {
-      console.log('Fecha actual del sistema:', now.toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }));
-    }
-    return now;
+    return new Date();
   }
 
   // Función para crear fecha del turno en zona horaria de Argentina
@@ -910,15 +907,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const [hour, minute] = (turno.hora || '00:00').split(':').map(Number);
     
     // Crear fecha en zona horaria local (Argentina)
-    const turnoDate = new Date(year, month - 1, day, hour, minute, 0);
-    
-    // Solo log en modo debug para el primer turno
-    if (turno.nroTurno === this.turnos[0]?.nroTurno) {
-      console.log(`Turno ${turno.nroTurno}: Fecha original: ${turno.fecha}, Hora: ${turno.hora}`);
-      console.log(`Turno ${turno.nroTurno}: Fecha interpretada:`, turnoDate.toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }));
-    }
-    
-    return turnoDate;
+    return new Date(year, month - 1, day, hour, minute, 0);
   }
 
   // Función para verificar si un turno está en tolerancia (30 minutos)
@@ -968,6 +957,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Función para marcar turnos ausentes automáticamente
   marcarTurnosAusentes(): void {
+    // Solo ejecutar si no se está ejecutando ya
+    if (this.marcandoAusentes) {
+      return;
+    }
+    
+    this.marcandoAusentes = true;
+    
     const turnosParaMarcar = this.turnos.filter(turno => {
       // Solo turnos que no estén ya marcados como ausente, completado o cancelado
       if (['ausente', 'completado', 'cancelado'].includes(turno.estado)) {
@@ -980,23 +976,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // Si hay turnos para marcar como ausentes, actualizar y refrescar datos
     if (turnosParaMarcar.length > 0) {
-      console.log(`Marcando ${turnosParaMarcar.length} turnos como ausentes automáticamente`);
-      
       // Marcar cada turno como ausente
       turnosParaMarcar.forEach(turno => {
         const turnoId = turno._id || turno.id?.toString() || '';
         this.turnoService.cambiarEstadoTurno(turnoId, 'ausente').subscribe({
           next: (response) => {
-            console.log(`Turno ${turnoId} marcado como ausente automáticamente`);
             // Refrescar datos después de marcar como ausente
             this.loadTurnosData();
           },
           error: (error) => {
-            console.error(`Error al marcar turno ${turnoId} como ausente:`, error);
+            // Silenciar errores para evitar logs excesivos
           }
         });
       });
     }
+    
+    // Resetear flag después de un delay
+    setTimeout(() => {
+      this.marcandoAusentes = false;
+    }, 5000);
   }
 
   getTipoClass(tipo: string): string {
@@ -1019,7 +1017,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   cargarRendimientoSistema(): void {
     // Obtener turnos y pacientes en paralelo
-    this.turnoService.getTurnosFromAPI().subscribe((turnos: any[]) => {
+    this.turnoService.getTurnosFromAPI().subscribe((response) => {
+      const turnos = response.turnos;
       const total = turnos.length;
       const completados = turnos.filter((t: any) => t.estado === 'completado').length;
       this.rendimiento.ocupacion = total ? Math.round((completados / total) * 100) : 0;
@@ -1038,7 +1037,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const alertasCombinadas: any[] = [];
     
     // Alertas de turnos - usar fecha de creación real
-    this.turnoService.getTurnosFromAPI().subscribe((turnos: any[]) => {
+    this.turnoService.getTurnosFromAPI().subscribe((response) => {
+      const turnos = response.turnos;
       const turnosRecientes = turnos
         .slice(-3)
         .reverse()
@@ -1494,7 +1494,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadTurnosActividad(): void {
-    this.turnoService.getTurnosFromAPI().subscribe((turnos) => {
+    this.turnoService.getTurnosFromAPI().subscribe((response) => {
+      const turnos = response.turnos;
       // Filtrar turnos recientes - usar fecha de creación real
       const turnosRecientes = turnos
         .filter((t: any) => {
@@ -2258,11 +2259,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
             horarioInicio: this.disponibilidadDentista?.horarioInicio,
             horarioFin: this.disponibilidadDentista?.horarioFin
           });
+          // Forzar detección de cambios con OnPush
+          this.cdr.detectChanges();
         } else {
           console.log('⚠️ No se encontró configuración personalizada, usando configuración por defecto');
           this.disponibilidadDentista = this.disponibilidadService.getConfiguracionPorDefecto();
           this.generarHorariosPersonalizados();
           this.procesarConfiguracionPersonalizada();
+          // Forzar detección de cambios con OnPush
+          this.cdr.detectChanges();
         }
       },
       error: (error) => {
@@ -2271,6 +2276,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.disponibilidadDentista = this.disponibilidadService.getConfiguracionPorDefecto();
         this.generarHorariosPersonalizados();
         this.procesarConfiguracionPersonalizada();
+        // Forzar detección de cambios con OnPush
+        this.cdr.detectChanges();
       }
     });
   }

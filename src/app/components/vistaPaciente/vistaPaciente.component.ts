@@ -208,10 +208,10 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
   loadMisTurnos(): void {
     this.isLoading = true;
     this.turnoService.getTurnosFromAPI().subscribe({
-      next: (turnos) => {
+      next: (response) => {
         // Filtrar los turnos que pertenecen al paciente autenticado
         const pacienteId = this.paciente?._id || this.paciente?.id;
-        this.misTurnos = turnos.filter(turno => {
+        this.misTurnos = response.turnos.filter(turno => {
           // Coincidencia por pacienteId
           if (pacienteId && turno.pacienteId) {
             if (turno.pacienteId.toString() === pacienteId.toString()) return true;
@@ -520,21 +520,16 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
 
   // Método para manejar acciones de botones del chat
   handleChatAction(action: ActionButton): void {
-    console.log('Acción ejecutada:', action);
-    console.log('URL actual:', this.router.url);
     const actionType = action.action.split(':')[0];
     const actionValue = action.action.split(':').slice(1).join(':');
 
     switch (actionType) {
       case 'navigate':
         // Navegar a una ruta específica
-        console.log('Navegando a:', actionValue);
         
         // Manejar navegación específica para "Mis Turnos"
         if (actionValue === '/misTurnos') {
-          console.log('Intentando navegar a /misTurnos desde:', this.router.url);
           this.router.navigate(['/misTurnos']).then(success => {
-            console.log('Navegación a /misTurnos exitosa:', success);
             this.chatOpen = false;
             // Agregar mensaje de confirmación
             this.addConfirmationMessage('🎯 **Perfecto!** Te he llevado a tu sección de turnos. Aquí puedes ver todos tus turnos y cancelar cualquiera que necesites.');

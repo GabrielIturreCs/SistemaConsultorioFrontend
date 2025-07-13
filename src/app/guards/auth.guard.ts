@@ -8,8 +8,6 @@ export function authGuard(role: string | string[] = ''): CanActivateFn {
     const authService = inject(AuthService);
     const router = inject(Router);
     
-    console.log('🛡️ AuthGuard: Verificando acceso a', state.url);
-    
     // Verificar si viene de un pago exitoso (caso especial)
     const urlParams = new URLSearchParams(state.url.split('?')[1] || '');
     const isReturnFromPayment = urlParams.get('returnFromPayment') === 'true' || 
@@ -17,13 +15,10 @@ export function authGuard(role: string | string[] = ''): CanActivateFn {
                                sessionStorage.getItem('payment_success') === 'true';
     
     if (isReturnFromPayment) {
-      console.log('🛡️ AuthGuard: Detectado retorno de pago exitoso');
       // Verificar si la sesión está activa
       const isAuthenticated = authService.isAuthenticated();
-      console.log('🛡️ AuthGuard: Usuario autenticado en retorno de pago:', isAuthenticated);
       
       if (!isAuthenticated) {
-        console.log('🛡️ AuthGuard: Sesión perdida incluso con pago exitoso, redirigiendo a login');
         router.navigate(['/login']);
         return false;
       }
@@ -35,12 +30,7 @@ export function authGuard(role: string | string[] = ''): CanActivateFn {
     const isAuthenticated = authService.isAuthenticated();
     const currentUser = authService.getCurrentUser();
     
-    console.log('🛡️ AuthGuard: Usuario autenticado:', isAuthenticated);
-    console.log('🛡️ AuthGuard: Usuario actual:', currentUser);
-    console.log('🛡️ AuthGuard: Rol requerido:', role);
-    
     if (!isAuthenticated) {
-      console.log('🛡️ AuthGuard: No autenticado, redirigiendo a login');
       router.navigate(['/login']);
       return false;
     }
@@ -52,21 +42,18 @@ export function authGuard(role: string | string[] = ''): CanActivateFn {
       // Si es un array de roles, verificar si el usuario tiene alguno de ellos
       if (Array.isArray(role)) {
         if (!role.includes(userRole || '')) {
-          console.log('🛡️ AuthGuard: Usuario no tiene ninguno de los roles requeridos:', role);
           router.navigate(['/unauthorized']);
           return false;
         }
       } else {
         // Si es un string, verificar si coincide exactamente
         if (userRole !== role) {
-          console.log('🛡️ AuthGuard: Usuario no tiene el rol requerido. Tiene:', userRole, 'Requiere:', role);
           router.navigate(['/unauthorized']);
           return false;
         }
       }
     }
     
-    console.log('🛡️ AuthGuard: Acceso permitido');
     return true;
   };
 }

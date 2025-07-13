@@ -12,6 +12,7 @@ import { PacienteService } from '../../services/paciente.service';
 import { NotificationService } from '../../services/notification.service';
 import { DentistaService } from '../../services/dentista.service';
 import { PatientNavbarComponent } from '../layouts/patient-navbar/patient-navbar.component';
+import { LoggerService, LogCategory } from '../../utils/logger.service';
 
 @Component({
   selector: 'app-turnos',
@@ -25,13 +26,16 @@ export class TurnosComponent implements OnInit {
   pacienteActual: Paciente | null = null; // Información del paciente logueado
   turnos: Turno[] = [];
   searchTerm: string = '';
-  filterEstado: string = 'todos';
-  isLoading: boolean = false;
   
-  // Nuevas propiedades para filtros avanzados
+
+
+  // Propiedades de filtrado
+  filterEstado: string = 'todos';
   filterFechaDesde: string = '';
   filterFechaHasta: string = '';
   filterPago: string = 'todos';
+  filterCantidad: string = 'todos';
+  isLoading: boolean = false;
   viewMode: 'cards' | 'table' = 'cards';
   
   // Chatbot properties
@@ -64,9 +68,6 @@ export class TurnosComponent implements OnInit {
   tratamientos: Tratamiento[] = [];
 
   selectedTurnoParaCancelar: any = null;
-  showCancelModal = false;
-  showSuccessModal = false;
-  reembolsoStatus: string | null = null;
   dentistas: any[] = [];
 
   constructor(
@@ -77,7 +78,8 @@ export class TurnosComponent implements OnInit {
     private turnoService: TurnoService,
     private pacienteService: PacienteService,
     private notificationService: NotificationService,
-    private dentistaService: DentistaService
+    private dentistaService: DentistaService,
+    private logger: LoggerService
   ) {
     this.chatForm = this.fb.group({
       message: ['', [Validators.required, Validators.minLength(1)]]
@@ -118,7 +120,7 @@ export class TurnosComponent implements OnInit {
       // Mostrar contexto de conversación si es una continuación
       if (this.chatService.isContinuingConversation()) {
         const summary = this.chatService.getConversationSummary();
-        console.log('Continuando conversación en turnos:', summary);
+        this.logger.debug('Continuando conversación en turnos', LogCategory.CHAT, { summary });
       }
     }
   }
@@ -173,21 +175,15 @@ export class TurnosComponent implements OnInit {
   private showWelcomeBubbleAfterDelay(): void {
     // Verificar si ya se mostró la burbuja anteriormente
     const bubbleShown = localStorage.getItem('welcomeBubbleShown');
-    console.log('Burbuja de bienvenida - bubbleShown:', bubbleShown);
     
     if (!bubbleShown) {
-      console.log('Mostrando burbuja de bienvenida...');
       setTimeout(() => {
         this.showWelcomeBubble = true;
-        console.log('Burbuja visible:', this.showWelcomeBubble);
         // Auto-ocultar después de 10 segundos
         setTimeout(() => {
           this.showWelcomeBubble = false;
-          console.log('Burbuja auto-ocultada');
         }, 10000);
       }, 2000); // Mostrar después de 2 segundos
-    } else {
-      console.log('Burbuja ya fue mostrada anteriormente');
     }
   }
 
@@ -312,75 +308,42 @@ export class TurnosComponent implements OnInit {
   }
 
   // Función temporal para debugging - forzar recarga de turnos
+  // Métodos de paginación
+  onFilterChange(): void {
+    this.loadTurnosData();
+  }
+
   forceReloadTurnos(): void {
-    console.log('🔄 Forzando recarga de turnos...');
     this.loadTurnosData();
   }
 
   loadTurnosData(): void {
     this.isLoading = true;
-    console.log('🔄 Cargando turnos desde API...');
-    console.log('👤 Usuario actual:', this.user);
-    console.log('👤 Paciente actual:', this.pacienteActual);
     
+    // Preparar parámetros de filtrado
+    const params: any = {};
+
+    // Filtrar por paciente si el usuario es paciente
+    if (this.user?.tipoUsuario === 'paciente' && this.pacienteActual) {
+      params.pacienteId = this.pacienteActual._id || this.pacienteActual.id;
+    }
+
+    // Aplicar filtros adicionales
+    if (this.filterEstado !== 'todos') {
+      params.estado = this.filterEstado;
+    }
+    if (this.filterFechaDesde) {
+      params.fecha = this.filterFechaDesde;
+    }
+
     // Forzar recarga desde backend para obtener el estado actualizado
-    this.turnoService.getTurnosFromAPI().subscribe({
-      next: (turnos) => {
-        console.log('✅ Turnos recibidos del backend:', turnos);
-        console.log('📊 Total de turnos recibidos:', turnos.length);
-        
-        // Debug específico para pacientes
-        if (this.user?.tipoUsuario === 'paciente' && this.pacienteActual) {
-          console.log('🔍 Buscando turnos para paciente:', this.pacienteActual);
-          
-          const turnosDelPaciente = turnos.filter(turno => {
-            const pacienteId = this.pacienteActual?._id || this.pacienteActual?.id;
-            
-            // Verificar por pacienteId
-            if (pacienteId && turno.pacienteId) {
-              const idMatch = turno.pacienteId.toString() === pacienteId.toString();
-              if (idMatch) return true;
-            }
-            
-            // Verificar por nombre y apellido como fallback
-            if (this.pacienteActual?.nombre && this.pacienteActual?.apellido && turno.nombre && turno.apellido) {
-              const nombreMatch = turno.nombre.toLowerCase().trim() === this.pacienteActual.nombre.toLowerCase().trim();
-              const apellidoMatch = turno.apellido.toLowerCase().trim() === this.pacienteActual.apellido.toLowerCase().trim();
-              return nombreMatch && apellidoMatch;
-            }
-            
-            return false;
-          });
-          
-          console.log(`🎯 Turnos encontrados para ${this.pacienteActual.nombre} ${this.pacienteActual.apellido}:`, turnosDelPaciente.length);
-          console.log('📋 Turnos del paciente:', turnosDelPaciente);
-        }
-        
-        // Debug: mostrar información de pago de cada turno
-        turnos.forEach((turno, index) => {
-          if (index < 5) { // Solo mostrar los primeros 5 para no saturar la consola
-            console.log(`📋 Turno ${index + 1}:`, {
-              nroTurno: turno.nroTurno,
-              paciente: `${turno.nombre} ${turno.apellido}`,
-              estado: turno.estado,
-              paymentStatus: turno.paymentStatus,
-              paymentId: turno.paymentId,
-              metodoPago: turno.metodoPago,
-              fechaPago: turno.fechaPago,
-              montoRecibido: turno.montoRecibido,
-              // Mostrar el valor que se usará en la template
-              finalPaymentValue: turno.paymentStatus || turno.metodoPago || ''
-            });
-          }
-        });
-        
-        this.turnos = turnos;
+    this.turnoService.getTurnosFromAPI(params).subscribe({
+      next: (response) => {
+        this.turnos = response.turnos;
         this.isLoading = false;
-        
-        console.log('✅ Turnos asignados al componente. Total:', this.turnos.length);
       },
       error: (error) => {
-        console.error('❌ Error cargando turnos:', error);
+        this.logger.error('Error cargando turnos', LogCategory.API, error);
         this.turnos = [];
         this.isLoading = false;
       }
@@ -518,13 +481,27 @@ export class TurnosComponent implements OnInit {
   }
 
   cancelarTurno(turno: Turno): void {
-    this.selectedTurnoParaCancelar = turno;
-    this.showCancelModal = true;
-  }
-
-  closeCancelModal() {
-    this.showCancelModal = false;
-    this.selectedTurnoParaCancelar = null;
+    // Función simplificada sin modales
+    if (confirm('¿Estás seguro de que quieres cancelar este turno?')) {
+      const turnoId = turno._id || turno.id?.toString() || '';
+      if (turnoId) {
+        this.isLoading = true;
+        this.turnoService.cancelarTurnoYReembolso(turnoId).subscribe({
+          next: (res) => {
+            this.isLoading = false;
+            this.notificationService.showSuccess('Turno cancelado exitosamente');
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          },
+          error: (error) => {
+            this.isLoading = false;
+            const errorMessage = error.error?.msg || 'Error al cancelar el turno';
+            this.notificationService.showError(errorMessage);
+          }
+        });
+      }
+    }
   }
 
   // Nuevas funciones para manejo de estado de pago
@@ -610,34 +587,7 @@ export class TurnosComponent implements OnInit {
     }
   }
 
-  confirmCancelTurno() {
-    if (this.selectedTurnoParaCancelar) {
-      const turnoId = this.selectedTurnoParaCancelar._id || this.selectedTurnoParaCancelar.id?.toString() || '';
-      if (turnoId) {
-        this.isLoading = true;
-        this.turnoService.cancelarTurnoYReembolso(turnoId).subscribe({
-          next: (res) => {
-            this.reembolsoStatus = res?.refundResult ? 'reembolsado' : 'cancelado';
-            this.showSuccessModal = true;
-            this.isLoading = false;
-            setTimeout(() => {
-              window.location.reload();
-            }, 500);
-            this.showCancelModal = false;
-            this.selectedTurnoParaCancelar = null;
-          },
-          error: (error) => {
-            this.isLoading = false;
-            this.reembolsoStatus = null;
-            const errorMessage = error.error?.msg || 'Error al cancelar el turno o el pago';
-            this.notificationService.showError(errorMessage);
-            this.showCancelModal = false;
-            this.selectedTurnoParaCancelar = null;
-          }
-        });
-      }
-    }
-  }
+
 
   completarTurno(turno: Turno): void {
     if (confirm('¿Confirmar que el turno ha sido completado?')) {
@@ -745,6 +695,17 @@ export class TurnosComponent implements OnInit {
     }
     // Para dentistas y administradores: mostrar todos los turnos (no filtrar por paciente)
 
+    // Filtrar por cantidad de turnos
+    if (this.filterCantidad !== 'todos') {
+      const cantidad = parseInt(this.filterCantidad);
+      if (!isNaN(cantidad) && cantidad > 0) {
+        // Ordenar por fecha (más recientes primero) y tomar solo los últimos N
+        filtered = filtered
+          .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+          .slice(0, cantidad);
+      }
+    }
+
     // Debug: mostrar resultado final
     if (this.user?.tipoUsuario === 'paciente') {
       console.log('- Turnos filtrados:', filtered.length);
@@ -754,9 +715,7 @@ export class TurnosComponent implements OnInit {
     return filtered;
   }
 
-  closeSuccessModal() {
-    this.showSuccessModal = false;
-  }
+
 
   // Método para manejar acciones de botones del chat
   handleChatAction(action: ActionButton): void {
@@ -897,6 +856,7 @@ export class TurnosComponent implements OnInit {
     this.filterFechaDesde = '';
     this.filterFechaHasta = '';
     this.filterPago = 'todos';
+    this.filterCantidad = 'todos';
   }
 
   hasActiveFilters(): boolean {
@@ -904,7 +864,8 @@ export class TurnosComponent implements OnInit {
            this.filterEstado !== 'todos' || 
            this.filterFechaDesde !== '' || 
            this.filterFechaHasta !== '' || 
-           this.filterPago !== 'todos';
+           this.filterPago !== 'todos' ||
+           this.filterCantidad !== 'todos';
   }
 
   setViewMode(mode: 'cards' | 'table'): void {

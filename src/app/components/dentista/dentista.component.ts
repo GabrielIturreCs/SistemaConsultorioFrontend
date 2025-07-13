@@ -391,7 +391,7 @@ export class DentistaComponent implements OnInit, OnDestroy {
       this.turnoService.getTurnosFromAPI()
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (turnos) => this.turnos = turnos,
+          next: (response) => this.turnos = response.turnos,
           error: (error) => {
             console.error('Error al cargar turnos:', error);
             this.turnos = [];

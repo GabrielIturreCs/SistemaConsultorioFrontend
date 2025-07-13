@@ -7,6 +7,7 @@ import { LoginForm } from '../interfaces';
 import { environment } from '../environments/environment';
 import { User } from '../interfaces';
 import { NotificationService } from './notification.service';
+import { LoggerService, LogCategory } from '../utils/logger.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,8 @@ export class AuthService {
 
   constructor(
     private _http: HttpClient,
-    private router: Router
+    private router: Router,
+    private logger: LoggerService
   ) {
     this.hostBase = `${environment.apiUrl}/usuario/`;
     this.loadUserFromStorage();
@@ -51,9 +53,8 @@ export class AuthService {
         this.currentUserSubject.next(user);
         // Refuerza la persistencia
         localStorage.setItem('user', JSON.stringify(user));
-        console.log('👤 Usuario cargado desde localStorage:', user);
       } catch (error) {
-        console.error('❌ Error al parsear usuario desde localStorage:', error);
+        this.logger.error('❌ Error al parsear usuario desde localStorage:', LogCategory.AUTH, error);
         this.logout();
       }
     }
@@ -70,14 +71,13 @@ export class AuthService {
       nombreUsuario: nombreUsuario, 
        password: password 
      }); 
-     console.log(body); 
      return this._http.post(this.hostBase + 'login', body, httpOption); 
   }
 
   public googleLogin(credential: string): Observable<any> {
-    console.log('🔍 === AUTH SERVICE: GOOGLE LOGIN ===');
-    console.log('Credential recibido:', credential);
-    console.log('Backend URL:', environment.apiUrl);
+    this.logger.info('🔍 === AUTH SERVICE: GOOGLE LOGIN ===', LogCategory.AUTH);
+    this.logger.info('Credential recibido:', LogCategory.AUTH, credential);
+    this.logger.info('Backend URL:', LogCategory.AUTH, environment.apiUrl);
     
     const httpOption = {
       headers: new HttpHeaders({
@@ -89,15 +89,12 @@ export class AuthService {
     const body = JSON.stringify({ token: credential });
     const url = environment.apiUrl + '/google-auth/verify-token';
     
-    console.log('🌐 Enviando petición a:', url);
-    console.log('📦 Body:', body);
-    
     return this._http.post(url, body, httpOption).pipe(
       tap((response: any) => {
-        console.log('✅ Respuesta exitosa del backend:', response);
+        this.logger.info('✅ Respuesta exitosa del backend:', LogCategory.AUTH, response);
       }),
       catchError(error => {
-        console.error('❌ Error en petición al backend:', error);
+        this.logger.error('❌ Error en petición al backend:', LogCategory.AUTH, error);
         return throwError(error);
       })
     );
@@ -195,14 +192,14 @@ export class AuthService {
       const now = Date.now() / 1000;
       
       if (payload.exp && payload.exp < now) {
-        console.log('🔒 Token expirado, cerrando sesión');
+        this.logger.warn('🔒 Token expirado, cerrando sesión', LogCategory.AUTH);
         this.logout();
         return false;
       }
       
       return true;
     } catch (error) {
-      console.error('❌ Error al verificar token:', error);
+      this.logger.error('❌ Error al verificar token:', LogCategory.AUTH, error);
       this.logout();
       return false;
     }

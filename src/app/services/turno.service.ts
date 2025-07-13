@@ -6,6 +6,7 @@ import { tap } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import { NotificationService } from './notification.service';
 import { AuthService } from './auth.service';
+import { LoggerService, LogCategory } from '../utils/logger.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,8 @@ export class TurnoService {
   constructor(
     private http: HttpClient,
     private notificationService: NotificationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private logger: LoggerService
   ) {
     this.loadTurnos();
   }
@@ -30,19 +32,48 @@ export class TurnoService {
 
   private loadTurnos(): void {
     this.getTurnosFromAPI().subscribe({
-      next: (turnos) => {
-        this.turnosSubject.next(turnos);
+      next: (response) => {
+        this.turnosSubject.next(response.turnos);
       },
       error: (error) => {
-        console.error('Error cargando turnos:', error);
+        this.logger.error('Error cargando turnos', LogCategory.API, error);
         this.turnosSubject.next([]);
       }
     });
   }
 
-  // Obtener todos los turnos desde el backend
-  getTurnosFromAPI(): Observable<Turno[]> {
-    return this.http.get<Turno[]>(this.apiUrl, { headers: this.getHeaders() });
+  // Obtener turnos paginados y filtrados desde el backend
+  getTurnosFromAPI(params?: {
+    page?: number;
+    limit?: number;
+    pacienteId?: string;
+    dentistaId?: string;
+    estado?: string;
+    fecha?: string;
+  }): Observable<{
+    turnos: Turno[];
+    total: number;
+    page: number;
+    totalPages: number;
+    limit: number;
+  }> {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.pacienteId) queryParams.append('pacienteId', params.pacienteId);
+    if (params?.dentistaId) queryParams.append('dentistaId', params.dentistaId);
+    if (params?.estado) queryParams.append('estado', params.estado);
+    if (params?.fecha) queryParams.append('fecha', params.fecha);
+
+    const url = `${this.apiUrl}${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    return this.http.get<{
+      turnos: Turno[];
+      total: number;
+      page: number;
+      totalPages: number;
+      limit: number;
+    }>(url, { headers: this.getHeaders() });
   }
 
   // Obtener turnos (para compatibilidad con el componente)
@@ -68,9 +99,7 @@ export class TurnoService {
   // Obtener turnos por dentista
   getTurnosByDentista(dentistaId: string): Observable<Turno[]> {
     const url = `${this.apiUrl}/dentista/${dentistaId}`;
-    console.log('🔗 getTurnosByDentista - URL llamada:', url);
-    console.log('🔗 getTurnosByDentista - dentistaId:', dentistaId);
-    console.log('🔗 getTurnosByDentista - headers:', this.getHeaders());
+    this.logger.debug('getTurnosByDentista - URL llamada', LogCategory.API, { url, dentistaId });
     
     return this.http.get<Turno[]>(url, { headers: this.getHeaders() });
   }

@@ -106,10 +106,10 @@ export class AgendaComponent implements OnInit {
     } else {
       // Para otros tipos de usuario, cargar todos los turnos (comportamiento original)
       this.turnoService.getTurnosFromAPI().subscribe({
-        next: (turnos) => {
-          this.turnos = turnos; // Guarda todos los turnos
+        next: (response) => {
+          this.turnos = response.turnos; // Guarda todos los turnos
           this.isLoading = false;
-          console.log('Turnos cargados:', turnos.length);
+          console.log('Turnos cargados:', response.turnos.length);
         },
         error: (error) => {
           console.error('Error cargando turnos:', error);
