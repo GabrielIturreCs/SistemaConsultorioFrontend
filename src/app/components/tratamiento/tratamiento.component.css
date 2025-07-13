@@ -1,52 +1,398 @@
+/* ===== MODERN TREATMENT MANAGEMENT STYLES ===== */
+
 /* General container styling */
 .container {
-  background-color: #f8f9fa;
-  border-radius: 12px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   padding: 2rem;
+  min-height: 100vh;
 }
 
-/* Primary text color */
+/* Primary colors */
 .text-primary {
   color: #005566 !important;
 }
 
-/* Typography */
-.display-5 {
+/* ===== HEADER SECTION ===== */
+.header-section {
+  margin-bottom: 3rem;
+}
+
+.header-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #005566, #007a8a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 8px 25px rgba(0, 85, 102, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.header-icon:hover {
+  transform: scale(1.05);
+}
+
+.header-icon i {
   font-size: 2.5rem;
-  font-weight: 700;
+  color: white;
 }
-.fw-semibold {
+
+.main-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #005566;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 85, 102, 0.1);
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #6c757d;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* ===== SEARCH AND ACTIONS BAR ===== */
+.search-actions-bar {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+}
+
+.search-container {
+  position: relative;
+}
+
+.search-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 1.1rem;
+  z-index: 2;
+}
+
+.search-input {
+  padding: 12px 45px 12px 45px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.search-input:focus {
+  border-color: #005566;
+  box-shadow: 0 0 0 3px rgba(0, 85, 102, 0.1);
+  background: white;
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 10px;
+  border: none;
+  background: none;
+  color: #6c757d;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.clear-search-btn:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.action-btn {
+  background: linear-gradient(135deg, #005566, #007a8a);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
   font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 85, 102, 0.2);
 }
-.fw-medium {
-  font-weight: 500;
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 85, 102, 0.3);
+  background: linear-gradient(135deg, #007a8a, #005566);
+}
+
+/* ===== LOADING SECTION ===== */
+.loading-container {
+  padding: 4rem 2rem;
+}
+
+.loading-spinner {
+  font-size: 3rem;
+  color: #005566;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* ===== TREATMENTS TABLE ===== */
+.treatments-container {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.table-card {
+  padding: 0;
+}
+
+.table-header {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  padding: 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #005566;
+}
+
+.table-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-item {
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  color: #6c757d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Table styling */
 .table {
-  background-color: #fff;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid #dee2e6;
-}
-.table-primary {
-  background-color: #005566;
-  color: white;
-}
-.table th {
-  font-weight: 600;
-  padding: 1rem;
-}
-.table td {
-  vertical-align: middle;
-  padding: 1rem;
-}
-.table-hover tbody tr:hover {
-  background-color: #e6f3f8;
+  margin: 0;
+  border: none;
 }
 
-/* Button styling */
+.table thead th {
+  background: linear-gradient(135deg, #005566, #007a8a);
+  color: white;
+  border: none;
+  padding: 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.table tbody tr:hover {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.table tbody td {
+  padding: 1rem;
+  vertical-align: middle;
+  border: none;
+}
+
+/* Treatment row styling */
+.treatment-number .number-badge {
+  background: linear-gradient(135deg, #005566, #007a8a);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-block;
+  min-width: 60px;
+  text-align: center;
+}
+
+.treatment-description .description-text {
+  font-weight: 500;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.treatment-duration .duration-badge {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.4rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.treatment-price .price-amount {
+  font-weight: 700;
+  color: #28a745;
+  font-size: 1.1rem;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.btn-action {
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 80px;
+  justify-content: center;
+  position: relative;
+}
+
+.btn-action i {
+  font-size: 1rem;
+  display: inline-block;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* Ensure Material Icons are visible */
+.material-icons {
+  display: inline-block !important;
+  font-family: 'Material Icons' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 1.1rem !important;
+  line-height: 1 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  word-wrap: normal !important;
+  white-space: nowrap !important;
+  direction: ltr !important;
+  vertical-align: middle !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+  -webkit-font-feature-settings: 'liga' !important;
+  -moz-font-feature-settings: 'liga' !important;
+  font-feature-settings: 'liga' !important;
+}
+
+/* Specific icon sizes for buttons */
+.btn-action .material-icons {
+  font-size: 1.1rem !important;
+  margin-right: 0.25rem;
+  color: inherit;
+}
+
+@media (max-width: 768px) {
+  .btn-action .material-icons {
+    font-size: 1rem !important;
+    margin-right: 0;
+  }
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+}
+
+.btn-edit:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.btn-delete:hover {
+  background: linear-gradient(135deg, #c82333, #bd2130);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.action-text {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .action-text {
+    display: inline;
+  }
+  
+  .btn-action {
+    min-width: 100px;
+  }
+}
+
+/* Empty state */
+.empty-state-content {
+  padding: 3rem 2rem;
+}
+
+.empty-state-content i {
+  color: #dee2e6;
+  margin-bottom: 1rem;
+}
+
+.empty-state-content h5 {
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-content p {
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ===== LEGACY STYLES (KEPT FOR COMPATIBILITY) ===== */
 .btn-primary {
   background-color: #005566;
   border-color: #005566;
@@ -93,49 +439,264 @@
   padding: 0.35rem 0.75rem;
 }
 
-/* Input group styling */
-.input-group-lg .form-control {
-  font-size: 1.1rem;
-  border-radius: 8px;
-}
-.input-group-text {
-  background-color: #005566;
-  color: white;
-  border-radius: 8px 0 0 8px;
-}
-.form-control {
-  border-radius: 8px;
-  border: 1px solid #ced4da;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-.form-control:focus {
-  border-color: #005566;
-  box-shadow: 0 0 8px rgba(0, 85, 102, 0.3);
+/* ===== MODERN MODAL STYLES ===== */
+.modal-content {
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
 }
 
-/* Modal styling */
-.modal-content {
-  border-radius: 12px;
-  border: none;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
 .modal-header {
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+  background: white;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.5rem;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
 }
-.modal-header.bg-primary {
-  background-color: #005566;
+
+.modal-header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
 }
-.modal-header.bg-danger {
-  background-color: #dc3545;
+
+.modal-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  background: linear-gradient(135deg, #005566, #007a8a);
 }
-.modal-header .btn-close {
-  filter: invert(1);
-  opacity: 0.8;
+
+.delete-modal .modal-icon {
+  background: linear-gradient(135deg, #dc3545, #c82333);
 }
+
+.modal-title-content {
+  flex: 1;
+}
+
+.modal-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #005566;
+  margin: 0;
+}
+
+.delete-modal .modal-title {
+  color: #dc3545;
+}
+
+.modal-subtitle {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin: 0.25rem 0 0 0;
+}
+
+.btn-close-modal {
+  background: none;
+  border: none;
+  color: #6c757d;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close-modal:hover {
+  background: #f8f9fa;
+  color: #495057;
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+/* Form styling */
+.form-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.form-group {
+  position: relative;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.form-label i {
+  color: #005566;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.form-control {
+  padding: 12px 45px 12px 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+  width: 100%;
+}
+
+.form-control:focus {
+  border-color: #005566;
+  box-shadow: 0 0 0 3px rgba(0, 85, 102, 0.1);
+  background: white;
+  outline: none;
+}
+
+.input-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-weight: 600;
+  font-size: 1rem;
+  z-index: 2;
+}
+
+.form-control[formControlName="precio"] {
+  padding-left: 35px;
+}
+
 .modal-footer {
-  border-top: none;
-  padding-top: 0;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.btn-cancel {
+  background: #6c757d;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #005566, #007a8a);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-save:hover {
+  background: linear-gradient(135deg, #007a8a, #005566);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 85, 102, 0.3);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+  background: linear-gradient(135deg, #c82333, #bd2130);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Delete confirmation modal */
+.delete-confirmation-content {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.warning-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+.warning-icon i {
+  font-size: 2rem;
+  color: white;
+}
+
+.confirmation-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #dc3545;
+  margin-bottom: 1rem;
+}
+
+.confirmation-text {
+  color: #6c757d;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.warning-box {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 10px;
+  padding: 1rem;
+  color: #856404;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 /* Timeline styling */
@@ -184,20 +745,235 @@
   color: #005566;
 }
 
-/* Responsive adjustments */
+/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .container {
-    padding: 1.5rem;
+    padding: 1rem;
+    border-radius: 15px;
   }
-  .display-5 {
+  
+  .header-section {
+    margin-bottom: 2rem;
+  }
+  
+  .header-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .header-icon i {
     font-size: 2rem;
   }
-  .table {
-    font-size: 0.95rem;
+  
+  .main-title {
+    font-size: 2rem;
   }
-  .btn-lg {
-    padding: 0.5rem 1rem;
+  
+  .subtitle {
     font-size: 1rem;
+  }
+  
+  .search-actions-bar {
+    padding: 1rem;
+  }
+  
+  .table-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .table-stats {
+    align-self: flex-end;
+  }
+  
+  .table thead th {
+    font-size: 0.8rem;
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .table tbody td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .treatment-number .number-badge {
+    min-width: 50px;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .treatment-description .description-text {
+    font-size: 0.9rem;
+  }
+  
+  .treatment-duration .duration-badge {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .treatment-price .price-amount {
+    font-size: 1rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .btn-action {
+    min-width: 60px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .modal-dialog {
+    margin: 1rem;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .modal-header-content {
+    gap: 0.75rem;
+  }
+  
+  .modal-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .modal-title {
+    font-size: 1.1rem;
+  }
+  
+  .modal-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .form-grid {
+    gap: 1rem;
+  }
+  
+  .form-label {
+    font-size: 0.9rem;
+  }
+  
+  .form-control {
+    padding: 10px 40px 10px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+  }
+  
+  .btn-cancel, .btn-save, .btn-delete {
+    width: 100%;
+    padding: 12px 20px;
+  }
+  
+  .warning-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .warning-icon i {
+    font-size: 1.5rem;
+  }
+  
+  .confirmation-title {
+    font-size: 1.1rem;
+  }
+  
+  .confirmation-text {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 0.75rem;
+  }
+  
+  .main-title {
+    font-size: 1.8rem;
+  }
+  
+  .search-input {
+    padding: 10px 40px 10px 40px;
+    font-size: 0.9rem;
+  }
+  
+  .action-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .table thead th {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .table tbody td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .treatment-number .number-badge {
+    min-width: 40px;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .treatment-description .description-text {
+    font-size: 0.85rem;
+  }
+  
+  .treatment-duration .duration-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .treatment-price .price-amount {
+    font-size: 0.9rem;
+  }
+  
+  .btn-action {
+    min-width: 50px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+  
+  .modal-header {
+    padding: 0.75rem;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .form-control {
+    padding: 8px 35px 8px 10px;
+    font-size: 0.85rem;
+  }
+  
+  .modal-footer {
+    padding: 0.75rem;
+  }
+  
+  .btn-cancel, .btn-save, .btn-delete {
+    padding: 10px 16px;
+    font-size: 0.9rem;
   }
 }
 @media (max-width: 576px) {

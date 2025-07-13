@@ -1,59 +1,140 @@
 <div class="container py-5">
-  <h2 class="mb-4 text-primary text-center display-5 fw-bold"><i class="fas fa-tooth me-2"></i>Gestión de Tratamientos</h2>
-
-  <!-- Search bar -->
-  <div class="mb-4">
-    <div class="input-group input-group-lg shadow-sm">
-      <span class="input-group-text bg-primary text-white"><i class="fas fa-search"></i></span>
-      <input type="text" class="form-control" placeholder="Buscar tratamientos..." [(ngModel)]="searchText" (input)="filterTratamientos()">
+  <!-- Header Section -->
+  <div class="header-section text-center mb-5">
+    <div class="header-icon">
+      <span class="material-icons">medical_services</span>
     </div>
+    <h1 class="main-title">Gestión de Tratamientos</h1>
+    <p class="subtitle">Administra y gestiona todos los tratamientos disponibles</p>
   </div>
 
-  <!-- Botón para abrir modal de nuevo tratamiento -->
-  <div class="text-end mb-4">
-    <button class="btn btn-primary btn-lg shadow-sm" (click)="editando = false; formulario.reset(); showModal = true;">
-      <i class="fas fa-plus me-2"></i>Nuevo Tratamiento
-    </button>
+  <!-- Search and Actions Bar -->
+  <div class="search-actions-bar mb-4">
+    <div class="row align-items-center">
+      <div class="col-lg-8 col-md-7 col-12 mb-3 mb-md-0">
+        <div class="search-container">
+          <div class="search-input-group">
+            <span class="material-icons search-icon">search</span>
+            <input 
+              type="text" 
+              class="form-control search-input" 
+              placeholder="Buscar tratamientos por descripción, duración o precio..." 
+              [(ngModel)]="searchText" 
+              (input)="filterTratamientos()">
+            <button 
+              class="btn btn-outline-secondary clear-search-btn" 
+              (click)="searchText = ''; filterTratamientos()"
+              *ngIf="searchText">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-5 col-12">
+        <button class="btn btn-primary btn-lg w-100 action-btn" (click)="editando = false; formulario.reset(); showModal = true;">
+          <span class="material-icons me-2">add_circle</span>
+          <span>Nuevo Tratamiento</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Loading spinner -->
-  <div class="text-center" *ngIf="loading">
-    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-      <span class="visually-hidden">Cargando...</span>
+  <div class="loading-container text-center" *ngIf="loading">
+    <div class="loading-spinner">
+      <span class="material-icons" style="animation: spin 1s linear infinite;">refresh</span>
     </div>
+    <p class="loading-text">Cargando tratamientos...</p>
   </div>
 
-  <!-- Tabla de tratamientos -->
-  <div class="row">
-    <div class="col-lg-8 col-12">
-      <div class="table-responsive" *ngIf="!loading">
-        <table class="table table-hover align-middle shadow-sm">
-          <thead class="table-primary">
+  <!-- Treatments Table -->
+  <div class="treatments-container" *ngIf="!loading">
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">
+          <span class="material-icons me-2">list</span>
+          <span>Lista de Tratamientos</span>
+        </div>
+        <div class="table-stats">
+          <span class="stat-item">
+            <span class="material-icons me-1">medical_services</span>
+            {{ filteredTratamientos.length }} tratamientos
+          </span>
+        </div>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
             <tr>
-              <th scope="col">Nro</th>
-              <th scope="col">Descripción</th>
-              <th scope="col">Duración</th>
-              <th scope="col">Precio</th>
-              <th scope="col" class="text-center">Acciones</th>
+              <th scope="col" class="th-number">
+                <span class="material-icons me-1">tag</span>Nro
+              </th>
+              <th scope="col" class="th-description">
+                <span class="material-icons me-1">description</span>Descripción
+              </th>
+              <th scope="col" class="th-duration">
+                <span class="material-icons me-1">schedule</span>Duración
+              </th>
+              <th scope="col" class="th-price">
+                <span class="material-icons me-1">attach_money</span>Precio
+              </th>
+              <th scope="col" class="th-actions text-center">
+                <span class="material-icons me-1">settings</span>Acciones
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let t of filteredTratamientos">
-              <td>{{ t.nroTratamiento }}</td>
-              <td>{{ t.descripcion }}</td>
-              <td>{{ t.duracion }}</td>
-              <td>${{ t.precio | number:'1.2-2' }}</td>
-              <td class="text-center">
-                <button class="btn btn-sm btn-outline-primary me-2" (click)="editarPorNro(t.nroTratamiento); showModal = true;" title="Editar">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" (click)="tratamientoAEliminar = t.nroTratamiento; showDeleteModal = true;" title="Eliminar">
-                  <i class="fas fa-trash"></i>
-                </button>
+            <tr *ngFor="let t of filteredTratamientos" class="treatment-row">
+              <td class="treatment-number">
+                <span class="number-badge">{{ t.nroTratamiento }}</span>
+              </td>
+              <td class="treatment-description">
+                <div class="description-content">
+                  <span class="description-text">{{ t.descripcion }}</span>
+                </div>
+              </td>
+              <td class="treatment-duration">
+                <span class="duration-badge">
+                  <span class="material-icons me-1">schedule</span>
+                  {{ t.duracion }}
+                </span>
+              </td>
+              <td class="treatment-price">
+                <span class="price-amount">${{ t.precio | number:'1.2-2' }}</span>
+              </td>
+              <td class="treatment-actions text-center">
+                <div class="action-buttons">
+                  <button 
+                    class="btn btn-action btn-edit" 
+                    (click)="editarPorNro(t.nroTratamiento); showModal = true;" 
+                    title="Editar tratamiento">
+                    <span class="material-icons">edit</span>
+                    <span class="action-text">Editar</span>
+                  </button>
+                  <button 
+                    class="btn btn-action btn-delete" 
+                    (click)="tratamientoAEliminar = t.nroTratamiento; showDeleteModal = true;" 
+                    title="Eliminar tratamiento">
+                    <span class="material-icons">delete</span>
+                    <span class="action-text">Eliminar</span>
+                  </button>
+                </div>
               </td>
             </tr>
-            <tr *ngIf="filteredTratamientos.length === 0">
-              <td colspan="5" class="text-center text-muted">No se encontraron tratamientos</td>
+            <tr *ngIf="filteredTratamientos.length === 0" class="empty-state">
+              <td colspan="5" class="text-center">
+                <div class="empty-state-content">
+                  <span class="material-icons text-muted mb-3" style="font-size: 3rem;">search</span>
+                  <h5 class="text-muted">No se encontraron tratamientos</h5>
+                  <p class="text-muted">Intenta con otros términos de búsqueda o crea un nuevo tratamiento</p>
+                  <button 
+                    class="btn btn-outline-primary" 
+                    (click)="searchText = ''; filterTratamientos()">
+                    <span class="material-icons me-2">refresh</span>Limpiar búsqueda
+                  </button>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -63,39 +144,98 @@
 
   <!-- Modal de formulario (crear/editar) -->
   <div class="modal fade" [ngClass]="{'show d-block': showModal}" [style.display]="showModal ? 'block' : 'none'" tabindex="-1" aria-modal="true" role="dialog">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content shadow-lg">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fw-semibold">{{ editando ? 'Editar Tratamiento' : 'Nuevo Tratamiento' }}</h5>
-          <button type="button" class="btn-close" (click)="showModal = false; cancelar();" aria-label="Close"></button>
+        <div class="modal-header">
+          <div class="modal-header-content">
+            <div class="modal-icon">
+              <span class="material-icons" [textContent]="editando ? 'edit' : 'add_circle'"></span>
+            </div>
+            <div class="modal-title-content">
+              <h5 class="modal-title">{{ editando ? 'Editar Tratamiento' : 'Nuevo Tratamiento' }}</h5>
+              <p class="modal-subtitle">{{ editando ? 'Modifica los datos del tratamiento' : 'Crea un nuevo tratamiento para el sistema' }}</p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-modal" (click)="showModal = false; cancelar();" aria-label="Close">
+            <span class="material-icons">close</span>
+          </button>
         </div>
         <form [formGroup]="formulario" (ngSubmit)="guardar(); showModal = false;" autocomplete="off">
           <div class="modal-body">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label fw-medium">Nro Tratamiento</label>
-                <input type="number" class="form-control" formControlName="nroTratamiento" [readonly]="editando" required />
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="material-icons me-2">tag</span>Número de Tratamiento
+                </label>
+                <div class="input-wrapper">
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    formControlName="nroTratamiento" 
+                    [readonly]="editando" 
+                    required 
+                    placeholder="Ej: 001" />
+                  <span class="material-icons input-icon">tag</span>
+                </div>
               </div>
-              <div class="col-12">
-                <label class="form-label fw-medium">Descripción</label>
-                <input type="text" class="form-control" formControlName="descripcion" required />
+              
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="material-icons me-2">description</span>Descripción
+                </label>
+                <div class="input-wrapper">
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    formControlName="descripcion" 
+                    required 
+                    placeholder="Ej: Limpieza dental profesional" />
+                  <span class="material-icons input-icon">description</span>
+                </div>
               </div>
-              <div class="col-12">
-                <label class="form-label fw-medium">Duración</label>
-                <input type="text" class="form-control" formControlName="duracion" required />
+              
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="material-icons me-2">schedule</span>Duración
+                </label>
+                <div class="input-wrapper">
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    formControlName="duracion" 
+                    required 
+                    placeholder="Ej: 60 minutos" />
+                  <span class="material-icons input-icon">schedule</span>
+                </div>
               </div>
-              <div class="col-12">
-                <label class="form-label fw-medium">Precio</label>
-                <div class="input-group">
-                  <span class="input-group-text">$</span>
-                  <input type="number" class="form-control" formControlName="precio" min="0" step="0.01" required />
+              
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="material-icons me-2">attach_money</span>Precio
+                </label>
+                <div class="input-wrapper">
+                  <span class="currency-symbol">$</span>
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    formControlName="precio" 
+                    min="0" 
+                    step="0.01" 
+                    required 
+                    placeholder="0.00" />
+                  <span class="material-icons input-icon">attach_money</span>
                 </div>
               </div>
             </div>
           </div>
-          <div class="modal-footer border-0">
-            <button type="submit" class="btn btn-success" [disabled]="formulario.invalid">{{ editando ? 'Actualizar' : 'Crear' }}</button>
-            <button type="button" class="btn btn-secondary" (click)="showModal = false; cancelar();">Cancelar</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-cancel" (click)="showModal = false; cancelar();">
+              <span class="material-icons me-2">cancel</span>Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary btn-save" [disabled]="formulario.invalid">
+              <span class="material-icons" [textContent]="editando ? 'save' : 'add'"></span>
+              <span class="ms-2">{{ editando ? 'Actualizar' : 'Crear' }}</span>
+            </button>
           </div>
         </form>
       </div>
@@ -104,22 +244,44 @@
 
   <!-- Modal de confirmación para eliminar (custom) -->
   <div class="modal-overlay" [class.show]="showDeleteModal">
-    <div class="modal-container">
-      <div class="modal-header bg-danger text-white">
-        <span class="modal-title">¿Eliminar tratamiento?</span>
-        <button class="btn-close-modal" (click)="showDeleteModal = false; tratamientoAEliminar = null;">
-          <i class="fas fa-times"></i>
-        </button>
+    <div class="modal-container delete-modal">
+      <div class="modal-header">
+                  <div class="modal-header-content">
+            <div class="modal-icon delete-icon">
+              <span class="material-icons">warning</span>
+            </div>
+            <div class="modal-title-content">
+              <h5 class="modal-title">Confirmar Eliminación</h5>
+              <p class="modal-subtitle">Esta acción no se puede deshacer</p>
+            </div>
+          </div>
+          <button class="btn-close-modal" (click)="showDeleteModal = false; tratamientoAEliminar = null;">
+            <span class="material-icons">close</span>
+          </button>
       </div>
-      <div class="modal-body modal-confirmacion">
-        <div class="icono-confirmacion confirmar">
-          <i class="fas fa-exclamation-triangle"></i>
+      <div class="modal-body">
+        <div class="delete-confirmation-content">
+          <div class="warning-icon">
+            <span class="material-icons">delete_forever</span>
+          </div>
+          <h6 class="confirmation-title">¿Eliminar tratamiento?</h6>
+          <p class="confirmation-text">
+            Estás a punto de eliminar el tratamiento <strong>N°{{ tratamientoAEliminar }}</strong>.
+            Esta acción eliminará permanentemente el tratamiento del sistema.
+          </p>
+          <div class="warning-box">
+            <span class="material-icons me-2">error</span>
+            <span>Esta acción no se puede deshacer.</span>
+          </div>
         </div>
-        <p>¿Estás seguro de que quieres eliminar el tratamiento <strong>{{ tratamientoAEliminar }}</strong>?</p>
       </div>
       <div class="modal-footer">
-        <button class="btn-modal btn-cancelar-modal" (click)="showDeleteModal = false; tratamientoAEliminar = null;">Cancelar</button>
-        <button class="btn-modal btn-confirmar" (click)="eliminarPorNro(tratamientoAEliminar!); showDeleteModal = false; tratamientoAEliminar = null;">Eliminar</button>
+        <button class="btn btn-secondary btn-cancel" (click)="showDeleteModal = false; tratamientoAEliminar = null;">
+          <span class="material-icons me-2">cancel</span>Cancelar
+        </button>
+        <button class="btn btn-danger btn-delete" (click)="eliminarPorNro(tratamientoAEliminar!); showDeleteModal = false; tratamientoAEliminar = null;">
+          <span class="material-icons me-2">delete</span>Eliminar
+        </button>
       </div>
     </div>
   </div>
