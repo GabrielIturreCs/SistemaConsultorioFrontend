@@ -8,10 +8,11 @@ import { TurnoService } from '../../services/turno.service';
 import { PacienteService } from '../../services/paciente.service';
 import { DentistaService } from '../../services/dentista.service';
 import { Subject, takeUntil } from 'rxjs';
+import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
 
 @Component({
   selector: 'app-dentista',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminNavbarComponent],
   templateUrl: './dentista.component.html',
   styleUrl: './dentista.component.css'
 })

@@ -1,5 +1,8 @@
 <!-- DENTISTA COMPONENT - MEJORADO -->
 <div class="dental-system">
+  <!-- Admin Navbar - Fijo en todas las rutas del administrador -->
+  <app-admin-navbar></app-admin-navbar>
+
   <!-- Alertas -->
   <div *ngIf="alertVisible" [class]="'alert alert-' + currentAlertType + ' alert-dismissible fade show'" role="alert" aria-live="assertive">
     <i *ngIf="currentAlertType==='success'" class="material-icons me-2">check_circle</i>

@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { DisponibilidadService } from '../../services/disponibilidad.service';
 import { NotificationService } from '../../services/notification.service';
 import { Disponibilidad, DiaNoLaborable, FranjaNoDisponible, Pausa } from '../../interfaces';
+import { DentistNavbarComponent } from '../layouts/dentist-navbar/dentist-navbar.component';
 
 @Component({
   selector: 'app-configuracion-disponibilidad',
   templateUrl: './configuracion-disponibilidad.component.html',
   styleUrls: ['./configuracion-disponibilidad.component.css'],
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DentistNavbarComponent],
   standalone: true
 })
 export class ConfiguracionDisponibilidadComponent implements OnInit {

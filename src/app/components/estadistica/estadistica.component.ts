@@ -11,6 +11,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { PdfExportService } from '../../services/pdf-export.service';
 import { NotificationService } from '../../services/notification.service';
 import { Subscription, interval } from 'rxjs';
+import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
 
 interface EstadisticaTratamiento {
   tratamiento: string;
@@ -20,7 +21,7 @@ interface EstadisticaTratamiento {
 
 @Component({
   selector: 'app-estadistica',
-  imports: [CommonModule,FormsModule, NgChartsModule],
+  imports: [CommonModule,FormsModule, NgChartsModule, AdminNavbarComponent],
   templateUrl: './estadistica.component.html',
   styleUrl: './estadistica.component.css'
 })

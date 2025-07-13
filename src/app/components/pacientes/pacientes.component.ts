@@ -2,16 +2,19 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Paciente, RegisterForm } from '../../interfaces';
+import { Paciente, RegisterForm, User } from '../../interfaces';
 import { PacienteService } from '../../services/paciente.service';
 import { RegisterService } from '../../services/register.service';
 import { NotificationService } from '../../services/notification.service';
 import { OdontogramaComponent } from '../odontograma/odontograma.component';
+import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
+import { DentistNavbarComponent } from '../layouts/dentist-navbar/dentist-navbar.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-pacientes',
   standalone: true,
-  imports: [CommonModule, FormsModule, OdontogramaComponent],
+  imports: [CommonModule, FormsModule, OdontogramaComponent, AdminNavbarComponent, DentistNavbarComponent],
   templateUrl: './pacientes.component.html',
   styleUrl: './pacientes.component.css'
 })
@@ -21,6 +24,7 @@ export class PacientesComponent implements OnInit {
   isLoading: boolean = false;
   searchTerm: string = '';
   selectedPaciente: Paciente | null = null;
+  user: User | null = null;
   
   // Modal y formulario para nuevo paciente
   showModal: boolean = false;
@@ -67,10 +71,12 @@ export class PacientesComponent implements OnInit {
     private pacienteService: PacienteService,
     private registerService: RegisterService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.user = this.authService.getCurrentUser();
     this.loadPacientes();
   }
 
@@ -349,5 +355,13 @@ export class PacientesComponent implements OnInit {
     } else {
       this.router.navigate(['/dashboard']); // fallback
     }
+  }
+
+  isAdmin(): boolean {
+    return this.user?.tipoUsuario === 'administrador';
+  }
+
+  isDentist(): boolean {
+    return this.user?.tipoUsuario === 'dentista';
   }
 }

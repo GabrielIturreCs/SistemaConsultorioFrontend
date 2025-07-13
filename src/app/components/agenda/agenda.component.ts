@@ -8,12 +8,13 @@ import { PdfExportService } from '../../services/pdf-export.service';
 import { Turno } from '../../interfaces';
 import { Tratamiento } from '../../interfaces';
 import { DataRefreshService } from '../../services/data-refresh.service';
+import { DentistNavbarComponent } from '../layouts/dentist-navbar/dentist-navbar.component';
 
 @Component({
   selector: 'app-agenda',
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.css'],
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DentistNavbarComponent],
   standalone: true
 })
 export class AgendaComponent implements OnInit {

@@ -25,6 +25,9 @@
   </div>
 </div>
 
+<!-- Admin Navbar - Fijo en todas las rutas del administrador -->
+<app-admin-navbar></app-admin-navbar>
+
 <!-- Vista de Estadísticas -->
 <div class="container-fluid position-relative">
   <!-- Overlay de carga -->
@@ -38,22 +41,19 @@
   <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
       <div>
-        <h5><i class="fas fa-chart-bar"></i> Estadísticas del Sistema</h5>
+        <h5><i class="material-icons me-2">analytics</i> Estadísticas del Sistema</h5>
         <small class="text-muted">
-          <i class="fas fa-circle text-success"></i> Datos en tiempo real
+          <i class="material-icons me-1" style="font-size: 0.8rem; color: #28a745;">fiber_manual_record</i> Datos en tiempo real
           <span class="ms-2">Última actualización: {{ fechaDesde }} - {{ fechaHasta }}</span>
         </small>
       </div>
       <div>
         <button class="btn btn-success btn-sm me-2" (click)="refreshEstadisticas()" [disabled]="isLoading">
-          <i class="fas" [class.fa-sync-alt]="!isLoading" [class.fa-spinner]="isLoading" [class.fa-spin]="isLoading"></i> 
+          <i class="material-icons" [class.spin]="isLoading">{{ isLoading ? 'refresh' : 'refresh' }}</i> 
           {{ isLoading ? 'Cargando...' : 'Refrescar' }}
         </button>
         <button class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#exportModal">
-          <i class="fas fa-download"></i> Exportar
-        </button>
-        <button class="btn btn-secondary btn-sm" (click)="navigateToDashboard()">
-          <i class="fas fa-arrow-left"></i> Volver
+          <i class="material-icons me-1">download</i> Exportar
         </button>
       </div>
     </div>

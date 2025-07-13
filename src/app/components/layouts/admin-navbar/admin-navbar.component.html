@@ -1,0 +1,68 @@
+<!-- Admin Navbar - Fijo en todas las rutas del administrador -->
+<nav class="navbar navbar-expand-lg admin-navbar mb-4 rounded-4 shadow-sm px-4">
+  <div class="container-fluid">
+    <span class="navbar-brand d-flex align-items-center gap-2">
+      <i class="material-icons">medical_services</i>
+      <span class="fw-bold">DentalTurnos</span>
+    </span>
+    <div class="navbar-nav ms-auto align-items-center">
+      <span class="navbar-text me-3">
+        Bienvenido, <span class="fw-semibold">{{ getUserGreeting() }}</span>
+        <span [class]="getTipoClass(user?.tipoUsuario || '')" style="margin-left: 8px;">{{ user?.tipoUsuario }}</span>
+      </span>
+      <button class="btn btn-outline-light btn-sm ms-2" (click)="logout()">
+        <i class="material-icons me-1">logout</i> Cerrar Sesión
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Menú de navegación siempre visible -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="btn-group w-100 shadow-sm rounded-3 overflow-hidden" role="group">
+      <button 
+        type="button" 
+        class="btn nav-btn-dashboard py-3"
+        [class.active]="isActiveRoute('dashboard')"
+        (click)="navigateToDashboard()">
+        <i class="material-icons me-1">dashboard</i> Dashboard
+      </button>
+      <button 
+        type="button" 
+        class="btn nav-btn-pacientes py-3"
+        [class.active]="isActiveRoute('pacientes')"
+        (click)="navigateToPacientes()">
+        <i class="material-icons me-1">people</i> Pacientes
+      </button>
+      <button 
+        type="button" 
+        class="btn nav-btn-dentistas py-3"
+        [class.active]="isActiveRoute('dentista')"
+        (click)="navigateToDentistas()">
+        <i class="material-icons me-1">medical_services</i> Dentistas
+      </button>
+      <button 
+        type="button" 
+        class="btn nav-btn-admin py-3"
+        [class.active]="isActiveRoute('admin')"
+        (click)="navigateToAdmin()">
+        <i class="material-icons me-1">settings</i> Administración
+      </button>
+      <button 
+        type="button" 
+        class="btn nav-btn-estadisticas py-3"
+        [class.active]="isActiveRoute('estadistica')"
+        (click)="navigateToEstadisticas()">
+        <i class="material-icons me-1">analytics</i> Estadísticas
+      </button>
+      <button 
+        type="button" 
+        class="btn nav-btn-tratamiento py-3"
+        [class.active]="isActiveRoute('tratamiento')"
+        (click)="navigateToTratamiento()">
+        <i class="material-icons me-1">healing</i> Tratamientos
+      </button>
+    </div>
+  </div>
+</div> 

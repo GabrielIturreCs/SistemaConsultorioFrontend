@@ -4,10 +4,11 @@ import { Tratamiento } from '../../interfaces';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
+import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
 
 @Component({
   selector: 'app-tratamiento',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminNavbarComponent],
   templateUrl: './tratamiento.component.html',
   styleUrls: ['./tratamiento.component.css']
 })

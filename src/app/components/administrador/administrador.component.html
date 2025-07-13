@@ -1,10 +1,13 @@
+<!-- Admin Navbar - Fijo en todas las rutas del administrador -->
+<app-admin-navbar></app-admin-navbar>
+
 <!-- Vista Administración Mejorada SOLO TARJETAS -->
 <div *ngIf="currentView === 'admin' && user?.tipoUsuario === 'administrador'" class="container-fluid admin-panel">
   <!-- Fondo decorativo y encabezado fuera del panel -->
   <div class="admin-bg">
     <div class="container py-4">
       <div class="text-center mb-4">
-        <h2 class="fw-bold text-white"><i class="fas fa-cog"></i> Panel de Administración</h2>
+        <h2 class="fw-bold text-white"><i class="material-icons me-2">settings</i> Panel de Administración</h2>
         <p class="lead text-white">Gestione pacientes y dentistas del sistema odontológico</p>
       </div>
       <!-- Filtros en card pequeño -->

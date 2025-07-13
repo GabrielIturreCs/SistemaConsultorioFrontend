@@ -5,10 +5,11 @@ import { Router } from '@angular/router';
 import { PacienteService } from '../../services/paciente.service';
 import { DentistaService } from '../../services/dentista.service';
 import { RegisterService } from '../../services/register.service';
+import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
 
 @Component({
   selector: 'app-admin',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, AdminNavbarComponent],
   templateUrl: './administrador.component.html',
   styleUrls: ['./administrador.component.css']
 })

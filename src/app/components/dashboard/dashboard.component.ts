@@ -19,6 +19,8 @@ import { PdfExportService } from '../../services/pdf-export.service';
 import { AuthService } from '../../services/auth.service';
 import { DataRefreshService } from '../../services/data-refresh.service';
 import { DisponibilidadService } from '../../services/disponibilidad.service';
+import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
+import { DentistNavbarComponent } from '../layouts/dentist-navbar/dentist-navbar.component';
 
 interface AdminStats {
   totalUsuarios: number;
@@ -45,7 +47,7 @@ interface AdminStats {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminNavbarComponent, DentistNavbarComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
