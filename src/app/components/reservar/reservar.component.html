@@ -218,14 +218,14 @@
       <!-- Paso 2: Selección de fecha (para todos los usuarios) -->
       <div *ngIf="currentStep === 2" class="col-12">
         <div class="card shadow">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5><i class="fas fa-calendar-alt"></i> Paso 2: Selecciona la fecha del turno</h5>
+          <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+            <h5 class="mb-2 mb-md-0"><i class="fas fa-calendar-alt"></i> Paso 2: Selecciona la fecha del turno</h5>
             <div class="selected-info">
               <div class="d-flex flex-column">
-                <div *ngIf="selectedDentista">
+                <div *ngIf="selectedDentista" class="mb-1">
                   <i class="fas fa-user-md"></i> {{ selectedDentista.nombre }} {{ selectedDentista.apellido }}
                 </div>
-                <div *ngIf="selectedPaciente">
+                <div *ngIf="selectedPaciente" class="mb-1">
                   <i class="fas fa-user"></i> {{ selectedPaciente.nombre }} {{ selectedPaciente.apellido }}
                 </div>
                 <small class="text-muted" *ngIf="tieneConfiguracionPersonalizada()">
@@ -297,8 +297,8 @@
               
               <!-- Mensaje informativo sobre días no disponibles -->
               <div class="alert alert-info mt-3" *ngIf="tieneConfiguracionPersonalizada()">
-                <div class="d-flex align-items-center">
-                  <i class="fas fa-info-circle me-2"></i>
+                <div class="d-flex align-items-start">
+                  <i class="fas fa-info-circle me-2 mt-1"></i>
                   <div>
                     <strong>Información:</strong> Los días marcados con 🔒 no están disponibles según la configuración del dentista.
                     <br>
@@ -312,9 +312,13 @@
               
               <!-- Información adicional sobre configuración personalizada -->
               <div class="alert alert-info mt-3" *ngIf="tieneConfiguracionPersonalizada()">
-                <i class="fas fa-info-circle"></i>
-                <strong>Configuración personalizada aplicada:</strong> 
-                {{ getDisponibilidadInfo() }}
+                <div class="d-flex align-items-start">
+                  <i class="fas fa-info-circle me-2 mt-1"></i>
+                  <div>
+                    <strong>Configuración personalizada aplicada:</strong> 
+                    {{ getDisponibilidadInfo() }}
+                  </div>
+                </div>
               </div>
             </div>
             
