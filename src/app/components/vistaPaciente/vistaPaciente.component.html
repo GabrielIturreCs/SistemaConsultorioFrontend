@@ -1,140 +1,422 @@
 <!-- Patient Navbar - Fijo en todas las rutas del paciente -->
 <app-patient-navbar></app-patient-navbar>
 
-<!-- Dashboard del Paciente -->
-<div class="patient-dashboard">
-  <div class="container py-4">
-
-    <!-- Acciones rápidas -->
-    <div class="row mb-4">
-      <div class="col-md-6 mb-3">
-        <div class="quick-action-card text-center" (click)="navigateToReservar()">
-          <div class="action-icon bg-primary">
-            <i class="fas fa-calendar-plus"></i>
+<!-- Dashboard del Paciente - Diseño Moderno -->
+<div class="patient-dashboard-modern">
+  <div class="container-fluid py-4">
+    
+    <!-- Header de Bienvenida -->
+    <div class="welcome-header mb-5">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <div class="welcome-content">
+            <h1 class="welcome-title">
+              <i class="material-icons welcome-icon">medical_services</i>
+              ¡Bienvenido, {{ getUserGreeting() }}!
+            </h1>
+            <p class="welcome-subtitle">
+              Tu salud dental es nuestra prioridad. Aquí tienes todo lo que necesitas para gestionar tus citas.
+            </p>
+            <div class="welcome-stats">
+              <div class="stat-item">
+                <span class="stat-number">{{ pacienteStats.totalTurnos }}</span>
+                <span class="stat-label">Turnos Totales</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">{{ pacienteStats.turnosCompletados }}</span>
+                <span class="stat-label">Completados</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">${{ pacienteStats.totalGastado | number:'1.0-0' }}</span>
+                <span class="stat-label">Invertido en Salud</span>
+              </div>
+            </div>
           </div>
-          <h5>Reservar Turno</h5>
-          <p class="text-muted">Agenda una nueva cita</p>
         </div>
-      </div>
-      <div class="col-md-6 mb-3">
-        <div class="quick-action-card text-center" (click)="navigateToMisTurnos()">
-          <div class="action-icon bg-info">
-            <i class="fas fa-list-alt"></i>
+        <div class="col-lg-4">
+          <div class="welcome-illustration">
+            <div class="illustration-circle">
+              <i class="material-icons illustration-icon">favorite</i>
+            </div>
           </div>
-          <h5>Mis Turnos</h5>
-          <p class="text-muted">Ver todos mis turnos</p>
         </div>
       </div>
     </div>
 
-    <!-- Contenido principal -->
-    <div class="row">
-      <!-- Próximo turno -->
-      <div class="col-md-6 mb-4">
-        <div class="card h-100">
-          <div class="card-header bg-primary text-white">
-            <h5 class="mb-0 text-white">
-              <i class="fas fa-calendar-day me-2"></i>Próximo Turno
-            </h5>
-          </div>
-          <div class="card-body">
-            <div *ngIf="pacienteStats.proximoTurno; else noProximoTurno">
-              <div class="upcoming-appointment">
-                <div class="appointment-date">
-                  <div class="date-number">{{ pacienteStats.proximoTurno.fecha | date:'dd' }}</div>
-                  <div class="date-month">{{ pacienteStats.proximoTurno.fecha | date:'MMM' | uppercase }}</div>
-                  <div class="date-year">{{ pacienteStats.proximoTurno.fecha | date:'yyyy' }}</div>
-                </div>
-                <div class="appointment-details">
-                  <h5 class="treatment-name-simple">{{ pacienteStats.proximoTurno.tratamiento }}</h5>
-                  <p class="appointment-time-simple">
-                    <i class="fas fa-clock me-2"></i>
-                    {{ pacienteStats.proximoTurno.hora }}
-                  </p>
-                  <span [class]="getStatusClass(pacienteStats.proximoTurno.estado)" class="status-badge-simple">
-                    {{ getStatusText(pacienteStats.proximoTurno.estado) }}
-                  </span>
-                </div>
+    <!-- Acciones Rápidas Mejoradas -->
+    <div class="quick-actions-section mb-5">
+      <h3 class="section-title">
+        <i class="material-icons">flash_on</i>
+        Acciones Rápidas
+      </h3>
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="quick-action-card modern" (click)="navigateToReservar()">
+            <div class="action-icon-wrapper">
+              <div class="action-icon">
+                <i class="material-icons">add_circle</i>
               </div>
             </div>
-            <ng-template #noProximoTurno>
-              <div class="text-center py-4">
-                <i class="fas fa-calendar-day fa-3x text-muted mb-3"></i>
-                <h6 class="text-white-force">No tienes turnos pendientes</h6>
-                <p class="text-white-force">¡Agenda tu próxima cita!</p>
-                <button class="btn btn-primary" (click)="navigateToReservar()">
-                  <i class="fas fa-plus me-1"></i> Reservar Turno
-                </button>
+            <div class="action-content">
+              <h4>Reservar Turno</h4>
+              <p>Agenda tu próxima cita médica de forma rápida y sencilla</p>
+              <div class="action-features">
+                <span class="feature-tag">
+                  <i class="material-icons">schedule</i>
+                  Disponible 24/7
+                </span>
+                <span class="feature-tag">
+                  <i class="material-icons">payment</i>
+                  Múltiples formas de pago
+                </span>
               </div>
-            </ng-template>
+            </div>
+            <div class="action-arrow">
+              <i class="material-icons">arrow_forward</i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6">
+          <div class="quick-action-card modern" (click)="navigateToMisTurnos()">
+            <div class="action-icon-wrapper">
+              <div class="action-icon">
+                <i class="material-icons">calendar_today</i>
+              </div>
+            </div>
+            <div class="action-content">
+              <h4>Mis Turnos</h4>
+              <p>Revisa tu historial completo y gestiona tus citas pendientes</p>
+              <div class="action-features">
+                <span class="feature-tag">
+                  <i class="material-icons">history</i>
+                  Historial completo
+                </span>
+                <span class="feature-tag">
+                  <i class="material-icons">edit</i>
+                  Gestionar citas
+                </span>
+              </div>
+            </div>
+            <div class="action-arrow">
+              <i class="material-icons">arrow_forward</i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6">
+          <div class="quick-action-card modern" (click)="toggleChat()">
+            <div class="action-icon-wrapper">
+              <div class="action-icon">
+                <i class="material-icons">support_agent</i>
+              </div>
+            </div>
+            <div class="action-content">
+              <h4>Asistente Virtual</h4>
+              <p>Obtén ayuda inmediata con cualquier consulta sobre tus turnos</p>
+              <div class="action-features">
+                <span class="feature-tag">
+                  <i class="material-icons">smart_toy</i>
+                  IA Inteligente
+                </span>
+                <span class="feature-tag">
+                  <i class="material-icons">access_time</i>
+                  Respuesta inmediata
+                </span>
+              </div>
+            </div>
+            <div class="action-arrow">
+              <i class="material-icons">arrow_forward</i>
+            </div>
           </div>
         </div>
       </div>
-
-
     </div>
 
-    <!-- Historial reciente de turnos -->
-    <div class="row">
-      <div class="col-12">
-        <div class="card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 text-white">
-              <i class="fas fa-history me-2"></i>Mis Turnos Recientes
-            </h5>
-            <div class="d-flex gap-2">
-              <button 
-                class="btn btn-outline-success btn-sm" 
-                (click)="refreshData()" 
-                [disabled]="isLoading"
-                title="Actualizar datos">
-                <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
-                <span *ngIf="isLoading" class="ms-1">Actualizando...</span>
-              </button>
-              <button class="btn btn-outline-primary btn-sm" (click)="navigateToMisTurnos()">
-                Ver Todos
-              </button>
+    <!-- Próximo Turno Destacado -->
+    <div class="next-appointment-section mb-5" *ngIf="pacienteStats.proximoTurno">
+      <div class="next-appointment-card">
+        <div class="appointment-header">
+          <h3 class="section-title">
+            <i class="material-icons">event</i>
+            Tu Próxima Cita
+          </h3>
+          <div class="countdown-timer">
+            <span class="countdown-label">Faltan</span>
+            <span class="countdown-days">{{ getDaysUntilAppointment() }}</span>
+            <span class="countdown-text">días</span>
+          </div>
+        </div>
+        
+        <div class="appointment-details">
+          <div class="appointment-date-card">
+            <div class="date-circle">
+              <div class="date-day">{{ pacienteStats.proximoTurno.fecha | date:'dd' }}</div>
+              <div class="date-month">{{ pacienteStats.proximoTurno.fecha | date:'MMM' | uppercase }}</div>
+              <div class="date-year">{{ pacienteStats.proximoTurno.fecha | date:'yyyy' }}</div>
             </div>
           </div>
-          <div class="card-body">
-            <div *ngIf="isLoading" class="text-center py-4">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
+          
+          <div class="appointment-info">
+            <div class="treatment-info">
+              <h4 class="treatment-name">{{ pacienteStats.proximoTurno.tratamiento }}</h4>
+              <div class="treatment-meta">
+                <span class="meta-item">
+                  <i class="material-icons">schedule</i>
+                  {{ pacienteStats.proximoTurno.hora }}
+                </span>
+                <span class="meta-item">
+                  <i class="material-icons">person</i>
+                  Dr. {{ pacienteStats.proximoTurno.nombre || 'Asignado' }}
+                </span>
+                <span class="meta-item">
+                  <i class="material-icons">attach_money</i>
+                  ${{ pacienteStats.proximoTurno.precioFinal | number:'1.0-0' }}
+                </span>
               </div>
             </div>
             
-            <div *ngIf="!isLoading && misTurnos.length === 0" class="text-center py-4">
-              <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-              <h6>No tienes turnos registrados</h6>
-              <p class="text-muted">¡Agenda tu primera cita!</p>
-              <button class="btn btn-primary" (click)="navigateToReservar()">
-                <i class="fas fa-plus me-1"></i> Reservar Primer Turno
+            <div class="appointment-status">
+              <span [class]="getStatusClass(pacienteStats.proximoTurno.estado)" class="status-badge-modern">
+                <i class="material-icons status-icon">{{ getStatusIcon(pacienteStats.proximoTurno.estado) }}</i>
+                {{ getStatusText(pacienteStats.proximoTurno.estado) }}
+              </span>
+            </div>
+            
+            <div class="appointment-actions">
+              <button class="btn btn-outline-primary btn-sm" (click)="navigateToMisTurnos()">
+                <i class="material-icons">visibility</i>
+                Ver Detalles
+              </button>
+              <button class="btn btn-outline-warning btn-sm" (click)="navigateToReservar()">
+                <i class="material-icons">edit</i>
+                Reprogramar
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            <div *ngIf="!isLoading && misTurnos.length > 0" class="table-responsive">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Tratamiento</th>
-                    <th>Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let turno of misTurnos.slice(0, 5)">
-                    <td>{{ turno.fecha | date:'dd/MM/yyyy' }}</td>
-                    <td>{{ turno.hora }}</td>
-                    <td>{{ turno.tratamiento || 'Sin especificar' }}</td>
-                    <td>
-                      <span [class]="getStatusClass(turno.estado)">
-                        {{ getStatusText(turno.estado) }}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+    <!-- Sin Próximo Turno -->
+    <div class="no-appointment-section mb-5" *ngIf="!pacienteStats.proximoTurno">
+      <div class="no-appointment-card">
+        <div class="no-appointment-content">
+          <div class="no-appointment-icon">
+            <i class="material-icons">calendar_today</i>
+          </div>
+          <h3>No tienes turnos pendientes</h3>
+          <p>¡Es momento de agendar tu próxima cita para mantener tu salud dental!</p>
+          <button class="btn btn-primary btn-lg" (click)="navigateToReservar()">
+            <i class="material-icons">add_circle</i>
+            Reservar Turno
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estadísticas Detalladas -->
+    <div class="stats-section mb-5">
+      <h3 class="section-title">
+        <i class="material-icons">analytics</i>
+        Tu Actividad
+      </h3>
+      <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper">
+              <i class="material-icons stat-icon">calendar_month</i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ pacienteStats.totalTurnos }}</div>
+              <div class="stat-label">Total de Turnos</div>
+              <div class="stat-trend positive">
+                <i class="material-icons">trending_up</i>
+                +{{ pacienteStats.turnosReservados }} este mes
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper">
+              <i class="material-icons stat-icon">check_circle</i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ pacienteStats.turnosCompletados }}</div>
+              <div class="stat-label">Completados</div>
+              <div class="stat-trend positive">
+                <i class="material-icons">trending_up</i>
+                {{ getCompletionRate() }}% éxito
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper">
+              <i class="material-icons stat-icon">pending</i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ pacienteStats.turnosReservados }}</div>
+              <div class="stat-label">Pendientes</div>
+              <div class="stat-trend neutral">
+                <i class="material-icons">schedule</i>
+                Próximos turnos
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper">
+              <i class="material-icons stat-icon">account_balance_wallet</i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">${{ pacienteStats.totalGastado | number:'1.0-0' }}</div>
+              <div class="stat-label">Invertido en Salud</div>
+              <div class="stat-trend positive">
+                <i class="material-icons">savings</i>
+                Inversión en bienestar
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial Reciente Mejorado -->
+    <div class="recent-history-section mb-5">
+      <div class="section-header">
+        <h3 class="section-title">
+          <i class="material-icons">history</i>
+          Historial Reciente
+        </h3>
+        <div class="section-actions">
+          <button 
+            class="btn btn-outline-primary btn-sm" 
+            (click)="refreshData()" 
+            [disabled]="isLoading"
+            title="Actualizar datos">
+            <i class="material-icons" [class.rotating]="isLoading">refresh</i>
+            <span *ngIf="isLoading" class="ms-1">Actualizando...</span>
+          </button>
+          <button class="btn btn-primary btn-sm" (click)="navigateToMisTurnos()">
+            <i class="material-icons">list</i>
+            Ver Todos
+          </button>
+        </div>
+      </div>
+      
+      <div class="history-content">
+        <div *ngIf="isLoading" class="loading-state">
+          <div class="loading-spinner">
+            <i class="material-icons rotating">refresh</i>
+          </div>
+          <p>Cargando tu historial...</p>
+        </div>
+        
+        <div *ngIf="!isLoading && misTurnos.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <i class="material-icons">calendar_today</i>
+          </div>
+          <h4>No tienes turnos registrados</h4>
+          <p>¡Agenda tu primera cita y comienza tu camino hacia una sonrisa saludable!</p>
+          <button class="btn btn-primary" (click)="navigateToReservar()">
+            <i class="material-icons">add_circle</i>
+            Reservar Primer Turno
+          </button>
+        </div>
+
+        <div *ngIf="!isLoading && misTurnos.length > 0" class="history-cards">
+          <div class="row g-3">
+            <div class="col-lg-6 col-md-12" *ngFor="let turno of misTurnos.slice(0, 4)">
+              <div class="history-card">
+                <div class="history-card-header">
+                  <div class="history-date">
+                    <div class="history-day">{{ turno.fecha | date:'dd' }}</div>
+                    <div class="history-month">{{ turno.fecha | date:'MMM' }}</div>
+                  </div>
+                  <div class="history-status">
+                    <span [class]="getStatusClass(turno.estado)" class="status-badge-small">
+                      {{ getStatusText(turno.estado) }}
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="history-card-body">
+                  <h5 class="history-treatment">{{ turno.tratamiento || 'Consulta General' }}</h5>
+                  <div class="history-details">
+                    <div class="detail-item">
+                      <i class="material-icons">schedule</i>
+                      <span>{{ turno.hora }}</span>
+                    </div>
+                                         <div class="detail-item">
+                       <i class="material-icons">person</i>
+                       <span>Dr. {{ turno.nombre || 'Asignado' }}</span>
+                     </div>
+                    <div class="detail-item">
+                      <i class="material-icons">attach_money</i>
+                      <span>${{ turno.precioFinal | number:'1.0-0' }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="history-card-footer">
+                  <button class="btn btn-outline-primary btn-sm" (click)="navigateToMisTurnos()">
+                    <i class="material-icons">visibility</i>
+                    Ver Detalles
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información de Contacto -->
+    <div class="contact-info-section mb-5">
+      <div class="contact-info-card">
+        <div class="row align-items-center">
+          <div class="col-lg-8">
+            <h3 class="section-title">
+              <i class="material-icons">contact_support</i>
+              ¿Necesitas Ayuda?
+            </h3>
+            <p class="contact-description">
+              Nuestro equipo está disponible para ayudarte con cualquier consulta sobre tus turnos, tratamientos o pagos.
+            </p>
+            <div class="contact-methods">
+              <div class="contact-method">
+                <i class="material-icons">phone</i>
+                <div>
+                  <strong>Teléfono</strong>
+                  <p>(011) 4567-8901</p>
+                </div>
+              </div>
+              <div class="contact-method">
+                <i class="material-icons">whatsapp</i>
+                <div>
+                  <strong>WhatsApp</strong>
+                  <p>+54 9 11 1234-5678</p>
+                </div>
+              </div>
+              <div class="contact-method">
+                <i class="material-icons">schedule</i>
+                <div>
+                  <strong>Horarios</strong>
+                  <p>Lun-Vie: 8:00-18:00</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="contact-illustration">
+              <i class="material-icons">support_agent</i>
             </div>
           </div>
         </div>
@@ -142,107 +424,103 @@
     </div>
   </div>
 
-  <!-- Chatbot Widget -->
-  <div class="chatbot-widget">
+  <!-- Chatbot Widget Mejorado -->
+  <div class="chatbot-widget-modern">
     <!-- Floating Button -->
-    <div class="chat-toggle-btn" (click)="toggleChat()" [class.open]="chatOpen">
-      <img src="/assets/images/logo.png" alt="Chat" class="chat-toggle-img" *ngIf="!chatOpen">
-      <i class="fas fa-times" *ngIf="chatOpen"></i>
+    <div class="chat-toggle-btn-modern" (click)="toggleChat()" [class.open]="chatOpen">
+      <div class="chat-toggle-content" *ngIf="!chatOpen">
+        <i class="material-icons">support_agent</i>
+        <span class="chat-toggle-text">Asistente</span>
+      </div>
+      <i class="material-icons" *ngIf="chatOpen">close</i>
       
-      <!-- Burbuja de presentación amigable que sale del ícono -->
-      <div class="welcome-bubble" [class.show]="showWelcomeBubble && !chatOpen" (click)="openChatFromBubble($event)">
-        <div class="bubble-content">
-          <div class="bubble-avatar">
-            <img src="assets/images/logo.png" alt="Asistente" class="bubble-avatar-img">
+      <!-- Burbuja de presentación mejorada -->
+      <div class="welcome-bubble-modern" [class.show]="showWelcomeBubble && !chatOpen" (click)="openChatFromBubble($event)">
+        <div class="bubble-content-modern">
+          <div class="bubble-avatar-modern">
+            <i class="material-icons">smart_toy</i>
           </div>
-          <div class="bubble-text">
-            <div class="bubble-message">
-              👋 ¡Hola! Soy tu <strong>asistente virtual inteligente</strong>
+          <div class="bubble-text-modern">
+            <div class="bubble-message-modern">
+              👋 ¡Hola! Soy tu <strong>asistente virtual</strong>
             </div>
-            <div class="bubble-submessage">
-              Estoy aquí para ayudarte con tus turnos y consultas 😊
+            <div class="bubble-submessage-modern">
+              ¿En qué puedo ayudarte hoy?
             </div>
           </div>
-          <button class="bubble-close" (click)="closeWelcomeBubble($event)">
-            <i class="fas fa-times"></i>
+          <button class="bubble-close-modern" (click)="closeWelcomeBubble($event)">
+            <i class="material-icons">close</i>
           </button>
         </div>
-        <div class="bubble-pointer"></div>
+        <div class="bubble-pointer-modern"></div>
       </div>
     </div>
 
-    <!-- Chat Window -->
-    <div class="chat-window" [class.open]="chatOpen">
-      <div class="chat-header">
-        <div class="d-flex align-items-center">
-          <div class="chat-avatar">
-            <img src="/assets/images/logo.png" alt="Logo Clínica" class="chat-avatar-img">
+    <!-- Chat Window Mejorado -->
+    <div class="chat-window-modern" [class.open]="chatOpen">
+      <div class="chat-header-modern">
+        <div class="chat-header-content">
+          <div class="chat-avatar-modern">
+            <i class="material-icons">smart_toy</i>
           </div>
-          <div class="ms-2">
-            <div class="fw-bold">Asistente Virtual</div>
-            <div class="text-muted small">En línea</div>
+          <div class="chat-info">
+            <div class="chat-title">Asistente Virtual</div>
+            <div class="chat-status">En línea • Respuesta inmediata</div>
           </div>
         </div>
-        <button class="btn-close-chat" (click)="toggleChat()">
-          <i class="fas fa-times"></i>
+        <button class="btn-close-chat-modern" (click)="toggleChat()">
+          <i class="material-icons">close</i>
         </button>
       </div>
 
-      <div class="chat-body">
-        <div class="chat-messages" #chatMessages>
-          <div *ngFor="let message of messages" class="message" [class.user]="message.isUser" [class.bot]="!message.isUser">
-            <div class="message-content">
-              <div class="message-text" [innerHTML]="formatMessageText(message.text)"></div>
+      <div class="chat-body-modern">
+        <div class="chat-messages-modern" #chatMessages>
+          <div *ngFor="let message of messages" class="message-modern" [class.user]="message.isUser" [class.bot]="!message.isUser">
+            <div class="message-content-modern">
+              <div class="message-text-modern" [innerHTML]="formatMessageText(message.text)"></div>
               
-              <!-- Botones de acción -->
-              <div class="message-actions" *ngIf="message.actions && message.actions.length > 0">
+              <!-- Botones de acción mejorados -->
+              <div class="message-actions-modern" *ngIf="message.actions && message.actions.length > 0">
                 <button 
                   *ngFor="let action of message.actions" 
-                  class="btn btn-action"
+                  class="btn btn-action-modern"
                   [class]="'btn-' + (action.variant || 'primary')"
                   (click)="handleChatAction(action)"
                   [title]="action.text">
-                  <i class="fas fa-{{action.icon}}" *ngIf="action.icon"></i>
+                  <i class="material-icons">{{action.icon}}</i>
                   {{action.text}}
                 </button>
               </div>
               
-              <div class="message-time">{{ message.timestamp | date:'HH:mm' }}</div>
+              <div class="message-time-modern">{{ message.timestamp | date:'HH:mm' }}</div>
             </div>
           </div>
           
-          <div *ngIf="isTyping" class="message bot">
-            <div class="message-content">
-              <div class="typing-indicator">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
+          <div *ngIf="isTyping" class="message-modern bot">
+            <div class="message-content-modern">
+              <div class="typing-indicator-modern">
+                <div class="typing-dot-modern"></div>
+                <div class="typing-dot-modern"></div>
+                <div class="typing-dot-modern"></div>
               </div>
             </div>
           </div>
-        </div>          <!-- Quick Questions - Removidas porque los botones de acción son más útiles -->
-          <!-- <div class="quick-questions" *ngIf="messages.length <= 1">
-            <div class="mb-2 small text-muted">Preguntas frecuentes:</div>
-            <div class="quick-question-item" *ngFor="let question of quickQuestions" (click)="handleQuickQuestion(question)">
-              <i class="fas fa-question-circle me-2"></i>
-              {{ question.text }}
-            </div>
-          </div> -->
+        </div>
       </div>
 
-      <div class="chat-footer">
-        <form [formGroup]="chatForm" (ngSubmit)="onSubmit()" class="d-flex">
+      <div class="chat-footer-modern">
+        <form [formGroup]="chatForm" (ngSubmit)="onSubmit()" class="chat-form-modern">
           <input 
             type="text" 
             formControlName="message"
-            class="form-control chat-input" 
+            class="chat-input-modern" 
             placeholder="Escribe tu mensaje..."
             [disabled]="isTyping">
           <button 
             type="submit" 
-            class="btn btn-primary chat-send-btn"
+            class="chat-send-btn-modern"
             [disabled]="chatForm.invalid || isTyping">
-            <i class="fas fa-paper-plane"></i>
+            <i class="material-icons">send</i>
           </button>
         </form>
       </div>

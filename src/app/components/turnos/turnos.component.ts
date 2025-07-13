@@ -28,6 +28,12 @@ export class TurnosComponent implements OnInit {
   filterEstado: string = 'todos';
   isLoading: boolean = false;
   
+  // Nuevas propiedades para filtros avanzados
+  filterFechaDesde: string = '';
+  filterFechaHasta: string = '';
+  filterPago: string = 'todos';
+  viewMode: 'cards' | 'table' = 'cards';
+  
   // Chatbot properties
   @ViewChild('chatMessages') chatMessages!: ElementRef;
   chatOpen = false;
@@ -681,6 +687,39 @@ export class TurnosComponent implements OnInit {
       filtered = filtered.filter(turno => turno.estado === this.filterEstado);
     }
 
+    // Filtrar por fecha desde
+    if (this.filterFechaDesde) {
+      filtered = filtered.filter(turno => {
+        const turnoDate = new Date(turno.fecha);
+        const desdeDate = new Date(this.filterFechaDesde);
+        return turnoDate >= desdeDate;
+      });
+    }
+
+    // Filtrar por fecha hasta
+    if (this.filterFechaHasta) {
+      filtered = filtered.filter(turno => {
+        const turnoDate = new Date(turno.fecha);
+        const hastaDate = new Date(this.filterFechaHasta);
+        return turnoDate <= hastaDate;
+      });
+    }
+
+    // Filtrar por método de pago
+    if (this.filterPago !== 'todos') {
+      filtered = filtered.filter(turno => {
+        const paymentStatus = turno.paymentStatus || turno.metodoPago || '';
+        if (this.filterPago === 'online') {
+          return paymentStatus === 'approved' || paymentStatus === 'pagado';
+        } else if (this.filterPago === 'efectivo') {
+          return paymentStatus === 'efectivo' || paymentStatus === 'pendiente_pago_efectivo';
+        } else if (this.filterPago === 'pendiente') {
+          return paymentStatus === 'pending' || paymentStatus === 'pendiente_pago';
+        }
+        return true;
+      });
+    }
+
     // Filtrar por usuario según el tipo y la vista actual
     if (this.user?.tipoUsuario === 'paciente') {
       // Para pacientes: mostrar solo sus turnos usando múltiples criterios
@@ -837,8 +876,102 @@ export class TurnosComponent implements OnInit {
   // Método para resetear la burbuja de bienvenida (solo para pruebas)
   resetWelcomeBubble(): void {
     localStorage.removeItem('welcomeBubbleShown');
-    this.showWelcomeBubble = false;
-    console.log('Burbuja de bienvenida reseteada');
     this.showWelcomeBubbleAfterDelay();
+  }
+
+  // Métodos adicionales para el nuevo diseño
+  getTurnosReservados(): number {
+    return this.turnos.filter(t => 
+      t.estado === 'reservado' || 
+      t.estado === 'pendiente' || 
+      t.estado === 'pendiente_pago' || 
+      t.estado === 'pendiente_pago_efectivo'
+    ).length;
+  }
+
+  getTurnosCompletados(): number {
+    return this.turnos.filter(t => t.estado === 'completado').length;
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.filterEstado = 'todos';
+    this.filterFechaDesde = '';
+    this.filterFechaHasta = '';
+    this.filterPago = 'todos';
+  }
+
+  hasActiveFilters(): boolean {
+    return this.searchTerm !== '' || 
+           this.filterEstado !== 'todos' || 
+           this.filterFechaDesde !== '' || 
+           this.filterFechaHasta !== '' || 
+           this.filterPago !== 'todos';
+  }
+
+  setViewMode(mode: 'cards' | 'table'): void {
+    this.viewMode = mode;
+  }
+
+  getTurnoCardClass(turno: Turno): string {
+    const baseClass = 'turno-card';
+    if (turno.estado === 'cancelado') return `${baseClass} cancelled`;
+    if (turno.estado === 'completado') return `${baseClass} completed`;
+    if (turno.estado === 'reservado' || turno.estado === 'pagado') return `${baseClass} active`;
+    return baseClass;
+  }
+
+  getDayFromDate(fecha: string): string {
+    const date = new Date(fecha);
+    return date.getDate().toString();
+  }
+
+  getMonthFromDate(fecha: string): string {
+    const date = new Date(fecha);
+    const months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+    return months[date.getMonth()];
+  }
+
+  formatDate(fecha: string): string {
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  getStatusIcon(estado: string): string {
+    switch (estado) {
+      case 'reservado': return 'schedule';
+      case 'cancelado': return 'cancel';
+      case 'pendiente': return 'pending';
+      case 'pendiente_pago': return 'payment';
+      case 'pendiente_pago_efectivo': return 'money';
+      case 'pagado': return 'check_circle';
+      case 'completado': return 'check_circle';
+      default: return 'help';
+    }
+  }
+
+  canCancelTurno(turno: Turno): boolean {
+    if (this.user?.tipoUsuario === 'paciente') {
+      return turno.estado === 'reservado' || 
+             turno.estado === 'pendiente' || 
+             turno.estado === 'pendiente_pago' || 
+             turno.estado === 'pendiente_pago_efectivo';
+    }
+    return turno.estado === 'reservado';
+  }
+
+  viewTurnoDetails(turno: Turno): void {
+    // Implementar vista de detalles del turno
+    console.log('Ver detalles del turno:', turno);
+    // Aquí podrías abrir un modal o navegar a una página de detalles
+  }
+
+  navigateToReservar(): void {
+    this.router.navigate(['/reservarTurno']);
   }
 }

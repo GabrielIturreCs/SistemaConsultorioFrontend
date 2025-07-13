@@ -733,4 +733,37 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
     // También notificar al servicio de refresh por si otros componentes necesitan actualizarse
     this.dataRefreshService.triggerRefresh('all');
   }
+
+  // Métodos adicionales para el nuevo diseño
+  getDaysUntilAppointment(): number {
+    if (!this.pacienteStats.proximoTurno?.fecha) return 0;
+    
+    const appointmentDate = new Date(this.pacienteStats.proximoTurno.fecha);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    appointmentDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = appointmentDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return Math.max(0, diffDays);
+  }
+
+  getStatusIcon(estado: string): string {
+    switch (estado) {
+      case 'reservado': return 'schedule';
+      case 'cancelado': return 'cancel';
+      case 'pendiente': return 'pending';
+      case 'pendiente_pago': return 'payment';
+      case 'pendiente_pago_efectivo': return 'money';
+      case 'pagado': return 'check_circle';
+      case 'completado': return 'check_circle';
+      default: return 'help';
+    }
+  }
+
+  getCompletionRate(): number {
+    if (this.pacienteStats.totalTurnos === 0) return 0;
+    return Math.round((this.pacienteStats.turnosCompletados / this.pacienteStats.totalTurnos) * 100);
+  }
 }
