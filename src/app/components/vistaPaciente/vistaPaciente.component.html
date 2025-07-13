@@ -1,52 +1,9 @@
+<!-- Patient Navbar - Fijo en todas las rutas del paciente -->
+<app-patient-navbar></app-patient-navbar>
+
 <!-- Dashboard del Paciente -->
 <div class="patient-dashboard">
   <div class="container py-4">
-    
-    <!-- Header (navbar) siempre visible -->
-    <nav class="navbar navbar-expand-lg mb-4 rounded-4 shadow-sm px-4 navbar-dark">
-      <div class="container-fluid">
-        <span class="navbar-brand d-flex align-items-center gap-2">
-          <i class="fas fa-tooth"></i>
-          <span class="fw-bold">DentalTurnos</span>
-        </span>
-        <div class="navbar-nav ms-auto align-items-center">
-          <span class="navbar-text me-3">
-            <!--Bienvenido, <span class="fw-semibold">{{ paciente?.nombre || user?.nombre || 'Paciente' }}</span>-->
-             Bienvenido, <span class="fw-semibold">{{ getUserGreeting() }}</span>
-            <span class="badge bg-success" style="margin-left: 8px;">paciente</span>
-          </span>
-          <button class="btn btn-outline-light btn-sm ms-2" (click)="logout()">
-            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-          </button>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Menú de navegación -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="btn-group w-100 shadow-sm rounded-3 overflow-hidden" role="group">
-          <button 
-            type="button" 
-            class="btn btn-outline-primary py-3"
-            [class.active]="true">
-            <i class="fas fa-home"></i> Mi Panel
-          </button>
-          <button 
-            type="button" 
-            class="btn btn-outline-primary py-3"
-            (click)="navigateToReservar()">
-            <i class="fas fa-plus"></i> Reservar Turno
-          </button>
-          <button 
-            type="button" 
-            class="btn btn-outline-primary py-3"
-            (click)="navigateToMisTurnos()">
-            <i class="fas fa-calendar"></i> Mis Turnos
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- Acciones rápidas -->
     <div class="row mb-4">

@@ -11,10 +11,11 @@ import { TurnoService } from '../../services/turno.service';
 import { PacienteService } from '../../services/paciente.service';
 import { NotificationService } from '../../services/notification.service';
 import { DentistaService } from '../../services/dentista.service';
+import { PatientNavbarComponent } from '../layouts/patient-navbar/patient-navbar.component';
 
 @Component({
   selector: 'app-turnos',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, PatientNavbarComponent],
   templateUrl: './turnos.component.html',
   styleUrl: './turnos.component.css'
 })

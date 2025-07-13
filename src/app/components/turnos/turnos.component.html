@@ -1,3 +1,6 @@
+<!-- Patient Navbar - Fijo en todas las rutas del paciente -->
+<app-patient-navbar *ngIf="user?.tipoUsuario === 'paciente'"></app-patient-navbar>
+
 <!-- Contenedor centrado para la gestión de turnos -->
 <div class="d-flex justify-content-center align-items-center min-vh-100">
   <div class="w-100" style="max-width: 950px;">

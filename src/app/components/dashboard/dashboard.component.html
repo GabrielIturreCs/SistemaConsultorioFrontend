@@ -30,52 +30,7 @@
   <!-- Navbar condicional según el tipo de usuario -->
   <app-admin-navbar *ngIf="user?.tipoUsuario === 'administrador'"></app-admin-navbar>
   <app-dentist-navbar *ngIf="user?.tipoUsuario === 'dentista'"></app-dentist-navbar>
-  
-  <!-- Header (navbar) para pacientes -->
-  <nav *ngIf="user?.tipoUsuario === 'paciente'" class="navbar navbar-expand-lg mb-4 rounded-4 shadow-sm px-4 navbar-dark bg-primary">
-    <div class="container-fluid">
-      <span class="navbar-brand d-flex align-items-center gap-2">
-        <i class="fas fa-tooth"></i>
-        <span class="fw-bold">DentalTurnos</span>
-      </span>
-      <div class="navbar-nav ms-auto align-items-center">
-        <span class="navbar-text me-3">
-          Bienvenido, <span class="fw-semibold">{{ getUserGreeting() }}</span>
-          <span [class]="getTipoClass(user?.tipoUsuario || '')" style="margin-left: 8px;">{{ user?.tipoUsuario }}</span>
-        </span>
-        <button class="btn btn-outline-danger btn-sm ms-2" (click)="logout()">
-          <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Menú de navegación para pacientes -->
-  <div *ngIf="user?.tipoUsuario === 'paciente'" class="row mb-4">
-    <div class="col-12">
-      <div class="btn-group w-100 shadow-sm rounded-3 overflow-hidden" role="group">
-        <button 
-          type="button" 
-          class="btn btn-outline-primary py-3"
-          [class.active]="true"
-          (click)="navigateToDashboard()">
-          <i class="fas fa-home"></i> Dashboard
-        </button>
-        <button 
-          type="button" 
-          class="btn btn-outline-primary py-3"
-          (click)="navigateToReservar()">
-          <i class="fas fa-plus"></i> Reservar Turno
-        </button>
-        <button 
-          type="button" 
-          class="btn btn-outline-primary py-3"
-          (click)="navigateToTurnos()">
-          <i class="fas fa-calendar"></i> Mis Turnos
-        </button>
-      </div>
-    </div>
-  </div>
+  <app-patient-navbar *ngIf="user?.tipoUsuario === 'paciente'"></app-patient-navbar>
 
   <!-- Dashboard del Administrador -->
   <div *ngIf="user?.tipoUsuario === 'administrador' && !isPacienteView" class="admin-dashboard">

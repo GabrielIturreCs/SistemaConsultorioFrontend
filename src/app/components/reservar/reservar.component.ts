@@ -17,6 +17,7 @@ import { DentistaService } from '../../services/dentista.service';
 import { DisponibilidadService } from '../../services/disponibilidad.service';
 import { Disponibilidad } from '../../interfaces';
 import { PdfExportService } from '../../services/pdf-export.service';
+import { PatientNavbarComponent } from '../layouts/patient-navbar/patient-navbar.component';
 
 interface User {
   id: number;
@@ -41,7 +42,7 @@ interface Paciente {
 
 @Component({
   selector: 'app-reservar',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, PatientNavbarComponent],
   templateUrl: './reservar.component.html',
   styleUrl: './reservar.component.css'
 })
