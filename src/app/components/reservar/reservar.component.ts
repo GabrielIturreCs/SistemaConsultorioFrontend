@@ -903,6 +903,24 @@ export class ReservarComponent implements OnInit {
     return months[this.currentMonth.getMonth()];
   }
 
+  getPrevMonthName(): string {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const prevMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() - 1, 1);
+    return months[prevMonth.getMonth()];
+  }
+
+  getNextMonthName(): string {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const nextMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 1);
+    return months[nextMonth.getMonth()];
+  }
+
   getYear(): number {
     return this.currentMonth.getFullYear();
   }

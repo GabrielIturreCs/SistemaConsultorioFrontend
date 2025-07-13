@@ -238,12 +238,34 @@
             <div class="calendar-container">
               <!-- Calendar Header -->
               <div class="calendar-header">
-                <button type="button" class="btn btn-outline-primary" (click)="prevMonth()">
-                  <i class="fas fa-chevron-left"></i>
+                <button type="button" class="btn btn-calendar-nav btn-prev-month" (click)="prevMonth()" title="Mes anterior">
+                  <div class="nav-button-content">
+                    <i class="fas fa-chevron-left"></i>
+                    <span class="nav-text">Mes anterior</span>
+                  </div>
+                  <div class="month-preview prev-month-preview">
+                    <small>{{ getPrevMonthName() }}</small>
+                  </div>
                 </button>
-                <h4>{{ getMonthName() }} {{ getYear() }}</h4>
-                <button type="button" class="btn btn-outline-primary" (click)="nextMonth()">
-                  <i class="fas fa-chevron-right"></i>
+                
+                <div class="calendar-title">
+                  <h4 class="month-year">{{ getMonthName() }} {{ getYear() }}</h4>
+                  <div class="month-navigation-info">
+                    <small class="text-muted">
+                      <i class="fas fa-info-circle me-1"></i>
+                      Desliza o toca para cambiar de mes
+                    </small>
+                  </div>
+                </div>
+                
+                <button type="button" class="btn btn-calendar-nav btn-next-month" (click)="nextMonth()" title="Mes siguiente">
+                  <div class="nav-button-content">
+                    <span class="nav-text">Mes siguiente</span>
+                    <i class="fas fa-chevron-right"></i>
+                  </div>
+                  <div class="month-preview next-month-preview">
+                    <small>{{ getNextMonthName() }}</small>
+                  </div>
                 </button>
               </div>
 

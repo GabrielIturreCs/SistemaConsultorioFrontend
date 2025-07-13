@@ -96,31 +96,149 @@ body {
   padding: 0 0.5rem;
   flex-wrap: wrap;
   gap: 1rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.calendar-header h4 {
-  margin: 0;
-  color: #00bfff;
-  font-weight: 600;
-  font-size: 1.5rem;
-  text-align: center;
+.calendar-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   flex: 1;
   min-width: 200px;
 }
 
-.calendar-header button {
-  min-width: 44px;
+.month-year {
+  margin: 0;
+  color: #00bfff;
+  font-weight: 700;
+  font-size: 1.5rem;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 191, 255, 0.1);
+}
+
+.month-navigation-info {
+  margin-top: 0.25rem;
+  text-align: center;
+}
+
+.month-navigation-info small {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.btn-calendar-nav {
+  min-width: 120px;
   height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 25px;
   transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border: 2px solid #00bfff;
+  color: #00bfff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 191, 255, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
-.calendar-header button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 191, 255, 0.3);
+.btn-calendar-nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 191, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-calendar-nav:hover::before {
+  left: 100%;
+}
+
+.btn-calendar-nav:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+  background: linear-gradient(135deg, #00bfff, #7ff6ff);
+  color: white;
+  border-color: #00bfff;
+}
+
+.btn-calendar-nav:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 191, 255, 0.2);
+}
+
+.nav-button-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1;
+  position: relative;
+}
+
+.nav-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-prev-month .nav-button-content {
+  flex-direction: row;
+}
+
+.btn-next-month .nav-button-content {
+  flex-direction: row-reverse;
+}
+
+.btn-calendar-nav i {
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-calendar-nav:hover i {
+  transform: scale(1.2);
+}
+
+.month-preview {
+  position: absolute;
+  top: -20px;
+  background: rgba(0, 191, 255, 0.9);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.prev-month-preview {
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+}
+
+.next-month-preview {
+  right: 50%;
+  transform: translateX(50%) translateY(5px);
+}
+
+.btn-calendar-nav:hover .month-preview {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.btn-next-month:hover .month-preview {
+  transform: translateX(50%) translateY(0);
 }
 
 .calendar-grid {
@@ -338,6 +456,26 @@ body {
   
   .calendar-day.selected:active {
     transform: scale(1.05);
+  }
+
+  .btn-calendar-nav {
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-calendar-nav:active {
+    transform: scale(0.95);
+    background: linear-gradient(135deg, #00bfff, #7ff6ff);
+    color: white;
+  }
+
+  .btn-calendar-nav:active i {
+    transform: scale(1.1);
+  }
+
+  .month-preview {
+    display: none;
   }
 }
 
@@ -1267,16 +1405,32 @@ body {
     flex-direction: column;
     gap: 0.75rem;
     text-align: center;
+    padding: 0.75rem;
   }
 
-  .calendar-header h4 {
-    font-size: 1.25rem;
+  .calendar-title {
     min-width: auto;
   }
 
-  .calendar-header button {
-    min-width: 40px;
+  .month-year {
+    font-size: 1.25rem;
+  }
+
+  .month-navigation-info {
+    display: none;
+  }
+
+  .btn-calendar-nav {
+    min-width: 100px;
     height: 40px;
+  }
+
+  .nav-text {
+    font-size: 0.75rem;
+  }
+
+  .month-preview {
+    display: none;
   }
 
   .calendar-grid {
@@ -1432,15 +1586,24 @@ body {
 
   .calendar-header {
     gap: 0.5rem;
+    padding: 0.5rem;
   }
 
-  .calendar-header h4 {
+  .month-year {
     font-size: 1.1rem;
   }
 
-  .calendar-header button {
-    min-width: 36px;
+  .btn-calendar-nav {
+    min-width: 80px;
     height: 36px;
+  }
+
+  .nav-text {
+    font-size: 0.7rem;
+  }
+
+  .month-preview {
+    display: none;
   }
 
   .calendar-grid {
@@ -1589,15 +1752,24 @@ body {
 
   .calendar-header {
     gap: 0.4rem;
+    padding: 0.4rem;
   }
 
-  .calendar-header h4 {
+  .month-year {
     font-size: 1rem;
   }
 
-  .calendar-header button {
-    min-width: 32px;
+  .btn-calendar-nav {
+    min-width: 70px;
     height: 32px;
+  }
+
+  .nav-text {
+    font-size: 0.65rem;
+  }
+
+  .month-preview {
+    display: none;
   }
 
   .calendar-grid {
