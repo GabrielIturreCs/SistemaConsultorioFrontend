@@ -21,6 +21,7 @@
               id="loginUsuario"
               [(ngModel)]="loginForm.nombreUsuario" 
               name="nombreUsuario"
+              autocomplete="username"
               required
               placeholder="Ingresa tu usuario">
           </div>
@@ -35,6 +36,7 @@
               id="loginPassword"
               [(ngModel)]="loginForm.password" 
               name="password"
+              autocomplete="current-password"
               required
               placeholder="Ingresa tu contraseña">
           </div>
