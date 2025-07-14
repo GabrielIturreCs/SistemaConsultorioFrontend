@@ -85,8 +85,11 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
         next: () => {},
         error: (err) => {
           if (err.status === 404) {
+            // Inicializar odontograma vacío y permitir edición
             this.odontogramaService.limpiarOdontograma();
+            // No mostrar error bloqueante
           } else {
+            // Solo mostrar error si es otro tipo
             this.snackBar.open('Error al cargar el odontograma. Verifique su sesión o intente nuevamente.', 'Cerrar', {
               duration: 4000,
               panelClass: ['snackbar-error'],
