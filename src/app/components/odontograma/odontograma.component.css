@@ -305,6 +305,90 @@
   background: #0891b2;
 }
 
+/* === ODONTOGRAMA FDI (estilo imagen) === */
+.odontograma-fdi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+  width: 100%;
+}
+.odontograma-fdi-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2px;
+}
+.odontograma-fdi-row, .odontograma-fdi-label-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2px;
+}
+.odontograma-fdi-celda {
+  min-width: 69px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  background: transparent;
+}
+.odontograma-fdi-celda.cuadrante-num {
+  font-size: 1.5rem;
+  color: #2563eb;
+  font-weight: bold;
+}
+.odontograma-fdi-celda.separador {
+  min-width: 18px;
+  min-height: 18px;
+  background: transparent;
+}
+.odontograma-fdi-label-row {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  margin-bottom: 8px;
+}
+.label-derecha-abs {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #64748b;
+  letter-spacing: 2px;
+  padding-left: 12px;
+}
+.label-izquierda-abs {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #64748b;
+  letter-spacing: 2px;
+  padding-right: 12px;
+}
+.label-derecha, .label-izquierda {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #64748b;
+  letter-spacing: 2px;
+}
+.label-derecha {
+  justify-content: flex-start;
+}
+.label-izquierda {
+  justify-content: flex-end;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .toolbar {
@@ -320,6 +404,8 @@
   .cuadrantes-inferiores {
     gap: 20px;
   }
+  .odontograma-fdi-celda { min-width: 36px; min-height: 36px; font-size: 0.95rem; }
+  .odontograma-fdi-celda.cuadrante-num { font-size: 1.1rem; }
 }
 
 @media (max-width: 768px) {
@@ -366,6 +452,8 @@
     padding: 10px 16px;
     font-size: 12px;
   }
+  .odontograma-fdi-celda { min-width: 28px; min-height: 28px; font-size: 0.8rem; }
+  .odontograma-fdi-celda.cuadrante-num { font-size: 0.95rem; }
 }
 
 @media (max-width: 480px) {

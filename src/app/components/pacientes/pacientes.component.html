@@ -586,8 +586,8 @@
 
   <!-- Modal para Odontograma -->
   <div class="modal fade" [class.show]="showOdontograma" [style.display]="showOdontograma ? 'block' : 'none'" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
+    <div class="modal-dialog modal-xxl odontograma-fullscreen" role="document" style="max-width:98vw;width:98vw;height:98vh;min-width:1200px;min-height:700px;">
+      <div class="modal-content" style="height:96vh;">
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title">
             <i class="bi bi-diagram-3 me-3"></i>
@@ -595,7 +595,7 @@
           </h5>
           <button type="button" class="btn-close btn-close-white" (click)="cerrarOdontograma()" aria-label="Cerrar"></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body p-0" style="height:calc(96vh - 80px);overflow:auto;">
           <app-odontograma 
             [odontograma]="odontogramaPaciente"
             [paciente]="pacienteSeleccionado"

@@ -38,116 +38,82 @@
   </div>
 
   <!-- Odontograma principal -->
-  <div class="odontograma-main">
-    <!-- Dientes permanentes -->
-    <div class="dientes-permanentes">
-      <div class="cuadrantes-superiores">
-        <!-- Cuadrante 2 - Superior Izquierdo -->
-        <div class="cuadrante cuadrante-2">
-          <div class="cuadrante-label">Cuadrante 2</div>
-          <div class="piezas-row">
-            <app-pieza-dental 
-              *ngFor="let pieza of getPiezasPorCuadrante(2)"
-              [pieza]="pieza"
-              (zonaClic)="onZonaClic($event)">
-            </app-pieza-dental>
-          </div>
-        </div>
-
-        <!-- Cuadrante 1 - Superior Derecho -->
-        <div class="cuadrante cuadrante-1">
-          <div class="cuadrante-label">Cuadrante 1</div>
-          <div class="piezas-row">
-            <app-pieza-dental 
-              *ngFor="let pieza of getPiezasPorCuadrante(1)"
-              [pieza]="pieza"
-              (zonaClic)="onZonaClic($event)">
-            </app-pieza-dental>
-          </div>
-        </div>
-      </div>
-
-      <div class="cuadrantes-inferiores">
-        <!-- Cuadrante 3 - Inferior Izquierdo -->
-        <div class="cuadrante cuadrante-3">
-          <div class="cuadrante-label">Cuadrante 3</div>
-          <div class="piezas-row">
-            <app-pieza-dental 
-              *ngFor="let pieza of getPiezasPorCuadrante(3)"
-              [pieza]="pieza"
-              (zonaClic)="onZonaClic($event)">
-            </app-pieza-dental>
-          </div>
-        </div>
-
-        <!-- Cuadrante 4 - Inferior Derecho -->
-        <div class="cuadrante cuadrante-4">
-          <div class="cuadrante-label">Cuadrante 4</div>
-          <div class="piezas-row">
-            <app-pieza-dental 
-              *ngFor="let pieza of getPiezasPorCuadrante(4)"
-              [pieza]="pieza"
-              (zonaClic)="onZonaClic($event)">
-            </app-pieza-dental>
-          </div>
-        </div>
-      </div>
+  <div class="odontograma-main odontograma-fdi">
+    <div class="odontograma-fdi-label-row">
+      <span class="label-derecha-abs">DERECHA</span>
+      <span class="label-izquierda-abs">IZQUIERDA</span>
     </div>
-
-    <!-- Dientes temporales -->
-    <div class="dientes-temporales" *ngIf="mostrarTemporales">
-      <h3>Dentición Temporal</h3>
-      <div class="cuadrantes-superiores">
-        <!-- Cuadrante 6 - Temporal Superior Izquierdo -->
-        <div class="cuadrante cuadrante-6">
-          <div class="cuadrante-label">Cuadrante 6</div>
-          <div class="piezas-row">
-            <app-pieza-dental 
-              *ngFor="let pieza of getPiezasPorCuadrante(6)"
-              [pieza]="pieza"
-              (zonaClic)="onZonaClic($event)">
-            </app-pieza-dental>
-          </div>
-        </div>
-
-        <!-- Cuadrante 5 - Temporal Superior Derecho -->
-        <div class="cuadrante cuadrante-5">
-          <div class="cuadrante-label">Cuadrante 5</div>
-          <div class="piezas-row">
-            <app-pieza-dental 
-              *ngFor="let pieza of getPiezasPorCuadrante(5)"
-              [pieza]="pieza"
-              (zonaClic)="onZonaClic($event)">
-            </app-pieza-dental>
-          </div>
-        </div>
+    <!-- Fila superior: Cuadrante 2 | Separador | Cuadrante 1 -->
+    <div class="odontograma-fdi-row">
+      <div class="odontograma-fdi-celda cuadrante-num">2</div>
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(2)">
+        <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
-
-      <div class="cuadrantes-inferiores">
-        <!-- Cuadrante 7 - Temporal Inferior Izquierdo -->
-        <div class="cuadrante cuadrante-7">
-          <div class="cuadrante-label">Cuadrante 7</div>
-          <div class="piezas-row">
-            <app-pieza-dental 
-              *ngFor="let pieza of getPiezasPorCuadrante(7)"
-              [pieza]="pieza"
-              (zonaClic)="onZonaClic($event)">
-            </app-pieza-dental>
-          </div>
-        </div>
-
-        <!-- Cuadrante 8 - Temporal Inferior Derecho -->
-        <div class="cuadrante cuadrante-8">
-          <div class="cuadrante-label">Cuadrante 8</div>
-          <div class="piezas-row">
-            <app-pieza-dental 
-              *ngFor="let pieza of getPiezasPorCuadrante(8)"
-              [pieza]="pieza"
-              (zonaClic)="onZonaClic($event)">
-            </app-pieza-dental>
-          </div>
-        </div>
+      <div class="odontograma-fdi-celda separador"></div>
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(1)">
+        <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
+      <div class="odontograma-fdi-celda cuadrante-num">1</div>
+    </div>
+    <!-- Numeración superior (1-8 debajo de los dientes) -->
+    <div class="odontograma-fdi-header">
+      <div class="odontograma-fdi-celda"></div>
+      <ng-container *ngFor="let pieza of getPiezasPorCuadrante(2)">
+        <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
+      </ng-container>
+      <div class="odontograma-fdi-celda separador"></div>
+      <ng-container *ngFor="let pieza of getPiezasPorCuadrante(1)">
+        <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
+      </ng-container>
+      <div class="odontograma-fdi-celda"></div>
+    </div>
+    <!-- Fila inferior: Cuadrante 3 | Separador | Cuadrante 4 -->
+    <div class="odontograma-fdi-row">
+      <div class="odontograma-fdi-celda cuadrante-num">3</div>
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(3)">
+        <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
+      </div>
+      <div class="odontograma-fdi-celda separador"></div>
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(4)">
+        <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
+      </div>
+      <div class="odontograma-fdi-celda cuadrante-num">4</div>
+    </div>
+    <!-- Temporales: Cuadrante 6 y 5 (superior) -->
+    <div class="odontograma-fdi-row">
+      <div class="odontograma-fdi-celda cuadrante-num">6</div>
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(6)">
+        <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
+      </div>
+      <div class="odontograma-fdi-celda separador"></div>
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(5)">
+        <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
+      </div>
+      <div class="odontograma-fdi-celda cuadrante-num">5</div>
+    </div>
+    <!-- Numeración temporales superior (1-5 debajo de los dientes) -->
+    <div class="odontograma-fdi-header">
+      <div class="odontograma-fdi-celda"></div>
+      <ng-container *ngFor="let pieza of getPiezasPorCuadrante(6)">
+        <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
+      </ng-container>
+      <div class="odontograma-fdi-celda separador"></div>
+      <ng-container *ngFor="let pieza of getPiezasPorCuadrante(5)">
+        <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
+      </ng-container>
+      <div class="odontograma-fdi-celda"></div>
+    </div>
+    <!-- Temporales: Cuadrante 7 y 8 (inferior) -->
+    <div class="odontograma-fdi-row">
+      <div class="odontograma-fdi-celda cuadrante-num">7</div>
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(7)">
+        <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
+      </div>
+      <div class="odontograma-fdi-celda separador"></div>
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(8)">
+        <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
+      </div>
+      <div class="odontograma-fdi-celda cuadrante-num">8</div>
     </div>
   </div>
 
