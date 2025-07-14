@@ -76,11 +76,8 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
     const pacienteId = this.paciente?.id || this.paciente?._id;
     if (pacienteId) {
       this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe({
-        next: (data) => {
-          // El odontograma se actualiza automáticamente por el tap() del servicio
-        },
-        error: (err) => {
-          // Si no existe, inicializa uno nuevo
+        next: () => {},
+        error: () => {
           this.odontogramaService.limpiarOdontograma();
         }
       });
@@ -141,28 +138,25 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
   }
 
   guardarOdontograma(): void {
-    this.guardando = true
+    this.guardando = true;
     const pacienteId = this.paciente?.id || this.paciente?._id;
-    // Asegurar que se envía el ID del odontólogo
     this.odontogramaData.odontologo = this.odontologoId;
     this.odontogramaService
       .guardarOdontograma(pacienteId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
-          console.log("Guardado exitoso:", response)
-          this.guardando = false
+        next: () => {
+          this.guardando = false;
           this.snackBar.open('¡Odontograma guardado exitosamente!', 'Cerrar', {
             duration: 3000,
             panelClass: ['snackbar-success'],
             horizontalPosition: 'end',
             verticalPosition: 'top'
           });
-          this.cerrar.emit() // Cierra el modal
+          this.cerrar.emit();
         },
-        error: (error: any) => {
-          console.error("Error al guardar:", error)
-          this.guardando = false
+        error: () => {
+          this.guardando = false;
           this.snackBar.open('Error al guardar el odontograma', 'Cerrar', {
             duration: 3000,
             panelClass: ['snackbar-error'],
@@ -170,7 +164,7 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
             verticalPosition: 'top'
           });
         },
-      })
+      });
   }
 
   async imprimirGrafico(): Promise<void> {
