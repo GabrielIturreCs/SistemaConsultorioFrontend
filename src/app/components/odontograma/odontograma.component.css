@@ -473,6 +473,48 @@
   }
 }
 
+@media (max-width: 600px) {
+  .toolbar {
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 0.5rem 0.2rem;
+  }
+  .herramientas-grid, .estados-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.7rem;
+    padding-bottom: 0.5rem;
+  }
+  .herramienta-btn, .estado-btn {
+    min-width: 60px;
+    min-height: 60px;
+    font-size: 1.1rem;
+    padding: 0.7rem 0.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: #f5f7fa;
+    color: #1976d2;
+    border: 2px solid #1976d2;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .herramienta-btn.active, .estado-btn.active {
+    background: #1976d2;
+    color: #fff;
+    border-color: #1976d2;
+  }
+  .herramienta-btn i, .estado-btn i {
+    font-size: 1.5rem;
+    margin-bottom: 0.2rem;
+  }
+  .toolbar-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+  }
+}
+
 @media (max-width: 480px) {
   .cuadrantes-superiores,
   .cuadrantes-inferiores {
