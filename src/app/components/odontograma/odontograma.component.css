@@ -108,7 +108,7 @@
 
 /* Odontograma principal */
 .odontograma-main {
-  background: #ffffff;
+  background: #fff;
   border-radius: 16px;
   padding: 30px;
   margin-bottom: 20px;
@@ -389,6 +389,17 @@
   justify-content: flex-end;
 }
 
+.separador-central {
+  width: 4px;
+  min-width: 4px;
+  background: #0072ce;
+  border-radius: 2px;
+  margin: 0 8px;
+  height: 60px;
+  align-self: center;
+  box-shadow: 0 0 2px #0072ce44;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   .toolbar {
@@ -454,6 +465,12 @@
   }
   .odontograma-fdi-celda { min-width: 28px; min-height: 28px; font-size: 0.8rem; }
   .odontograma-fdi-celda.cuadrante-num { font-size: 0.95rem; }
+  .separador-central {
+    width: 3px;
+    min-width: 3px;
+    height: 40px;
+    margin: 0 4px;
+  }
 }
 
 @media (max-width: 480px) {

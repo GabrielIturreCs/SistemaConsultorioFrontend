@@ -30,11 +30,6 @@
       </div>
     </div>
 
-    <div class="toolbar-section">
-      <button class="toggle-btn" (click)="toggleTemporales()">
-        {{ mostrarTemporales ? 'Ocultar' : 'Mostrar' }} Temporales
-      </button>
-    </div>
   </div>
 
   <!-- Odontograma principal -->
@@ -49,7 +44,7 @@
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(2)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
-      <div class="odontograma-fdi-celda separador"></div>
+      <div class="separador-central"></div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(1)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
@@ -61,7 +56,7 @@
       <ng-container *ngFor="let pieza of getPiezasPorCuadrante(2)">
         <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
       </ng-container>
-      <div class="odontograma-fdi-celda separador"></div>
+      <div class="separador-central"></div>
       <ng-container *ngFor="let pieza of getPiezasPorCuadrante(1)">
         <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
       </ng-container>
@@ -73,7 +68,7 @@
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(3)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
-      <div class="odontograma-fdi-celda separador"></div>
+      <div class="separador-central"></div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(4)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
@@ -85,7 +80,7 @@
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(6)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
-      <div class="odontograma-fdi-celda separador"></div>
+      <div class="separador-central"></div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(5)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
@@ -97,7 +92,7 @@
       <ng-container *ngFor="let pieza of getPiezasPorCuadrante(6)">
         <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
       </ng-container>
-      <div class="odontograma-fdi-celda separador"></div>
+      <div class="separador-central"></div>
       <ng-container *ngFor="let pieza of getPiezasPorCuadrante(5)">
         <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
       </ng-container>
@@ -109,7 +104,7 @@
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(7)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
-      <div class="odontograma-fdi-celda separador"></div>
+      <div class="separador-central"></div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(8)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>

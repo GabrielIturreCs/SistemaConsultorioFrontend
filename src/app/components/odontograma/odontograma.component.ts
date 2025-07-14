@@ -1,4 +1,4 @@
-import { Component, type OnInit, type OnDestroy } from "@angular/core"
+import { Component, type OnInit, type OnDestroy, Output, EventEmitter } from "@angular/core"
 import { Input } from '@angular/core';
 import { Subject } from "rxjs"
 import { takeUntil } from "rxjs/operators"
@@ -6,6 +6,7 @@ import { OdontogramaService, PiezaDental, OdontogramaData } from "../../services
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PiezaDentalComponent } from './pieza-dental.component';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: "app-odontograma",
@@ -17,6 +18,7 @@ import { PiezaDentalComponent } from './pieza-dental.component';
 export class OdontogramaComponent implements OnInit, OnDestroy {
   @Input() odontograma: any;
   @Input() paciente: any;
+  @Output() cerrar = new EventEmitter<void>();
   private destroy$ = new Subject<void>()
 
   odontogramaData!: OdontogramaData
@@ -99,66 +101,242 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
 
   guardarOdontograma(): void {
     this.guardando = true
+    const pacienteId = this.paciente?.id || this.paciente?._id;
+    
     this.odontogramaService
-      .guardarOdontograma()
+      .guardarOdontograma(pacienteId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
           console.log("Guardado exitoso:", response)
           this.guardando = false
-          // Aquí podrías mostrar un toast de éxito
+          alert("Odontograma guardado exitosamente")
+          this.cerrar.emit() // Cierra el modal
         },
         error: (error: any) => {
           console.error("Error al guardar:", error)
           this.guardando = false
-          // Aquí podrías mostrar un toast de error
+          alert("Error al guardar el odontograma")
         },
       })
   }
 
-  imprimirGrafico(): void {
-    window.print()
+  async imprimirGrafico(): Promise<void> {
+    const odontogramaElement = document.querySelector('.odontograma-main') as HTMLElement;
+    if (!odontogramaElement) {
+      alert('No se encontró el odontograma para imprimir.');
+      return;
+    }
+    const canvas = await html2canvas(odontogramaElement, {
+      useCORS: true
+    });
+    const dataUrl = canvas.toDataURL('image/png');
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Odontograma - ${this.paciente?.nombre || 'Paciente'}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
+              .header { margin-bottom: 30px; }
+              .patient-info { margin-bottom: 20px; }
+              img { max-width: 100%; height: auto; margin: 0 auto; display: block; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>Odontograma Clínico</h1>
+              <h2>${this.paciente?.nombre || 'Paciente'} ${this.paciente?.apellido || ''}</h2>
+            </div>
+            <div class="patient-info">
+              <p><strong>Fecha:</strong> ${this.odontogramaData.fecha.toLocaleDateString()}</p>
+              <p><strong>Odontólogo:</strong> ${this.odontogramaData.odontologo || 'No especificado'}</p>
+              <p><strong>DNI:</strong> ${this.paciente?.dni || 'No especificado'}</p>
+            </div>
+            <img src="${dataUrl}" alt="Odontograma Gráfico" />
+            <div style="margin-top: 30px; color: #666; font-size: 12px;">
+              <p>Reporte generado el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')}</p>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    }
   }
 
   imprimirDatos(): void {
-    const datos = this.odontogramaService.exportarDatos()
-    const ventana = window.open("", "_blank")
-    if (ventana) {
-      ventana.document.write(`
+    const datos = this.odontogramaService.exportarDatos();
+    const zonaNombres: { [key: string]: string } = {
+      'superior': 'Oclusal (O)',
+      'inferior': 'Lingual (L)', 
+      'izquierda': 'Mesial (M)',
+      'derecha': 'Distal (D)',
+      'centro': 'Vestibular (V)'
+    };
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      const htmlContent = `
+        <!DOCTYPE html>
         <html>
-          <head><title>Datos del Odontograma</title></head>
+          <head>
+            <title>Datos del Odontograma - ${this.paciente?.nombre || 'Paciente'}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0072ce; padding-bottom: 20px; }
+              .patient-info { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+              .treatments { margin-top: 20px; }
+              .piece-treatment { 
+                background: #fff; 
+                border: 1px solid #ddd; 
+                margin: 10px 0; 
+                padding: 15px; 
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              }
+              .piece-number { 
+                font-weight: bold; 
+                color: #0072ce; 
+                font-size: 16px; 
+                margin-bottom: 10px;
+              }
+              .zone-treatment { 
+                margin: 5px 0; 
+                padding: 5px 10px; 
+                background: #f8f9fa; 
+                border-left: 3px solid #0072ce;
+              }
+              .no-treatments { 
+                color: #666; 
+                font-style: italic; 
+                text-align: center; 
+                padding: 20px;
+              }
+              .notes { 
+                background: #fff3cd; 
+                border: 1px solid #ffeaa7; 
+                padding: 15px; 
+                border-radius: 5px; 
+                margin-top: 20px;
+              }
+              @media print {
+                body { margin: 0; }
+                .piece-treatment { break-inside: avoid; }
+              }
+            </style>
+          </head>
           <body>
-            <h2>Odontograma - ${datos.odontologo}</h2>
-            <p><strong>Fecha:</strong> ${datos.fecha.toLocaleDateString()}</p>
-            <p><strong>Notas:</strong> ${datos.notas}</p>
-            <h3>Tratamientos por pieza:</h3>
-            <ul>
-              ${Object.values(datos.piezas)
-                .map((pieza: any) => {
-                  const tratamientos = Object.entries(pieza.zonas)
-                    .filter(([_, zona]) => zona !== null)
-                    .map(([nombreZona, zona]: [string, any]) => `${nombreZona}: ${zona?.herramienta}`)
-                    .join(", ")
-                  return tratamientos ? `<li>Pieza ${pieza.numero}: ${tratamientos}</li>` : ""
-                })
-                .join("")}
-            </ul>
+            <div class="header">
+              <h1>📋 Reporte de Odontograma</h1>
+              <h2>${this.paciente?.nombre || 'Paciente'} ${this.paciente?.apellido || ''}</h2>
+            </div>
+            
+            <div class="patient-info">
+              <h3>📋 Información del Paciente</h3>
+              <p><strong>Nombre:</strong> ${this.paciente?.nombre || 'No especificado'} ${this.paciente?.apellido || ''}</p>
+              <p><strong>DNI:</strong> ${this.paciente?.dni || 'No especificado'}</p>
+              <p><strong>Teléfono:</strong> ${this.paciente?.telefono || 'No especificado'}</p>
+              <p><strong>Obra Social:</strong> ${this.paciente?.obraSocial || 'No especificado'}</p>
+            </div>
+            
+            <div class="patient-info">
+              <h3>👨‍⚕️ Información del Tratamiento</h3>
+              <p><strong>Fecha:</strong> ${datos.fecha.toLocaleDateString('es-ES', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</p>
+              <p><strong>Odontólogo:</strong> ${datos.odontologo || 'No especificado'}</p>
+            </div>
+            
+            <div class="treatments">
+              <h3>🦷 Tratamientos por Pieza Dental</h3>
+              ${(() => {
+                const piezasConTratamientos = Object.values(datos.piezas)
+                  .filter((pieza: any) => {
+                    return Object.values(pieza.zonas).some((zona: any) => zona !== null);
+                  });
+                
+                if (piezasConTratamientos.length === 0) {
+                  return '<div class="no-treatments">No se han registrado tratamientos en ninguna pieza dental.</div>';
+                }
+                
+                return piezasConTratamientos
+                  .map((pieza: any) => {
+                    const tratamientos = Object.entries(pieza.zonas)
+                      .filter(([_, zona]) => zona !== null)
+                      .map(([nombreZona, zona]: [string, any]) => {
+                        const nombreZonaCompleto = zonaNombres[nombreZona] || nombreZona;
+                        return `<div class="zone-treatment">
+                                  <strong>${nombreZonaCompleto}:</strong> ${zona.herramienta} - ${zona.estado.replace(/_/g, ' ').toUpperCase()}
+                                </div>`;
+                      })
+                      .join('');
+                    
+                    return tratamientos ? `
+                      <div class="piece-treatment">
+                        <div class="piece-number">🦷 Pieza ${pieza.numero}</div>
+                        ${tratamientos}
+                      </div>
+                    ` : '';
+                  })
+                  .join('');
+              })()}
+            </div>
+            
+            ${datos.notas ? `
+              <div class="notes">
+                <h3>📝 Notas Clínicas</h3>
+                <p>${datos.notas}</p>
+              </div>
+            ` : ''}
+            
+            <div style="margin-top: 30px; text-align: center; color: #666; font-size: 12px;">
+              <p>Reporte generado el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')}</p>
+            </div>
           </body>
         </html>
-      `)
-      ventana.print()
+      `;
+      
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.focus();
+      
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
     }
   }
 
   limpiarOdontograma(): void {
-    if (confirm("¿Está seguro de que desea limpiar todo el odontograma?")) {
+    if (confirm("¿Está seguro de que desea limpiar todo el odontograma? Esta acción no se puede deshacer.")) {
       this.odontogramaService.limpiarOdontograma()
+      alert("Odontograma limpiado exitosamente")
     }
   }
 
-  exportarImagen(): void {
-    // Implementación para exportar como imagen usando html2canvas
-    console.log("Exportar imagen - implementar con html2canvas")
+  async exportarImagen(): Promise<void> {
+    const odontogramaElement = document.querySelector('.odontograma-main') as HTMLElement;
+    if (!odontogramaElement) {
+      alert('No se encontró el odontograma para exportar.');
+      return;
+    }
+    const canvas = await html2canvas(odontogramaElement, {
+      useCORS: true
+    });
+    const link = document.createElement('a');
+    link.download = `odontograma_${this.paciente?.nombre || 'paciente'}_${new Date().toISOString().split('T')[0]}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   }
 
   keyToString(key: unknown): string {

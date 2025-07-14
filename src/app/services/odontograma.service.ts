@@ -66,7 +66,7 @@ export class OdontogramaService {
   ];
 
   // Cambia esta URL base según tu backend
-  private baseUrl = '/api/odontograma';
+  private baseUrl = 'http://localhost:3000/api/odontograma';
 
   constructor(private http: HttpClient) {}
 
