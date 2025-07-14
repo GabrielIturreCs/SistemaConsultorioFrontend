@@ -80,16 +80,16 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
     // Usar SIEMPRE el _id del paciente
     const pacienteId = this.paciente?._id;
     if (pacienteId) {
-      this.odontogramaService.limpiarOdontograma();
+      // No limpiar aquí, solo al cambiar de paciente
       this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe({
-        next: () => {},
+        next: (data) => {
+          // El servicio ya actualiza el BehaviorSubject con la respuesta real
+        },
         error: (err) => {
           if (err.status === 404) {
             // Inicializar odontograma vacío y permitir edición
             this.odontogramaService.limpiarOdontograma();
-            // No mostrar error bloqueante
           } else {
-            // Solo mostrar error si es otro tipo
             this.snackBar.open('Error al cargar el odontograma. Verifique su sesión o intente nuevamente.', 'Cerrar', {
               duration: 4000,
               panelClass: ['snackbar-error'],
