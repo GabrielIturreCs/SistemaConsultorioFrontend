@@ -9,6 +9,7 @@ import { PiezaDentalComponent } from './pieza-dental.component';
 import html2canvas from 'html2canvas';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: "app-odontograma",
@@ -50,9 +51,13 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
   odontologoLogueado: string = '';
   odontologoId: string = '';
 
+  historialOdontogramas: any[] = [];
+  mostrarHistorial = false;
+
   constructor(
     private odontogramaService: OdontogramaService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private http: HttpClient
   ) {
     this.herramientas = this.odontogramaService.getHerramientas();
     this.coloresEstado = this.odontogramaService.getColoresEstado();
@@ -72,15 +77,17 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Cargar odontograma del paciente
+    // Cargar odontograma y su historial del paciente
     const pacienteId = this.paciente?.id || this.paciente?._id;
     if (pacienteId) {
+      this.odontogramaService.limpiarOdontograma(); // <-- LIMPIAR ANTES DE CARGAR
       this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe({
         next: () => {},
         error: () => {
           this.odontogramaService.limpiarOdontograma();
         }
       });
+      this.cargarHistorialOdontogramas(pacienteId);
     } else {
       this.odontogramaService.limpiarOdontograma();
     }
@@ -100,6 +107,34 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
     this.odontogramaService.estadoActual$.pipe(takeUntil(this.destroy$)).subscribe((estado: string) => {
       this.estadoActual = estado
     })
+
+    // Cargar historial de odontogramas
+    if (pacienteId) {
+      this.cargarHistorialOdontogramas(pacienteId);
+    }
+  }
+
+  cargarHistorialOdontogramas(pacienteId: string): void {
+    this.http.get<any>(`/api/odontograma/paciente/${pacienteId}/historial`).subscribe({
+      next: (res) => {
+        this.historialOdontogramas = res.odontogramas || [];
+      },
+      error: () => {
+        this.historialOdontogramas = [];
+      }
+    });
+  }
+
+  cargarOdontogramaDeHistorial(odontograma: any): void {
+    // Cargar el odontograma seleccionado del historial
+    this.odontogramaData = {
+      piezas: {},
+      notas: odontograma.notas,
+      odontologo: odontograma.odontologo?.nombre + ' ' + odontograma.odontologo?.apellido,
+      fecha: new Date(odontograma.fecha)
+    };
+    // NOTA: Si quieres cargar las piezas, deberías hacer otro GET para ese odontograma específico
+    // Aquí solo se muestra la info básica
   }
 
   ngOnDestroy(): void {
@@ -140,6 +175,16 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
   guardarOdontograma(): void {
     this.guardando = true;
     const pacienteId = this.paciente?.id || this.paciente?._id;
+    if (!pacienteId) {
+      this.guardando = false;
+      this.snackBar.open('Error: No se encontró el ID del paciente. No se puede guardar el odontograma.', 'Cerrar', {
+        duration: 4000,
+        panelClass: ['snackbar-error'],
+        horizontalPosition: 'end',
+        verticalPosition: 'top'
+      });
+      return;
+    }
     this.odontogramaData.odontologo = this.odontologoId;
     this.odontogramaService
       .guardarOdontograma(pacienteId)
@@ -147,6 +192,8 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.guardando = false;
+          // Recargar odontograma desde el backend después de guardar
+          this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe();
           this.snackBar.open('¡Odontograma guardado exitosamente!', 'Cerrar', {
             duration: 3000,
             panelClass: ['snackbar-success'],

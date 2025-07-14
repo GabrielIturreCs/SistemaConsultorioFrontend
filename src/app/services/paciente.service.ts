@@ -35,11 +35,6 @@ export class PacienteService {
 
   getOdontograma(id: string): Observable<any> {
     const headers = this.authService.getAuthHeaders();
-    return this.http.get<any>(`${this.apiUrl}/${id}/odontograma`, { headers });
-  }
-
-  updateOdontograma(id: string, odontograma: any): Observable<any> {
-    const headers = this.authService.getAuthHeaders();
-    return this.http.put<any>(`${this.apiUrl}/${id}/odontograma`, { odontograma }, { headers });
+    return this.http.get<any>(`/api/odontograma/paciente/${id}`, { headers });
   }
 }

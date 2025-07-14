@@ -327,7 +327,8 @@ export class PacientesComponent implements OnInit {
     const id = paciente._id || paciente.id;
     if (!id) return;
     this.pacienteService.getOdontograma(id as string).subscribe({
-      next: (odonto) => {
+      next: (res) => {
+        const odonto = res.odontograma || res;
         if (!odonto) {
           this.notificationService.showError('No se pudo cargar el odontograma del paciente.');
           return;

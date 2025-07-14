@@ -65,7 +65,7 @@ export class OdontogramaService {
   ];
 
   // Cambia esta URL base según tu backend
-  private baseUrl = `${environment.apiUrl}/odontograma`;
+  private baseUrl = `/api/odontograma`;
 
   constructor(private http: HttpClient) {}
 
@@ -160,6 +160,11 @@ export class OdontogramaService {
         const data = res.odontograma || res;
         // Convertir fecha a Date
         if (data.fecha) data.fecha = new Date(data.fecha);
+        // --- ARREGLO: Convertir piezas (Map de MongoDB) a objeto plano ---
+        if (data.piezas && typeof data.piezas === 'object' && !(data.piezas instanceof Array)) {
+          // Si viene como Map, convertir a objeto plano
+          data.piezas = Object.fromEntries(Object.entries(data.piezas));
+        }
         return data as OdontogramaData;
       }),
       tap(data => this.odontogramaSubject.next(data))
