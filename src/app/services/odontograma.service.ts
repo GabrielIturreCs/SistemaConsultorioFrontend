@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map, tap } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 export interface ZonaEstado {
   herramienta: string;
@@ -64,7 +65,7 @@ export class OdontogramaService {
   ];
 
   // Cambia esta URL base según tu backend
-  private baseUrl = 'http://localhost:3000/api/odontograma';
+  private baseUrl = `${environment.apiUrl}/odontograma`;
 
   constructor(private http: HttpClient) {}
 
