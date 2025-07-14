@@ -64,8 +64,8 @@ export class OdontogramaService {
     { id: 'implante', nombre: 'Implante', icono: 'fas fa-screw' }
   ];
 
-  // Cambia esta URL base según tu backend
-  private baseUrl = `/api/odontograma`;
+  // Usar la URL base de la API desde environment
+  private baseUrl = `${environment.apiUrl}/odontograma`;
 
   constructor(private http: HttpClient) {}
 
