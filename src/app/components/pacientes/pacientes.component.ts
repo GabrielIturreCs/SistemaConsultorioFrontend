@@ -7,6 +7,7 @@ import { PacienteService } from '../../services/paciente.service';
 import { RegisterService } from '../../services/register.service';
 import { NotificationService } from '../../services/notification.service';
 import { OdontogramaComponent } from '../odontograma/odontograma.component';
+import { OdontogramaService } from '../../services/odontograma.service';
 import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
 import { DentistNavbarComponent } from '../layouts/dentist-navbar/dentist-navbar.component';
 import { AuthService } from '../../services/auth.service';
@@ -81,7 +82,8 @@ export class PacientesComponent implements OnInit {
     private router: Router,
     private notificationService: NotificationService,
     private authService: AuthService,
-    private turnoService: TurnoService
+    private turnoService: TurnoService,
+    private odontogramaService: OdontogramaService
   ) {}
 
   ngOnInit(): void {
@@ -332,6 +334,8 @@ export class PacientesComponent implements OnInit {
     this.showOdontograma = false;
     this.odontogramaPaciente = null;
     this.pacienteSeleccionado = null;
+    // Limpiar el estado del odontograma para evitar residuos
+    this.odontogramaService.limpiarOdontograma();
   }
 
   verTurnosPaciente(paciente: Paciente) {

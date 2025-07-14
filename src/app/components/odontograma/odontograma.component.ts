@@ -1,5 +1,4 @@
-import { Component, type OnInit, type OnDestroy, Output, EventEmitter } from "@angular/core"
-import { Input } from '@angular/core';
+import { Component, type OnInit, type OnDestroy, Output, EventEmitter, Input, OnChanges, SimpleChanges } from "@angular/core"
 import { Subject } from "rxjs"
 import { takeUntil } from "rxjs/operators"
 import { OdontogramaService, PiezaDental, OdontogramaData } from "../../services/odontograma.service"
@@ -18,7 +17,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: "./odontograma.component.html",
   styleUrls: ["./odontograma.component.css"],
 })
-export class OdontogramaComponent implements OnInit, OnDestroy {
+export class OdontogramaComponent implements OnInit, OnDestroy, OnChanges {
   @Input() odontograma: any;
   @Input() paciente: any;
   @Output() cerrar = new EventEmitter<void>();
@@ -124,6 +123,32 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
     if (pacienteId) {
       this.cargarHistorialOdontogramas(pacienteId);
     }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['paciente'] && changes['paciente'].currentValue?._id) {
+      const pacienteId = changes['paciente'].currentValue._id;
+      this.cargarOdontogramaDePaciente(pacienteId);
+    }
+  }
+
+  cargarOdontogramaDePaciente(pacienteId: string): void {
+    this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe({
+      next: () => {},
+      error: (err) => {
+        if (err.status === 404) {
+          this.odontogramaService.limpiarOdontograma();
+        } else {
+          this.snackBar.open('Error al cargar el odontograma. Verifique su sesión o intente nuevamente.', 'Cerrar', {
+            duration: 4000,
+            panelClass: ['snackbar-error'],
+            horizontalPosition: 'end',
+            verticalPosition: 'top'
+          });
+        }
+      }
+    });
+    this.cargarHistorialOdontogramas(pacienteId);
   }
 
   cargarHistorialOdontogramas(pacienteId: string): void {
