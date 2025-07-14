@@ -40,7 +40,7 @@
     </div>
     <!-- Fila superior: Cuadrante 2 | Separador | Cuadrante 1 -->
     <div class="odontograma-fdi-row">
-      <div class="odontograma-fdi-celda cuadrante-num">2</div>
+      <div class="odontograma-fdi-celda cuadrante-num">1</div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(2)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
@@ -48,7 +48,7 @@
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(1)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
-      <div class="odontograma-fdi-celda cuadrante-num">1</div>
+      <div class="odontograma-fdi-celda cuadrante-num">2</div>
     </div>
     <!-- Numeración superior (1-8 debajo de los dientes) -->
     <div class="odontograma-fdi-header">
@@ -64,7 +64,7 @@
     </div>
     <!-- Fila inferior: Cuadrante 3 | Separador | Cuadrante 4 -->
     <div class="odontograma-fdi-row">
-      <div class="odontograma-fdi-celda cuadrante-num">3</div>
+      <div class="odontograma-fdi-celda cuadrante-num">4</div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(3)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
@@ -72,11 +72,11 @@
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(4)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
-      <div class="odontograma-fdi-celda cuadrante-num">4</div>
+      <div class="odontograma-fdi-celda cuadrante-num">3</div>
     </div>
     <!-- Temporales: Cuadrante 6 y 5 (superior) -->
     <div class="odontograma-fdi-row">
-      <div class="odontograma-fdi-celda cuadrante-num">6</div>
+      <div class="odontograma-fdi-celda cuadrante-num">5</div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(6)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
@@ -84,7 +84,7 @@
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(5)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
-      <div class="odontograma-fdi-celda cuadrante-num">5</div>
+      <div class="odontograma-fdi-celda cuadrante-num">6</div>
     </div>
     <!-- Numeración temporales superior (1-5 debajo de los dientes) -->
     <div class="odontograma-fdi-header">
@@ -100,7 +100,7 @@
     </div>
     <!-- Temporales: Cuadrante 7 y 8 (inferior) -->
     <div class="odontograma-fdi-row">
-      <div class="odontograma-fdi-celda cuadrante-num">7</div>
+      <div class="odontograma-fdi-celda cuadrante-num">8</div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(7)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
@@ -108,7 +108,7 @@
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(8)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
-      <div class="odontograma-fdi-celda cuadrante-num">8</div>
+      <div class="odontograma-fdi-celda cuadrante-num">7</div>
     </div>
   </div>
 
