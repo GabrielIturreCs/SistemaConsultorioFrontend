@@ -198,6 +198,9 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
       return;
     }
     this.odontogramaData.odontologo = this.odontologoId;
+    // LOG para depuración
+    console.log('🦷 [FRONTEND] Guardando odontograma para paciente:', pacienteId);
+    console.log('Datos enviados:', JSON.stringify(this.odontogramaData, null, 2));
     this.odontogramaService
       .guardarOdontograma(pacienteId)
       .pipe(takeUntil(this.destroy$))
