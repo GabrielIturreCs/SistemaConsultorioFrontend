@@ -83,8 +83,19 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
       this.odontogramaService.limpiarOdontograma(); // <-- LIMPIAR ANTES DE CARGAR
       this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe({
         next: () => {},
-        error: () => {
-          this.odontogramaService.limpiarOdontograma();
+        error: (err) => {
+          if (err.status === 404) {
+            // Si no existe odontograma, inicializar uno vacío
+            this.odontogramaService.limpiarOdontograma();
+          } else {
+            // Otros errores, mostrar mensaje
+            this.snackBar.open('Error al cargar el odontograma. Verifique su sesión o intente nuevamente.', 'Cerrar', {
+              duration: 4000,
+              panelClass: ['snackbar-error'],
+              horizontalPosition: 'end',
+              verticalPosition: 'top'
+            });
+          }
         }
       });
       this.cargarHistorialOdontogramas(pacienteId);
