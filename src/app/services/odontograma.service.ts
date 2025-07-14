@@ -58,10 +58,8 @@ export class OdontogramaService {
     { id: 'endodoncia', nombre: 'Endodoncia', icono: 'fas fa-tooth' },
     { id: 'protesis_fija', nombre: 'Prótesis Fija', icono: 'fas fa-link' },
     { id: 'protesis_removible', nombre: 'Prótesis Removible', icono: 'fas fa-unlink' },
-    { id: 'fractura', nombre: 'Fractura', icono: 'fas fa-exclamation-triangle' },
     { id: 'sellador', nombre: 'Sellador', icono: 'fas fa-shield-alt' },
     { id: 'caries', nombre: 'Caries', icono: 'fas fa-bug' },
-    { id: 'fistula', nombre: 'Fístula', icono: 'fas fa-circle' },
     { id: 'implante', nombre: 'Implante', icono: 'fas fa-screw' }
   ];
 

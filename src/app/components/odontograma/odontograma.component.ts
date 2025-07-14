@@ -7,11 +7,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PiezaDentalComponent } from './pieza-dental.component';
 import html2canvas from 'html2canvas';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: "app-odontograma",
   standalone: true,
-  imports: [CommonModule, FormsModule, PiezaDentalComponent],
+  imports: [CommonModule, FormsModule, PiezaDentalComponent, MatSnackBarModule],
   templateUrl: "./odontograma.component.html",
   styleUrls: ["./odontograma.component.css"],
 })
@@ -45,14 +47,36 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
   mostrarTemporales = false
   guardando = false
 
-  constructor(private odontogramaService: OdontogramaService) {
+  odontologoLogueado: string = '';
+  odontologoId: string = '';
+
+  constructor(
+    private odontogramaService: OdontogramaService,
+    private snackBar: MatSnackBar
+  ) {
     this.herramientas = this.odontogramaService.getHerramientas();
     this.coloresEstado = this.odontogramaService.getColoresEstado();
   }
 
   ngOnInit(): void {
+    // Obtener odontólogo logueado del localStorage
+    const user = localStorage.getItem('user');
+    if (user) {
+      try {
+        const userObj = JSON.parse(user);
+        this.odontologoLogueado = userObj.nombre ? userObj.nombre + (userObj.apellido ? ' ' + userObj.apellido : '') : '';
+        this.odontologoId = userObj.id || userObj._id || '';
+      } catch (e) {
+        this.odontologoLogueado = '';
+        this.odontologoId = '';
+      }
+    }
     this.odontogramaService.odontograma$.pipe(takeUntil(this.destroy$)).subscribe((data: OdontogramaData) => {
       this.odontogramaData = data
+      // Actualizar el odontólogo en el odontograma si no está seteado
+      if (!this.odontogramaData.odontologo && this.odontologoId) {
+        this.odontogramaData.odontologo = this.odontologoId;
+      }
     })
 
     this.odontogramaService.herramientaActual$.pipe(takeUntil(this.destroy$)).subscribe((herramienta: string) => {
@@ -102,7 +126,8 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
   guardarOdontograma(): void {
     this.guardando = true
     const pacienteId = this.paciente?.id || this.paciente?._id;
-    
+    // Asegurar que se envía el ID del odontólogo
+    this.odontogramaData.odontologo = this.odontologoId;
     this.odontogramaService
       .guardarOdontograma(pacienteId)
       .pipe(takeUntil(this.destroy$))
@@ -110,13 +135,23 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           console.log("Guardado exitoso:", response)
           this.guardando = false
-          alert("Odontograma guardado exitosamente")
+          this.snackBar.open('¡Odontograma guardado exitosamente!', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-success'],
+            horizontalPosition: 'end',
+            verticalPosition: 'top'
+          });
           this.cerrar.emit() // Cierra el modal
         },
         error: (error: any) => {
           console.error("Error al guardar:", error)
           this.guardando = false
-          alert("Error al guardar el odontograma")
+          this.snackBar.open('Error al guardar el odontograma', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-error'],
+            horizontalPosition: 'end',
+            verticalPosition: 'top'
+          });
         },
       })
   }

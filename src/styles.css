@@ -63,13 +63,17 @@ input:focus, select:focus, textarea:focus {
 
 /* Angular Material Snackbar Styles */
 .snackbar-success {
-    background: #4caf50 !important;
-    color: white !important;
+    background: #2196f3 !important;
+    color: #fff !important;
+    font-weight: bold;
+    font-size: 1.1rem;
 }
 
 .snackbar-error {
-    background: #f44336 !important;
-    color: white !important;
+    background: #e53935 !important;
+    color: #fff !important;
+    font-weight: bold;
+    font-size: 1.1rem;
 }
 
 .snackbar-warning {
