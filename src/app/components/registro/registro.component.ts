@@ -51,7 +51,9 @@ export class RegistroComponent {
       legajo: [''],
       telefono: ['', [
         Validators.required,
-        Validators.pattern(/^[0-9]{10,15}$/)
+        Validators.pattern(/^[0-9]{10,11}$/),
+        Validators.minLength(10),
+        Validators.maxLength(11)
       ]],
       direccion: ['', [
         Validators.required,
@@ -214,7 +216,7 @@ export class RegistroComponent {
         case 'nombreUsuario': return 'Solo letras, números y guiones bajos';
         case 'nombre':
         case 'apellido': return 'Solo letras y espacios';
-        case 'telefono': return 'Solo números (10-15 dígitos)';
+        case 'telefono': return 'Formato: 3884472423 (10-11 dígitos, sin código de país)';
         case 'dni': return 'Solo números (7-8 dígitos)';
         default: return 'Formato inválido';
       }

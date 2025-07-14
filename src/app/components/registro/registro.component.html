@@ -65,7 +65,8 @@
           </div>
           <div class="col-12 col-md-6 mb-3">
             <label for="regTelefono" class="form-label fw-bold fs-6">Teléfono</label>
-            <input type="tel" class="form-control form-control-lg" id="regTelefono" formControlName="telefono" placeholder="123456789" />
+            <input type="tel" class="form-control form-control-lg" id="regTelefono" formControlName="telefono" required placeholder="3884472423" />
+            <small class="text-muted">Formato: 3884472423 (sin código de país)</small>
             <div *ngIf="isFieldInvalid('telefono')" class="text-danger mt-2">
               <small class="fw-bold">{{ getFieldError('telefono') }}</small>
             </div>

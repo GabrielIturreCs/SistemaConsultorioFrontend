@@ -610,3 +610,36 @@
     gap: 0.3rem;
   }
 }
+
+/* Footer Legal Links */
+.footer-legal-links {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.legal-link {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.3s ease;
+}
+
+.legal-link:hover {
+  color: #4fd1ff;
+  text-decoration: none;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 576px) {
+  .footer-legal-links {
+    justify-content: center;
+    text-align: center;
+  }
+}

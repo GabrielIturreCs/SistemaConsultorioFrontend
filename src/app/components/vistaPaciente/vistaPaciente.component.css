@@ -262,18 +262,15 @@
 .detail-item {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  padding: 0.8rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  gap: 0.5rem;
+  color: #212529;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-.detail-item i {
-  color: var(--primary-color);
-  font-size: 1.1rem;
-  width: 20px;
-  text-align: center;
+.detail-item .material-icons {
+  color: #212529;
+  font-size: 1rem;
 }
 
 .detail-item strong {
@@ -2171,12 +2168,13 @@ h6 {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #6c757d;
+  color: #212529;
   font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .meta-item .material-icons {
-  color: #28a745;
+  color: #212529;
   font-size: 1.1rem;
 }
 
@@ -3510,4 +3508,41 @@ h6 {
   .chatbot-actions-container {
     gap: 0.4rem !important;
   }
+}
+
+/* Estilos para el tiempo restante */
+.time-remaining {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.time-remaining .material-icons {
+  font-size: 1rem;
+  color: #ffd700;
+}
+
+.time-remaining-item {
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.time-remaining-item .material-icons {
+  color: #ffd700;
+  font-size: 0.9rem;
+}
+
+.time-remaining-item span {
+  color: #ffd700;
+  font-weight: 600;
+  font-size: 0.85rem;
 }

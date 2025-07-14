@@ -33,7 +33,12 @@ export interface Turno {
   duracion?: number | string;
   pacienteId?: number | string;
   tratamientoId?: number | string;
+  dentistaId?: number | string | { nombre: string; apellido: string; especialidad?: string };
   tipoUsuario?: string;
+  // Información del dentista
+  dentistaNombre?: string;
+  dentistaApellido?: string;
+  dentistaEspecialidad?: string;
   // Campos de pago mejorados
   paymentStatus?: string; // Estado del pago (approved, pending, rejected, refunded, cancelled)
   paymentId?: string; // ID de pago de MercadoPago

@@ -37,6 +37,9 @@ interface Paciente {
   apellido: string;
   dni: string;
   obraSocial: string;
+  telefono?: string;
+  email?: string;
+  direccion?: string;
   userId?: string;
 }
 
@@ -1163,21 +1166,36 @@ export class ReservarComponent implements OnInit {
 
   // Pago en efectivo
   async pagarEnEfectivo(): Promise<void> {
+    console.log('🚀 INICIANDO PAGO EN EFECTIVO...');
+    console.log('📋 Datos seleccionados:');
+    console.log('  - Fecha:', this.selectedDate);
+    console.log('  - Hora:', this.selectedTime);
+    console.log('  - Tratamiento:', this.selectedTreatment);
+    console.log('  - Usuario:', this.user);
+    console.log('  - Dentista seleccionado:', this.selectedDentista);
+
     if (!this.selectedDate || !this.selectedTime || !this.selectedTreatment) {
+      console.log('❌ ERROR: Faltan datos requeridos');
       this.notificationService.showError('Por favor, completa todos los datos antes de continuar');
       return;
     }
 
     this.isLoading = true;
     this.metodoPago = 'efectivo'; // Establecer método de pago
+    console.log('💰 Método de pago establecido:', this.metodoPago);
 
     try {
       // Asegurar que el dentistaId sea el correcto
       this.turnoForm.dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
+      console.log('🦷 Dentista ID configurado:', this.turnoForm.dentistaId);
 
       // Obtener el pacienteId correcto
+      console.log('👤 Obteniendo ID del paciente...');
       const pacienteId = await this.getPacienteId();
+      console.log('👤 Paciente ID obtenido:', pacienteId);
+      
       if (!pacienteId) {
+        console.log('❌ ERROR: No se pudo obtener el ID del paciente');
         this.isLoading = false;
         this.notificationService.showError('Error: No se pudo obtener el ID del paciente');
         return;
@@ -1196,14 +1214,28 @@ export class ReservarComponent implements OnInit {
         descripcion: this.selectedTreatment.descripcion
       };
 
-      console.log('💳 pagarEnEfectivo - turnoData a enviar:', turnoData);
-      console.log('💳 pagarEnEfectivo - dentistaId usado:', this.turnoForm.dentistaId);
+      console.log('📤 ENVIANDO DATOS DEL TURNO AL BACKEND:');
+      console.log('  - Paciente ID:', turnoData.pacienteId);
+      console.log('  - Dentista ID:', turnoData.dentistaId);
+      console.log('  - Fecha:', turnoData.fecha);
+      console.log('  - Hora:', turnoData.hora);
+      console.log('  - Tratamiento ID:', turnoData.tratamientoId);
+      console.log('  - Estado:', turnoData.estado);
+      console.log('  - Método de pago:', turnoData.metodoPago);
+      console.log('  - Precio:', turnoData.precio);
+      console.log('  - Descripción:', turnoData.descripcion);
 
       this.turnoService.createTurno(turnoData).subscribe({
         next: (turnoCreado: any) => {
-          this.isLoading = false;
-          console.log('✅ Turno creado con pago en efectivo:', turnoCreado);
+          console.log('✅ TURNO CREADO EXITOSAMENTE:');
+          console.log('  - ID del turno:', turnoCreado.turno?._id || turnoCreado._id);
+          console.log('  - Número de turno:', turnoCreado.turno?.nroTurno || turnoCreado.nroTurno);
+          console.log('  - Estado:', turnoCreado.turno?.estado || turnoCreado.estado);
+          console.log('  - Respuesta completa:', turnoCreado);
           
+          this.isLoading = false;
+          
+          console.log('🔄 ACTUALIZANDO INTERFAZ...');
           // Recargar horarios ocupados para reflejar el nuevo turno
           this.loadOccupiedSlots();
           
@@ -1215,6 +1247,10 @@ export class ReservarComponent implements OnInit {
               this.generateTimeSlots();
             }, 500);
           }
+          
+          console.log('✅ PAGO EN EFECTIVO COMPLETADO EXITOSAMENTE');
+          console.log('📱 El backend debería haber enviado WhatsApp automáticamente');
+          console.log('📋 Verificar logs del servidor para confirmar envío de WhatsApp');
           
           // Mostrar mensaje de éxito
           this.notificationService.showSuccess('Turno registrado exitosamente. Pago en efectivo al momento de la consulta.');
@@ -1231,12 +1267,21 @@ export class ReservarComponent implements OnInit {
           this.paymentSuccess = true;
         },
         error: (error: any) => {
+          console.log('❌ ERROR AL CREAR TURNO:');
+          console.log('  - Error completo:', error);
+          console.log('  - Mensaje de error:', error.error?.msg);
+          console.log('  - Status:', error.status);
+          console.log('  - Status text:', error.statusText);
+          
           this.isLoading = false;
           const errorMessage = error.error?.msg || 'Error al registrar el turno con pago en efectivo.';
           this.notificationService.showError(errorMessage);
         }
       });
     } catch (error) {
+      console.log('❌ ERROR INESPERADO EN PAGO EN EFECTIVO:');
+      console.log('  - Error:', error);
+      
       this.isLoading = false;
       this.notificationService.showError('Error inesperado al procesar el pago en efectivo');
     }
@@ -1362,33 +1407,67 @@ export class ReservarComponent implements OnInit {
 
   // Método para obtener el pacienteId correcto
   async getPacienteId(): Promise<string | null> {
+    console.log('🔍 GETPACIENTEID - Iniciando búsqueda del paciente...');
+    console.log('👤 Usuario actual:', this.user);
+    console.log('👥 Lista de pacientes cargada:', this.pacientes.length, 'pacientes');
+    console.log('🎯 Paciente seleccionado:', this.selectedPaciente);
+    
     if (this.user?.tipoUsuario === 'paciente') {
+      console.log('👤 Usuario es PACIENTE');
+      
       // Si el usuario tiene patientId (usuario de Google con perfil completo)
       if (this.user.patientId) {
-        console.log('Usando patientId del usuario de Google:', this.user.patientId);
+        console.log('✅ Usando patientId del usuario de Google:', this.user.patientId);
         return this.user.patientId;
       }
       
       // Para usuarios tipo paciente, buscar en la lista de pacientes el que tenga userId igual al user.id
+      console.log('🔍 Buscando paciente con userId:', this.user?.id?.toString());
       const paciente = this.pacientes.find(p => p.userId === this.user?.id?.toString());
+      
       if (paciente) {
-        return paciente._id || paciente.id?.toString() || null;
+        console.log('✅ Paciente encontrado en lista local:', paciente);
+        console.log('📱 Teléfono del paciente:', paciente.telefono);
+        const pacienteId = paciente._id || paciente.id?.toString() || null;
+        console.log('🆔 ID del paciente a retornar:', pacienteId);
+        return pacienteId;
       }
+      
       // Si no encontramos el paciente, intentar cargarlo desde el servidor
+      console.log('🔄 Paciente no encontrado en lista local, buscando en servidor...');
       try {
         const allPacientes = await this.pacienteService.getPacientes().toPromise() as any[];
+        console.log('📡 Pacientes obtenidos del servidor:', allPacientes.length);
+        
         const foundPaciente = allPacientes?.find((p: any) => p.userId === this.user?.id?.toString());
-        return foundPaciente?._id || foundPaciente?.id?.toString() || null;
+        if (foundPaciente) {
+          console.log('✅ Paciente encontrado en servidor:', foundPaciente);
+          console.log('📱 Teléfono del paciente:', foundPaciente.telefono);
+        } else {
+          console.log('❌ Paciente NO encontrado en servidor');
+        }
+        
+        const pacienteId = foundPaciente?._id || foundPaciente?.id?.toString() || null;
+        console.log('🆔 ID del paciente a retornar:', pacienteId);
+        return pacienteId;
       } catch (error) {
-        console.error('Error al buscar paciente:', error);
+        console.error('❌ Error al buscar paciente en servidor:', error);
         return null;
       }
     } else {
+      console.log('👨‍⚕️ Usuario es DENTISTA/ADMINISTRADOR');
+      
       // Para usuarios tipo dentista/administrador, usar el paciente seleccionado en el wizard
       if (this.selectedPaciente) {
-        return this.selectedPaciente._id || this.selectedPaciente.id?.toString() || null;
+        console.log('✅ Usando paciente seleccionado:', this.selectedPaciente);
+        console.log('📱 Teléfono del paciente seleccionado:', this.selectedPaciente.telefono);
+        const pacienteId = this.selectedPaciente._id || this.selectedPaciente.id?.toString() || null;
+        console.log('🆔 ID del paciente a retornar:', pacienteId);
+        return pacienteId;
       }
+      
       // Fallback: usar el pacienteId del formulario si existe
+      console.log('🔄 Usando pacienteId del formulario:', this.turnoForm.pacienteId);
       return this.turnoForm.pacienteId || null;
     }
   }

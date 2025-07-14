@@ -23,6 +23,8 @@ import { ProfileCompleteGuard } from './guards/profile-complete.guard';
 import { PagoExitosoComponent } from './components/pago-exitoso/pago-exitoso.component';
 import { PagoPendienteComponent } from './components/pago-pendiente/pago-pendiente.component';
 import { PagoFallidoComponent } from './components/pago-fallido/pago-fallido.component';
+import { PrivacyComponent } from './components/privacy/privacy.component';
+import { TermsComponent } from './components/terms/terms.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -50,6 +52,10 @@ export const routes: Routes = [
   { path: 'pago/exitoso', component: PagoExitosoComponent },
   { path: 'pago/pendiente', component: PagoPendienteComponent },
   { path: 'pago/fallido', component: PagoFallidoComponent },
+  
+  // Rutas para política de privacidad y términos de servicio
+  { path: 'privacy', component: PrivacyComponent },
+  { path: 'terms', component: TermsComponent },
   
   // Ruta wildcard para 404
   { path: '**', redirectTo: '/' }

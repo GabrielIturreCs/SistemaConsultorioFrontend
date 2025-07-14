@@ -70,6 +70,10 @@ export class TurnosComponent implements OnInit {
 
   selectedTurnoParaCancelar: any = null;
   dentistas: any[] = [];
+  
+  // Propiedades para el modal de detalles
+  showTurnoDetails: boolean = false;
+  selectedTurno: Turno | null = null;
 
   constructor(
     private router: Router,
@@ -896,8 +900,54 @@ export class TurnosComponent implements OnInit {
   }
 
   viewTurnoDetails(turno: Turno): void {
-    // Implementar vista de detalles del turno
-    // Aquí podrías abrir un modal o navegar a una página de detalles
+    this.selectedTurno = turno;
+    this.showTurnoDetails = true;
+    // Detener la propagación del evento para evitar que se cierre inmediatamente
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 100);
+  }
+
+  closeTurnoDetails(): void {
+    this.showTurnoDetails = false;
+    this.selectedTurno = null;
+  }
+
+  getDayOfWeek(fecha: string): string {
+    const date = new Date(fecha);
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    return days[date.getDay()];
+  }
+
+  getDentistaName(turno: Turno): string {
+    // Si el dentista viene como objeto populate del backend
+    if (turno.dentistaId && typeof turno.dentistaId === 'object' && 'nombre' in turno.dentistaId) {
+      const dentista = turno.dentistaId as any;
+      return `${dentista.nombre || 'Dr.'} ${dentista.apellido || ''}`.trim();
+    }
+    
+    // Si viene como campos separados
+    if (turno.dentistaNombre || turno.dentistaApellido) {
+      return `${turno.dentistaNombre || 'Dr.'} ${turno.dentistaApellido || ''}`.trim();
+    }
+    
+    // Fallback
+    return 'Dr. No asignado';
+  }
+
+  getDentistaEspecialidad(turno: Turno): string | null {
+    // Si el dentista viene como objeto populate del backend
+    if (turno.dentistaId && typeof turno.dentistaId === 'object' && 'especialidad' in turno.dentistaId) {
+      const dentista = turno.dentistaId as any;
+      return dentista.especialidad || null;
+    }
+    
+    // Si viene como campo separado
+    if (turno.dentistaEspecialidad) {
+      return turno.dentistaEspecialidad;
+    }
+    
+    return null;
   }
 
   navigateToReservar(): void {

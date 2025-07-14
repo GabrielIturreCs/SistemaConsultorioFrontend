@@ -144,7 +144,6 @@
           <div class="countdown-timer">
             <span class="countdown-label">Faltan</span>
             <span class="countdown-days">{{ getDaysUntilAppointment() }}</span>
-            <span class="countdown-text">días</span>
           </div>
         </div>
         
@@ -167,7 +166,7 @@
                 </span>
                 <span class="meta-item">
                   <i class="material-icons">person</i>
-                  Dr. {{ pacienteStats.proximoTurno.nombre || 'Asignado' }}
+                  {{ getDentistaName(pacienteStats.proximoTurno) }}
                 </span>
                 <span class="meta-item">
                   <i class="material-icons">attach_money</i>
@@ -181,6 +180,10 @@
                 <i class="material-icons status-icon">{{ getStatusIcon(pacienteStats.proximoTurno.estado) }}</i>
                 {{ getStatusText(pacienteStats.proximoTurno.estado) }}
               </span>
+              <div class="time-remaining">
+                <i class="material-icons">access_time</i>
+                <span>{{ getTiempoRestante(pacienteStats.proximoTurno) }}</span>
+              </div>
             </div>
             
             <div class="appointment-actions">
@@ -292,8 +295,8 @@
     <div class="recent-history-section mb-5">
       <div class="section-header">
         <h3 class="section-title">
-          <i class="material-icons">history</i>
-          Historial Reciente
+          <i class="material-icons">event</i>
+          Próximos Turnos
         </h3>
         <div class="section-actions">
           <button 
@@ -319,6 +322,18 @@
           <p>Cargando tu historial...</p>
         </div>
         
+        <div *ngIf="!isLoading && getProximosTurnos().length === 0 && misTurnos.length > 0" class="empty-state">
+          <div class="empty-icon">
+            <i class="material-icons">event</i>
+          </div>
+          <h4>No tienes próximos turnos</h4>
+          <p>No tienes citas programadas para el futuro. ¡Agenda tu próxima cita!</p>
+          <button class="btn btn-primary" (click)="navigateToReservar()">
+            <i class="material-icons">add_circle</i>
+            Reservar Turno
+          </button>
+        </div>
+
         <div *ngIf="!isLoading && misTurnos.length === 0" class="empty-state">
           <div class="empty-icon">
             <i class="material-icons">calendar_today</i>
@@ -331,9 +346,9 @@
           </button>
         </div>
 
-        <div *ngIf="!isLoading && misTurnos.length > 0" class="history-cards">
+        <div *ngIf="!isLoading && getProximosTurnos().length > 0" class="history-cards">
           <div class="row g-3">
-            <div class="col-lg-6 col-md-12" *ngFor="let turno of misTurnos.slice(0, 4)">
+            <div class="col-lg-6 col-md-12" *ngFor="let turno of getProximosTurnos()">
               <div class="history-card">
                 <div class="history-card-header">
                   <div class="history-date">
@@ -349,18 +364,22 @@
                 
                 <div class="history-card-body">
                   <h5 class="history-treatment">{{ turno.tratamiento || 'Consulta General' }}</h5>
-                  <div class="history-details">
+                                    <div class="history-details">
                     <div class="detail-item">
                       <i class="material-icons">schedule</i>
                       <span>{{ turno.hora }}</span>
                     </div>
-                                         <div class="detail-item">
-                       <i class="material-icons">person</i>
-                       <span>Dr. {{ turno.nombre || 'Asignado' }}</span>
+                     <div class="detail-item">
+                       <i class="material-icons">medical_services</i>
+                       <span>{{ getDentistaName(turno) }}</span>
                      </div>
                     <div class="detail-item">
                       <i class="material-icons">attach_money</i>
                       <span>${{ turno.precioFinal | number:'1.0-0' }}</span>
+                    </div>
+                    <div class="detail-item time-remaining-item">
+                      <i class="material-icons">access_time</i>
+                      <span>{{ getTiempoRestante(turno) }}</span>
                     </div>
                   </div>
                 </div>

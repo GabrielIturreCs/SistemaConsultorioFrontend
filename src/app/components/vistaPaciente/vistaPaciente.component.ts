@@ -207,6 +207,7 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
 
   loadMisTurnos(): void {
     this.isLoading = true;
+    
     this.turnoService.getTurnosFromAPI().subscribe({
       next: (response) => {
         // Filtrar los turnos que pertenecen al paciente autenticado
@@ -214,7 +215,9 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
         this.misTurnos = response.turnos.filter(turno => {
           // Coincidencia por pacienteId
           if (pacienteId && turno.pacienteId) {
-            if (turno.pacienteId.toString() === pacienteId.toString()) return true;
+            if (turno.pacienteId.toString() === pacienteId.toString()) {
+              return true;
+            }
           }
           // Coincidencia por nombre y apellido (fallback)
           if (this.paciente?.nombre && this.paciente?.apellido && turno.nombre && turno.apellido) {
@@ -224,6 +227,7 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
           }
           return false;
         });
+        
         this.calculateStats();
         this.isLoading = false;
       },
@@ -256,30 +260,9 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
       .filter(t => t.estado === 'completado' || t.estado === 'pagado')
       .reduce((total, turno) => total + Number(turno.precioFinal || 0), 0);
     
-    // Encontrar próximo turno (reservado, pagado, pendiente, pendiente_pago, pendiente_pago_efectivo en el futuro)
-    const estadosProximo = ['reservado', 'pagado', 'pendiente', 'pendiente_pago', 'pendiente_pago_efectivo'];
-    const hoy = new Date();
-    const turnosFuturos = this.misTurnos
-      .filter(t => {
-        if (!estadosProximo.includes(t.estado)) return false;
-        let fechaTurno: Date | null = null;
-        if (t.fecha && typeof t.fecha === 'object' && Object.prototype.toString.call(t.fecha) === '[object Date]') {
-          fechaTurno = t.fecha as Date;
-        } else if (typeof t.fecha === 'string') {
-          if (/^\d{4}-\d{2}-\d{2}/.test(t.fecha)) {
-            fechaTurno = new Date(t.fecha);
-          } else if (/^\d{2}\/\d{2}\/\d{4}/.test(t.fecha)) {
-            const [dia, mes, anio] = t.fecha.split('/');
-            fechaTurno = new Date(`${anio}-${mes}-${dia}`);
-          } else {
-            fechaTurno = new Date(t.fecha);
-          }
-        }
-        if (!fechaTurno || isNaN(fechaTurno.getTime())) return false;
-        return fechaTurno >= new Date(hoy.toDateString());
-      })
-      .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
-    this.pacienteStats.proximoTurno = turnosFuturos.length > 0 ? turnosFuturos[0] : null;
+    // Encontrar próximo turno usando la misma lógica que getProximosTurnos()
+    const proximosTurnos = this.getProximosTurnos();
+    this.pacienteStats.proximoTurno = proximosTurnos.length > 0 ? proximosTurnos[0] : null;
   }
 
   // Navegación
@@ -733,18 +716,30 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
   }
 
   // Métodos adicionales para el nuevo diseño
-  getDaysUntilAppointment(): number {
-    if (!this.pacienteStats.proximoTurno?.fecha) return 0;
+  getDaysUntilAppointment(): string {
+    if (!this.pacienteStats.proximoTurno?.fecha) return '0 días';
     
     const appointmentDate = new Date(this.pacienteStats.proximoTurno.fecha);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    appointmentDate.setHours(0, 0, 0, 0);
+    const [hora, minuto] = (this.pacienteStats.proximoTurno.hora || '00:00').split(':');
+    appointmentDate.setHours(parseInt(hora), parseInt(minuto), 0, 0);
     
-    const diffTime = appointmentDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const now = new Date();
+    const diffTime = appointmentDate.getTime() - now.getTime();
     
-    return Math.max(0, diffDays);
+    if (diffTime < 0) {
+      return '0 días';
+    }
+    
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (diffDays > 0) {
+      return `${diffDays} día${diffDays > 1 ? 's' : ''}`;
+    } else if (diffHours > 0) {
+      return `${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+    } else {
+      return 'Menos de 1 hora';
+    }
   }
 
   getStatusIcon(estado: string): string {
@@ -763,5 +758,154 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
   getCompletionRate(): number {
     if (this.pacienteStats.totalTurnos === 0) return 0;
     return Math.round((this.pacienteStats.turnosCompletados / this.pacienteStats.totalTurnos) * 100);
+  }
+
+  // Obtener próximos turnos (futuros) para el historial reciente
+  getProximosTurnos(): Turno[] {
+    const estadosProximo = ['reservado', 'pagado', 'pendiente', 'pendiente_pago', 'pendiente_pago_efectivo'];
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Resetear a inicio del día
+    
+    return this.misTurnos
+      .filter(t => {
+        // Solo turnos con estados activos
+        if (!estadosProximo.includes(t.estado)) {
+          return false;
+        }
+        
+        // Verificar que la fecha sea futura usando la función auxiliar
+        const fechaTurno = this.parseTurnoDate(t.fecha);
+        if (!fechaTurno || isNaN(fechaTurno.getTime())) {
+          return false;
+        }
+        
+        // Comparar solo la fecha (sin hora) para evitar problemas con zonas horarias
+        const fechaTurnoSolo = new Date(fechaTurno.getFullYear(), fechaTurno.getMonth(), fechaTurno.getDate());
+        
+        return fechaTurnoSolo >= hoy;
+      })
+      .sort((a, b) => {
+        const fechaA = this.parseTurnoDate(a.fecha);
+        const fechaB = this.parseTurnoDate(b.fecha);
+        if (!fechaA || !fechaB) return 0;
+        
+        // Primero ordenar por fecha
+        const fechaComparison = fechaA.getTime() - fechaB.getTime();
+        if (fechaComparison !== 0) return fechaComparison;
+        
+        // Si la fecha es igual, ordenar por hora
+        const horaA = a.hora || '00:00';
+        const horaB = b.hora || '00:00';
+        return horaA.localeCompare(horaB);
+      })
+      .slice(0, 4); // Solo los 4 próximos turnos
+  }
+
+  // Función auxiliar para parsear fechas de turnos
+  private parseTurnoDate(fecha: any): Date | null {
+    if (!fecha) {
+      return null;
+    }
+    
+    // Si ya es un objeto Date
+    if (fecha && typeof fecha === 'object' && Object.prototype.toString.call(fecha) === '[object Date]') {
+      return fecha as Date;
+    }
+    
+    // Si es string
+    if (typeof fecha === 'string') {
+      let parsedDate: Date | null = null;
+      
+      // Formato YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}/.test(fecha)) {
+        parsedDate = new Date(fecha);
+      }
+      // Formato DD/MM/YYYY
+      else if (/^\d{2}\/\d{2}\/\d{4}/.test(fecha)) {
+        const [dia, mes, anio] = fecha.split('/');
+        parsedDate = new Date(`${anio}-${mes}-${dia}`);
+      }
+      // Otros formatos
+      else {
+        parsedDate = new Date(fecha);
+      }
+      
+      // Verificar que la fecha sea válida
+      if (parsedDate && !isNaN(parsedDate.getTime())) {
+        return parsedDate;
+      } else {
+        return null;
+      }
+    }
+    
+    return null;
+  }
+
+  // Función para obtener el nombre del dentista
+  getDentistaName(turno: Turno): string {
+    // Si el dentista viene como objeto populate del backend
+    if (turno.dentistaId && typeof turno.dentistaId === 'object' && 'nombre' in turno.dentistaId) {
+      const dentista = turno.dentistaId as any;
+      return `${dentista.nombre || 'Dr.'} ${dentista.apellido || ''}`.trim();
+    }
+    
+    // Si viene como campos separados
+    if (turno.dentistaNombre || turno.dentistaApellido) {
+      return `${turno.dentistaNombre || 'Dr.'} ${turno.dentistaApellido || ''}`.trim();
+    }
+    
+    // Fallback
+    return 'Dr. No asignado';
+  }
+
+  // Función para calcular el tiempo restante hasta el turno
+  getTiempoRestante(turno: Turno): string {
+    const fechaTurno = this.parseTurnoDate(turno.fecha);
+    if (!fechaTurno || isNaN(fechaTurno.getTime())) {
+      return 'Fecha no válida';
+    }
+
+    // Crear fecha completa con hora
+    const [hora, minuto] = (turno.hora || '00:00').split(':');
+    const fechaCompleta = new Date(fechaTurno);
+    fechaCompleta.setHours(parseInt(hora), parseInt(minuto), 0, 0);
+
+    const ahora = new Date();
+    const diferencia = fechaCompleta.getTime() - ahora.getTime();
+
+    if (diferencia < 0) {
+      return 'Turno pasado';
+    }
+
+    const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+    const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (dias > 0) {
+      return `${dias} día${dias > 1 ? 's' : ''} ${horas}h ${minutos}m`;
+    } else if (horas > 0) {
+      return `${horas}h ${minutos}m`;
+    } else {
+      return `${minutos}m`;
+    }
+  }
+
+  // Función para forzar recarga completa de datos
+  forceReloadData(): void {
+    this.isLoading = true;
+    
+    // Limpiar datos actuales
+    this.misTurnos = [];
+    this.pacienteStats = {
+      totalTurnos: 0,
+      turnosReservados: 0,
+      turnosCompletados: 0,
+      turnosCancelados: 0,
+      totalGastado: 0,
+      proximoTurno: null
+    };
+    
+    // Recargar datos
+    this.loadPacienteData();
   }
 }
