@@ -71,6 +71,23 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
         this.odontologoId = '';
       }
     }
+
+    // Cargar odontograma del paciente
+    const pacienteId = this.paciente?.id || this.paciente?._id;
+    if (pacienteId) {
+      this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe({
+        next: (data) => {
+          // El odontograma se actualiza automáticamente por el tap() del servicio
+        },
+        error: (err) => {
+          // Si no existe, inicializa uno nuevo
+          this.odontogramaService.limpiarOdontograma();
+        }
+      });
+    } else {
+      this.odontogramaService.limpiarOdontograma();
+    }
+
     this.odontogramaService.odontograma$.pipe(takeUntil(this.destroy$)).subscribe((data: OdontogramaData) => {
       this.odontogramaData = data
       // Actualizar el odontólogo en el odontograma si no está seteado
