@@ -10,11 +10,15 @@ import { OdontogramaComponent } from '../odontograma/odontograma.component';
 import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
 import { DentistNavbarComponent } from '../layouts/dentist-navbar/dentist-navbar.component';
 import { AuthService } from '../../services/auth.service';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { TurnoService } from '../../services/turno.service';
+import { Turno } from '../../interfaces';
 
 @Component({
   selector: 'app-pacientes',
   standalone: true,
-  imports: [CommonModule, FormsModule, OdontogramaComponent, AdminNavbarComponent, DentistNavbarComponent],
+  imports: [CommonModule, FormsModule, OdontogramaComponent, AdminNavbarComponent, DentistNavbarComponent, MatIconModule, MatTooltipModule],
   templateUrl: './pacientes.component.html',
   styleUrl: './pacientes.component.css'
 })
@@ -26,6 +30,10 @@ export class PacientesComponent implements OnInit {
   selectedPaciente: Paciente | null = null;
   user: User | null = null;
   
+  // Filtros modernos
+  filtroObraSocial: string = '';
+  filtroEstado: string = '';
+
   // Modal y formulario para nuevo paciente
   showModal: boolean = false;
   isCreating: boolean = false;
@@ -72,7 +80,8 @@ export class PacientesComponent implements OnInit {
     private registerService: RegisterService,
     private router: Router,
     private notificationService: NotificationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private turnoService: TurnoService
   ) {}
 
   ngOnInit(): void {
@@ -96,29 +105,29 @@ export class PacientesComponent implements OnInit {
   }
 
   filterPacientes(): void {
-    if (!this.searchTerm.trim()) {
-      this.pacientesFiltrados = this.pacientes;
-    } else {
-      const term = this.searchTerm.toLowerCase();
-      this.pacientesFiltrados = this.pacientes.filter(paciente =>
-        paciente.nombre.toLowerCase().includes(term) ||
-        paciente.apellido.toLowerCase().includes(term) ||
-        paciente.dni.includes(term) ||
-        paciente.obraSocial.toLowerCase().includes(term)
-      );
-    }
+    this.pacientesFiltrados = this.pacientes.filter(p => {
+      const matchesSearch = !this.searchTerm ||
+        (p.nombre + ' ' + p.apellido).toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        (p.dni && p.dni.toString().includes(this.searchTerm)) ||
+        (p.obraSocial && p.obraSocial.toLowerCase().includes(this.searchTerm.toLowerCase()));
+      const matchesObraSocial = !this.filtroObraSocial || p.obraSocial === this.filtroObraSocial;
+      const matchesEstado = !this.filtroEstado || (p.estado ? p.estado === this.filtroEstado : true);
+      return matchesSearch && matchesObraSocial && matchesEstado;
+    });
   }
 
   getObraSocialClass(obraSocial: string): string {
-    switch (obraSocial.toLowerCase()) {
-      case 'osde': return 'badge bg-primary obra-social-osde';
-      case 'swiss medical': return 'badge bg-success obra-social-swiss';
-      case 'galeno': return 'badge bg-warning obra-social-galeno';
-      case 'medicus': return 'badge bg-info obra-social-medicus';
-      case 'pami': return 'badge bg-secondary obra-social-pami';
-      case 'ioma': return 'badge bg-danger obra-social-ioma';
-      case 'particular': return 'badge bg-dark obra-social-particular';
-      default: return 'badge bg-secondary obra-social-default';
+    if (!obraSocial) return 'badge obra-social-default';
+    const os = obraSocial.trim().toLowerCase();
+    switch (os) {
+      case 'osde': return 'badge obra-social-osde';
+      case 'swiss medical': return 'badge obra-social-swiss';
+      case 'galeno': return 'badge obra-social-galeno';
+      case 'medicus': return 'badge obra-social-medicus';
+      case 'pami': return 'badge obra-social-pami';
+      case 'ioma': return 'badge obra-social-ioma';
+      case 'particular': return 'badge obra-social-particular';
+      default: return 'badge obra-social-default';
     }
   }
 
@@ -340,6 +349,11 @@ export class PacientesComponent implements OnInit {
     this.pacienteSeleccionado = null;
   }
 
+  verTurnosPaciente(paciente: Paciente) {
+    // Aquí puedes abrir un modal, navegar o mostrar los turnos del paciente
+    console.log('Ver turnos de paciente:', paciente);
+  }
+
   goToDashboard(): void {
     const user = localStorage.getItem('user');
     let tipoUsuario = '';
@@ -363,5 +377,17 @@ export class PacientesComponent implements OnInit {
 
   isDentist(): boolean {
     return this.user?.tipoUsuario === 'dentista';
+  }
+
+  // Devuelve lista única de obras sociales para el filtro
+  getObrasSociales(): string[] {
+    const obras = this.pacientes.map(p => p.obraSocial).filter(Boolean);
+    return Array.from(new Set(obras));
+  }
+
+  getFechaSimulada(offsetDias: number): string {
+    const fecha = new Date();
+    fecha.setDate(fecha.getDate() + offsetDias);
+    return fecha.toISOString();
   }
 }

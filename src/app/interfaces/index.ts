@@ -73,6 +73,11 @@ export interface Paciente {
   obraSocial: string;
   telefono?: string;
   userId?: string;
+  estado?: 'activo' | 'inactivo'; // Estado del paciente
+  ultimaVisita?: string | Date;
+  proximoTurno?: string | Date;
+  cantidadTurnos?: number;
+  fechaAlta?: string | Date;
 }
 
 export interface LoginForm {

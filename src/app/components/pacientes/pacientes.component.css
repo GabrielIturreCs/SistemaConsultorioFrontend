@@ -66,16 +66,80 @@
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ========== FONDO GENERAL SUAVE ========== */
-.container-fluid {
-  background: linear-gradient(to bottom, #76f1ff, #046d94, #ffffff);
-  min-height: 100vh;
-  padding: 2rem 1rem;
-  position: relative;
+/* Fondo general gris claro */
+body, .container-fluid {
+  background: #f5f7fa !important;
+  color: #222 !important;
 }
 
-.container-fluid::before {
-  display: none;
+/* Cabecera moderna, no sticky */
+.page-title {
+  color: #1976d2 !important;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+/* Elimino min-height: 100vh si existe */
+/* min-height: 100vh; */
+
+/* Tabla moderna */
+.table {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  color: #222;
+}
+.table thead {
+  background: #1976d2;
+  color: #fff;
+}
+.table tbody tr:nth-child(even) {
+  background: #f0f4f8;
+}
+.table tbody tr {
+  color: #222;
+}
+
+/* Botones de acción siempre visibles */
+.btn-action {
+  margin-right: 0.5rem;
+  background: #e3eafc;
+  color: #1976d2;
+  border-radius: 50%;
+  border: none;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.btn-action:hover {
+  background: #1976d2;
+  color: #fff;
+}
+
+/* Inputs y selects Material */
+.mat-form-field, input, select {
+  background: #fff !important;
+  color: #222 !important;
+}
+
+/* Badges de estado */
+.badge-activo {
+  background: #43a047;
+  color: #fff;
+}
+.badge-inactivo {
+  background: #bdbdbd;
+  color: #222;
+}
+
+/* Espaciado y bordes suaves */
+.card, .search-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  background: #fff;
 }
 
 /* ========== HEADER LIMPIO ========== */
@@ -839,7 +903,7 @@
 
 /* ========== TEXTO Y ESTADOS MEJORADOS ========== */
 .text-muted {
-  color: var(--text-muted) !important;
+  color: #666 !important;
   font-weight: 600;
 }
 
@@ -973,4 +1037,117 @@ h4, h5, h6, .section-title, .fw-bold {
   background-clip: unset !important;
   color: #00334d !important; /* O el color oscuro que prefieras */
   font-weight: 800;
+}
+
+.dni-cell {
+  color: #222 !important;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.btn-action.btn-primary {
+  background: #1976d2;
+  color: #fff;
+}
+.btn-action.btn-danger {
+  background: #e53935;
+  color: #fff;
+}
+.btn-action.btn-success {
+  background: #43a047;
+  color: #fff;
+}
+.btn-action.btn-info {
+  background: #0288d1;
+  color: #fff;
+}
+
+/* Botones de acción con colores distintivos */
+button[mat-icon-button][color="primary"] {
+  background: #1976d2 !important;
+  color: #fff !important;
+  margin-right: 0.2rem;
+}
+button[mat-icon-button][color="warn"] {
+  background: #e53935 !important;
+  color: #fff !important;
+  margin-right: 0.2rem;
+}
+button[mat-icon-button][color="accent"] {
+  background: #43a047 !important;
+  color: #fff !important;
+  margin-right: 0.2rem;
+}
+button[mat-icon-button][color="info"] {
+  background: #0288d1 !important;
+  color: #fff !important;
+  margin-right: 0.2rem;
+}
+button[mat-icon-button]:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* Colores alternos para filas de la tabla */
+.table tbody tr:nth-child(even) {
+  background: #e3f2fd !important;
+}
+.table tbody tr:nth-child(odd) {
+  background: #fff !important;
+}
+
+/* Badges de obra social más coloridos */
+.obra-social-osde {
+  background: linear-gradient(135deg, #0d47a1, #1976d2) !important;
+  color: #fff !important;
+}
+.obra-social-swiss {
+  background: linear-gradient(135deg, #00695c, #2e7d32) !important;
+  color: #fff !important;
+}
+.obra-social-galeno {
+  background: linear-gradient(135deg, #bf360c, #ff6f00) !important;
+  color: #fff !important;
+}
+.obra-social-medicus {
+  background: linear-gradient(135deg, #263238, #37474f) !important;
+  color: #fff !important;
+}
+.obra-social-pami {
+  background: linear-gradient(135deg, #4a148c, #6a1b9a) !important;
+  color: #fff !important;
+}
+.obra-social-ioma {
+  background: linear-gradient(135deg, #b71c1c, #c62828) !important;
+  color: #fff !important;
+}
+.obra-social-particular {
+  background: linear-gradient(135deg, #263238, #212121) !important;
+  color: #fff !important;
+}
+.obra-social-default {
+  background: linear-gradient(135deg, #424242, #757575) !important;
+  color: #fff !important;
+}
+
+.btn.btn-primary.btn-lg {
+  background: #1976d2 !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+}
+.btn.btn-primary.btn-lg:hover {
+  background: #1565c0 !important;
+  color: #fff !important;
+}
+
+.btn.btn-outline-primary.btn-lg {
+  background: #fff !important;
+  color: #1976d2 !important;
+  border: 2px solid #1976d2 !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.06);
+}
+.btn.btn-outline-primary.btn-lg:hover {
+  background: #1976d2 !important;
+  color: #fff !important;
 }

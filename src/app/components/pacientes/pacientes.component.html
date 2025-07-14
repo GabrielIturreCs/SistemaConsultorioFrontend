@@ -2,190 +2,133 @@
 <app-admin-navbar *ngIf="isAdmin()"></app-admin-navbar>
 <app-dentist-navbar *ngIf="isDentist()"></app-dentist-navbar>
 
-<div class="container-fluid py-4">
+<!-- CABECERA MODERNA Y ACCIONES PRINCIPALES -->
+<div class="sticky-top bg-white shadow-sm py-3 mb-4" style="z-index: 10;">
+  <div class="container-fluid d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+      <h1 class="page-title mb-1 fw-bold text-primary" style="font-size:2.2rem;letter-spacing:0.5px;">
+        <mat-icon color="primary" style="vertical-align:middle;">groups</mat-icon> Pacientes
+      </h1>
+      <div class="text-muted" style="font-size:1.1rem;">Gestión integral y ágil de pacientes</div>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <button class="btn btn-primary btn-lg d-flex align-items-center gap-2 shadow-sm" (click)="openCreateModal()">
+        <i class="bi bi-person-plus-fill"></i> Nuevo Paciente
+      </button>
+      <button class="btn btn-outline-primary btn-lg d-flex align-items-center gap-2 shadow-sm" (click)="loadPacientes()" [disabled]="isLoading">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm"></span>
+        <i *ngIf="!isLoading" class="bi bi-arrow-clockwise"></i> Actualizar
+      </button>
+    </div>
+  </div>
+</div>
 
-  <div class="row">
-    <div class="col-12">
-      <!-- Header -->
-      <div class="page-header d-flex justify-content-between align-items-center">
-        <div>
-          <h1 class="page-title mb-2">
-            <i class="material-icons me-3">people</i>
-            Gestión de Pacientes
-          </h1>
-          <p class="page-subtitle">Administra la información de todos los pacientes de manera eficiente</p>
-        </div>
-        <div class="d-flex gap-3 align-items-center">
-          <button class="btn btn-outline-info" (click)="loadPacientes()" title="Actualizar lista">
-            <i class="material-icons me-2">refresh</i>
-            Actualizar
-          </button>
-          <button class="btn btn-success" (click)="openCreateModal()" title="Agregar nuevo paciente">
-            <i class="material-icons me-2">person_add</i>
-            Nuevo Paciente
-          </button>
-        </div>
+<!-- BÚSQUEDA Y FILTROS MODERNOS -->
+<div class="container-fluid mb-4">
+  <div class="search-card card p-3 shadow-sm border-0">
+    <div class="row align-items-center g-3">
+      <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-semibold mb-2">
+          <i class="bi bi-search text-primary me-2"></i>
+          Buscar Pacientes
+        </label>
+        <input 
+          type="text" 
+          class="form-control form-control-lg shadow-sm" 
+          placeholder="Nombre, apellido, DNI, obra social..."
+          [(ngModel)]="searchTerm"
+          (input)="filterPacientes()"
+          list="pacientes-suggestions"
+          autocomplete="off"
+        >
+        <datalist id="pacientes-suggestions">
+          <option *ngFor="let p of pacientes" [value]="p.nombre + ' ' + p.apellido"></option>
+          <option *ngFor="let p of pacientes" [value]="p.dni"></option>
+          <option *ngFor="let p of pacientes" [value]="p.obraSocial"></option>
+        </datalist>
       </div>
-
-      <!-- Search and Filters -->
-      <div class="search-card card mb-4">
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-lg-8 col-md-12 mb-3 mb-lg-0">
-              <label class="form-label fw-semibold mb-2">
-                <i class="bi bi-search text-primary me-2"></i>
-                Buscar Pacientes
-              </label>
-              <div class="input-group">
-                <span class="input-group-text">
-                  <i class="bi bi-search"></i>
-                </span>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  placeholder="Buscar por nombre, apellido, DNI o obra social..."
-                  [(ngModel)]="searchTerm"
-                  (input)="filterPacientes()"
-                >
-                <button class="btn btn-outline-info" type="button" (click)="searchTerm = ''; filterPacientes()" title="Limpiar búsqueda">
-                  <i class="bi bi-x-lg"></i>
-                </button>
-              </div>
-            </div>
-            <div class="col-lg-4 col-md-12 text-lg-end">
-              <div class="d-flex align-items-center justify-content-lg-end justify-content-center">
-                <div class="me-3">
-                  <span class="badge bg-info fs-6 px-3 py-2">
-                    <i class="bi bi-people me-2"></i>
-                    {{ pacientesFiltrados.length }} de {{ pacientes.length }} pacientes
-                  </span>
-                </div>
-                <div *ngIf="searchTerm" class="text-muted small">
-                  <i class="bi bi-funnel me-1"></i>
-                  Filtrado
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label fw-semibold mb-2">
+          <i class="bi bi-shield-check text-primary me-2"></i>
+          Obra Social
+        </label>
+        <select class="form-select form-select-lg shadow-sm" [(ngModel)]="filtroObraSocial" (change)="filterPacientes()">
+          <option value="">Todas</option>
+          <option *ngFor="let os of getObrasSociales()" [value]="os">{{ os }}</option>
+        </select>
       </div>
-
-      <!-- Loading State -->
-      <div *ngIf="isLoading" class="loading-container text-center">
-        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-          <span class="visually-hidden">Cargando...</span>
-        </div>
-        <h5 class="text-muted">Cargando pacientes...</h5>
-        <p class="text-muted mb-0">Por favor espera un momento</p>
-      </div>
-
-      <!-- Patients Table -->
-      <div *ngIf="!isLoading" class="table-container">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th class="ps-4">
-                  <i class="bi bi-person me-2"></i>
-                  Paciente
-                </th>
-                <th>
-                  <i class="bi bi-card-text me-2"></i>
-                  DNI
-                </th>
-                <th>
-                  <i class="bi bi-telephone me-2"></i>
-                  Teléfono
-                </th>
-                <th>
-                  <i class="bi bi-shield-check me-2"></i>
-                  Obra Social
-                </th>
-                <th class="text-center">
-                  <i class="bi bi-gear me-2"></i>
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let paciente of pacientesFiltrados; let i = index" class="align-middle">
-                <td class="ps-4">
-                  <div class="d-flex align-items-center">
-                    <div class="avatar-sm bg-gradient text-white rounded-circle d-flex align-items-center justify-content-center me-3">
-                      {{ paciente.nombre.charAt(0) }}{{ paciente.apellido.charAt(0) }}
-                    </div>
-                    <div>
-                      <h6 class="mb-1 fw-bold text-dark">{{ paciente.nombre }} {{ paciente.apellido }}</h6>
-                      <small class="text-muted">
-                        <i class="bi bi-hash me-1"></i>
-                        ID: {{ paciente.id || paciente._id }}
-                      </small>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <span class="fw-semibold text-dark">{{ paciente.dni }}</span>
-                </td>
-                <td>
-                  <span class="text-muted">
-                    <i class="bi bi-telephone-fill me-1 text-success"></i>
-                    {{ paciente.telefono || 'No especificado' }}
-                  </span>
-                </td>
-                <td>
-                  <span [class]="getObraSocialClass(paciente.obraSocial)">
-                    {{ paciente.obraSocial }}
-                  </span>
-                </td>
-                <td class="text-center">
-                  <div class="btn-group" role="group">
-                    <button 
-                      class="btn btn-sm btn-outline-warning" 
-                      (click)="editarPaciente(paciente)"
-                      title="Editar información del paciente"
-                    >
-                      <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button 
-                      class="btn btn-sm btn-outline-danger" 
-                      (click)="eliminarPaciente(paciente)"
-                      title="Eliminar paciente del sistema"
-                    >
-                      <i class="bi bi-trash3"></i>
-                    </button>
-                    <button 
-                      class="btn btn-sm btn-outline-primary"
-                      (click)="abrirOdontograma(paciente)"
-                      title="Ver odontograma"
-                    >
-                      <i class="bi bi-diagram-3"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Empty State -->
-        <div *ngIf="pacientesFiltrados.length === 0 && !isLoading" class="empty-state">
-          <i class="bi bi-people display-1 mb-4"></i>
-          <h4 class="text-muted mb-3">No se encontraron pacientes</h4>
-          <p class="text-muted mb-4">
-            {{ searchTerm ? 'Intenta con otros términos de búsqueda o verifica la ortografía.' : 'No hay pacientes registrados en el sistema. ¡Comienza agregando el primer paciente!' }}
-          </p>
-          <button *ngIf="!searchTerm" class="btn btn-success" (click)="openCreateModal()">
-            <i class="bi bi-person-plus me-2"></i>
-            Agregar Primer Paciente
-          </button>
-          <button *ngIf="searchTerm" class="btn btn-outline-info" (click)="searchTerm = ''; filterPacientes()">
-            <i class="bi bi-arrow-clockwise me-2"></i>
-            Limpiar Filtros
-          </button>
-        </div>
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label fw-semibold mb-2">
+          <i class="bi bi-person-badge text-primary me-2"></i>
+          Estado
+        </label>
+        <select class="form-select form-select-lg shadow-sm" [(ngModel)]="filtroEstado" (change)="filterPacientes()">
+          <option value="">Todos</option>
+          <option value="activo">Activo</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Patients Table Mejorada -->
+<div class="container-fluid">
+  <div *ngIf="isLoading" class="loading-container text-center my-5">
+    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <h5 class="text-muted">Cargando pacientes...</h5>
+    <p class="text-muted mb-0">Por favor espera un momento</p>
+  </div>
+  <div *ngIf="!isLoading" class="table-container">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle" style="min-width:900px;">
+        <thead class="sticky-top bg-white shadow-sm" style="z-index:2;">
+          <tr>
+            <th class="ps-4"> <mat-icon color="primary">groups</mat-icon> Paciente </th>
+            <th> <mat-icon color="primary">badge</mat-icon> DNI </th>
+            <th> <mat-icon color="primary">call</mat-icon> Teléfono </th>
+            <th> <mat-icon color="primary">health_and_safety</mat-icon> Obra Social </th>
+            <th class="text-center"> <mat-icon color="primary">settings</mat-icon> Acciones </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let paciente of pacientesFiltrados; let i = index" class="align-middle">
+            <td class="ps-4">
+              <div class="d-flex align-items-center">
+                <div class="avatar-sm bg-gradient text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                  {{ paciente.nombre.charAt(0) }}{{ paciente.apellido.charAt(0) }}
+                </div>
+                <div>
+                  <h6 class="mb-1 fw-bold text-dark">{{ paciente.nombre }} {{ paciente.apellido }}</h6>
+                  <small class="text-muted">
+                    <i class="bi bi-hash me-1"></i>
+                    ID: {{ paciente.id || paciente._id }}
+                  </small>
+                </div>
+              </div>
+            </td>
+            <td><span class="dni-cell">{{ paciente.dni }}</span></td>
+            <td><span class="text-muted"><i class="bi bi-telephone-fill me-1 text-success"></i>{{ paciente.telefono || 'No especificado' }}</span></td>
+            <td><span [class]="getObraSocialClass(paciente.obraSocial)" style="background:#222;color:#fff;min-width:110px;display:inline-block;text-align:center;">{{ paciente.obraSocial }}</span></td>
+            <td class="text-center">
+              <button mat-icon-button color="primary" matTooltip="Editar" (click)="editarPaciente(paciente)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" matTooltip="Eliminar" (click)="eliminarPaciente(paciente)">
+                <mat-icon>delete</mat-icon>
+              </button>
+              <button mat-icon-button color="accent" matTooltip="Odontograma" (click)="abrirOdontograma(paciente)">
+                <mat-icon>medical_services</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
   <!-- Modal para Nuevo Paciente -->
   <div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1" role="dialog">
@@ -608,4 +551,4 @@
   
   <!-- Modal backdrop for odontograma -->
   <div class="modal-backdrop fade" [class.show]="showOdontograma" *ngIf="showOdontograma" (click)="cerrarOdontograma()"></div>
-</div>
+
