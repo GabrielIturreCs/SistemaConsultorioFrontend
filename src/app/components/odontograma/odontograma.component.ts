@@ -1,4 +1,5 @@
-import { Component, type OnInit, type OnDestroy, Output, EventEmitter, Input, OnChanges, SimpleChanges } from "@angular/core"
+import { Component, type OnInit, type OnDestroy, Output, EventEmitter } from "@angular/core"
+import { Input } from '@angular/core';
 import { Subject } from "rxjs"
 import { takeUntil } from "rxjs/operators"
 import { OdontogramaService, PiezaDental, OdontogramaData } from "../../services/odontograma.service"
@@ -17,7 +18,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: "./odontograma.component.html",
   styleUrls: ["./odontograma.component.css"],
 })
-export class OdontogramaComponent implements OnInit, OnDestroy, OnChanges {
+export class OdontogramaComponent implements OnInit, OnDestroy {
   @Input() odontograma: any;
   @Input() paciente: any;
   @Output() cerrar = new EventEmitter<void>();
@@ -76,26 +77,13 @@ export class OdontogramaComponent implements OnInit, OnDestroy, OnChanges {
       }
     }
 
-    // Usar SIEMPRE el _id del paciente
-    const pacienteId = this.paciente?._id;
+    // Cargar odontograma y su historial del paciente
+    const pacienteId = this.paciente?.id || this.paciente?._id;
     if (pacienteId) {
-      // No limpiar aquí, solo al cambiar de paciente
       this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe({
-        next: (data) => {
-          // El servicio ya actualiza el BehaviorSubject con la respuesta real
-        },
-        error: (err) => {
-          if (err.status === 404) {
-            // Inicializar odontograma vacío y permitir edición
-            this.odontogramaService.limpiarOdontograma();
-          } else {
-            this.snackBar.open('Error al cargar el odontograma. Verifique su sesión o intente nuevamente.', 'Cerrar', {
-              duration: 4000,
-              panelClass: ['snackbar-error'],
-              horizontalPosition: 'end',
-              verticalPosition: 'top'
-            });
-          }
+        next: () => {},
+        error: () => {
+          this.odontogramaService.limpiarOdontograma();
         }
       });
       this.cargarHistorialOdontogramas(pacienteId);
@@ -123,32 +111,6 @@ export class OdontogramaComponent implements OnInit, OnDestroy, OnChanges {
     if (pacienteId) {
       this.cargarHistorialOdontogramas(pacienteId);
     }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['paciente'] && changes['paciente'].currentValue?._id) {
-      const pacienteId = changes['paciente'].currentValue._id;
-      this.cargarOdontogramaDePaciente(pacienteId);
-    }
-  }
-
-  cargarOdontogramaDePaciente(pacienteId: string): void {
-    this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe({
-      next: () => {},
-      error: (err) => {
-        if (err.status === 404) {
-          this.odontogramaService.limpiarOdontograma();
-        } else {
-          this.snackBar.open('Error al cargar el odontograma. Verifique su sesión o intente nuevamente.', 'Cerrar', {
-            duration: 4000,
-            panelClass: ['snackbar-error'],
-            horizontalPosition: 'end',
-            verticalPosition: 'top'
-          });
-        }
-      }
-    });
-    this.cargarHistorialOdontogramas(pacienteId);
   }
 
   cargarHistorialOdontogramas(pacienteId: string): void {
@@ -211,28 +173,14 @@ export class OdontogramaComponent implements OnInit, OnDestroy, OnChanges {
 
   guardarOdontograma(): void {
     this.guardando = true;
-    const pacienteId = this.paciente?._id;
-    if (!pacienteId) {
-      this.guardando = false;
-      this.snackBar.open('Error: No se encontró el ID del paciente. No se puede guardar el odontograma.', 'Cerrar', {
-        duration: 4000,
-        panelClass: ['snackbar-error'],
-        horizontalPosition: 'end',
-        verticalPosition: 'top'
-      });
-      return;
-    }
+    const pacienteId = this.paciente?.id || this.paciente?._id;
     this.odontogramaData.odontologo = this.odontologoId;
-    // LOG para depuración
-    console.log('🦷 [FRONTEND] Guardando odontograma para paciente:', pacienteId);
-    console.log('Datos enviados:', JSON.stringify(this.odontogramaData, null, 2));
     this.odontogramaService
       .guardarOdontograma(pacienteId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.guardando = false;
-          this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe();
           this.snackBar.open('¡Odontograma guardado exitosamente!', 'Cerrar', {
             duration: 3000,
             panelClass: ['snackbar-success'],
