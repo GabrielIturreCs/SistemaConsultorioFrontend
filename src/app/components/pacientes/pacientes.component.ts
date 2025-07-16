@@ -233,11 +233,11 @@ export class PacientesComponent implements OnInit {
         this.isCreating = false;
         this.closeModal();
         this.notificationService.showSuccess('Paciente creado exitosamente. Se ha creado una cuenta de usuario para el paciente.');
-        
-        // Force page reload to ensure fresh data
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        if (response.token && response.user) {
+          this.authService.setToken(response.token);
+          this.authService.setCurrentUser(response.user);
+        }
+        this.loadPacientes(); // Recarga la lista sin recargar la página
       },
       error: (error) => {
         console.error('Error al crear paciente:', error);
