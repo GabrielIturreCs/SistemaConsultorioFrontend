@@ -27,7 +27,7 @@
                 <span class="stat-label">Completados</span>
               </div>
               <div class="stat-item">
-                <span class="stat-number">${{ pacienteStats.totalGastado | number:'1.0-0' }}</span>
+                <span class="stat-number">{{ pacienteStats.totalGastado | number:'1.0-0' }}</span>
                 <span class="stat-label">Invertido en Salud</span>
               </div>
             </div>
@@ -146,8 +146,7 @@
             <span class="countdown-days">{{ getDaysUntilAppointment() }}</span>
           </div>
         </div>
-        
-        <div class="appointment-details">
+        <div class="appointment-details appointment-details-redesign">
           <div class="appointment-date-card">
             <div class="date-circle">
               <div class="date-day">{{ pacienteStats.proximoTurno.fecha | date:'dd' }}</div>
@@ -155,38 +154,35 @@
               <div class="date-year">{{ pacienteStats.proximoTurno.fecha | date:'yyyy' }}</div>
             </div>
           </div>
-          
-          <div class="appointment-info">
+          <div class="appointment-info appointment-info-redesign">
             <div class="treatment-info">
               <h4 class="treatment-name">{{ pacienteStats.proximoTurno.tratamiento }}</h4>
-              <div class="treatment-meta">
-                <span class="meta-item">
+              <div class="treatment-meta treatment-meta-redesign">
+                <div class="meta-item-redesign">
                   <i class="material-icons">schedule</i>
-                  {{ pacienteStats.proximoTurno.hora }}
-                </span>
-                <span class="meta-item">
+                  <span>{{ pacienteStats.proximoTurno.hora }}</span>
+                </div>
+                <div class="meta-item-redesign">
                   <i class="material-icons">person</i>
-                  {{ getDentistaName(pacienteStats.proximoTurno) }}
-                </span>
-                <span class="meta-item">
+                  <span>{{ getDentistaName(pacienteStats.proximoTurno) }}</span>
+                </div>
+                <div class="meta-item-redesign">
                   <i class="material-icons">attach_money</i>
-                  ${{ pacienteStats.proximoTurno.precioFinal | number:'1.0-0' }}
-                </span>
+                  <span>{{ pacienteStats.proximoTurno.precioFinal | number:'1.0-0' }}</span>
+                </div>
               </div>
             </div>
-            
-            <div class="appointment-status">
+            <div class="appointment-status appointment-status-redesign">
               <span [class]="getStatusClass(pacienteStats.proximoTurno.estado)" class="status-badge-modern">
                 <i class="material-icons status-icon">{{ getStatusIcon(pacienteStats.proximoTurno.estado) }}</i>
                 {{ getStatusText(pacienteStats.proximoTurno.estado) }}
               </span>
-              <div class="time-remaining">
+              <div class="time-remaining time-remaining-redesign">
                 <i class="material-icons">access_time</i>
                 <span>{{ getTiempoRestante(pacienteStats.proximoTurno) }}</span>
               </div>
             </div>
-            
-            <div class="appointment-actions">
+            <div class="appointment-actions appointment-actions-redesign">
               <button class="btn btn-outline-primary btn-sm" (click)="navigateToMisTurnos()">
                 <i class="material-icons">visibility</i>
                 Ver Detalles
@@ -279,7 +275,7 @@
               <i class="material-icons stat-icon">account_balance_wallet</i>
             </div>
             <div class="stat-content">
-              <div class="stat-number">${{ pacienteStats.totalGastado | number:'1.0-0' }}</div>
+              <div class="stat-number">{{ pacienteStats.totalGastado | number:'1.0-0' }}</div>
               <div class="stat-label">Invertido en Salud</div>
               <div class="stat-trend positive">
                 <i class="material-icons">savings</i>
@@ -375,7 +371,7 @@
                      </div>
                     <div class="detail-item">
                       <i class="material-icons">attach_money</i>
-                      <span>${{ turno.precioFinal | number:'1.0-0' }}</span>
+                      <span>{{ turno.precioFinal | number:'1.0-0' }}</span>
                     </div>
                     <div class="detail-item time-remaining-item">
                       <i class="material-icons">access_time</i>
