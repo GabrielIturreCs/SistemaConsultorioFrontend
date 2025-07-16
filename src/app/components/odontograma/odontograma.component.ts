@@ -81,7 +81,13 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
     const pacienteId = this.paciente?.id || this.paciente?._id;
     if (pacienteId) {
       this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe({
-        next: () => {},
+        next: (data) => {
+          // Si el odontograma viene vacío, inicializa uno nuevo
+          if (!data || !data.piezas || Object.keys(data.piezas).length === 0) {
+            this.odontogramaService.limpiarOdontograma();
+          }
+          // Si viene con datos, el observable ya lo actualiza
+        },
         error: () => {
           this.odontogramaService.limpiarOdontograma();
         }
@@ -187,6 +193,8 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
             horizontalPosition: 'end',
             verticalPosition: 'top'
           });
+          // Recargar el odontograma desde el backend
+          this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe();
           this.cerrar.emit();
         },
         error: () => {
