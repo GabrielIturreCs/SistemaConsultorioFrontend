@@ -210,6 +210,10 @@ export class AuthService {
     return user?.tipoUsuario === role;
   }
 
+  private esProfesional(tipo: string): boolean {
+    return tipo !== 'paciente' && tipo !== 'administrador' && tipo !== 'secretario' && tipo !== 'secretaria';
+  }
+
   redirectByUserType(): void {
     const user = this.currentUserSubject.value;
     if (!user) {
@@ -231,8 +235,11 @@ export class AuthService {
         this.router.navigate(['/vistaPaciente']);
         break;
       default:
-        // Cualquier otro tipo de usuario (especialista, dentista, etc.) va al dashboard de dentista
-        this.router.navigate(['/dashboard']);
+        // Cualquier otro tipo de usuario profesional va al dashboard
+        if (this.esProfesional(user.tipoUsuario)) {
+          this.router.navigate(['/dashboard']);
+        }
+        break;
     }
   }
 }

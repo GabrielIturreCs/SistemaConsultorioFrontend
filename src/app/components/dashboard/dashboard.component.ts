@@ -140,6 +140,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private refreshSubscription?: Subscription;
   private marcandoAusentes: boolean = false;
 
+  pacientes: any[] = [];
+
   constructor(
     private router: Router, 
     private route: ActivatedRoute,
@@ -179,13 +181,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
         setTimeout(() => this.marcarTurnosAusentes(), 1000);
       }
     });
-    // Cargar configuración personalizada solo para dentistas (no secretarios)
-    if (this.user?.tipoUsuario === 'dentista') {
+    // Cargar configuración personalizada solo para profesionales (no secretarios)
+    if (this.esProfesional(this.user?.tipoUsuario)) {
       this.cargarDisponibilidadDentista();
     }
     
-    // Solo cargar chat para dentistas y secretarios
-    if (this.user?.tipoUsuario === 'dentista' || this.user?.tipoUsuario === 'secretario') {
+    // Solo cargar chat para profesionales y secretarios
+    if (this.esProfesional(this.user?.tipoUsuario) || this.user?.tipoUsuario === 'secretario') {
       this.loadChatHistory();
       this.addWelcomeMessage();
     }
@@ -376,10 +378,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Chatbot methods
   addWelcomeMessage(): void {
-    // Solo mostrar mensaje de bienvenida para dentistas y secretarios
-    if (this.user?.tipoUsuario === 'dentista' || this.user?.tipoUsuario === 'secretario') {
+    // Solo mostrar mensaje de bienvenida para profesionales y secretarios
+    if (this.esProfesional(this.user?.tipoUsuario) || this.user?.tipoUsuario === 'secretario') {
       const welcomeText = 'Hola Doctor/a. Soy DentalBot, tu asistente para la gestión de la clínica. Puedo ayudarte con:\n\n🔹 Gestión de citas y agenda\n🔹 Información de pacientes\n🔹 Seguimiento de tratamientos\n🔹 Reportes y estadísticas\n🔹 Control de inventario\n🔹 Configuración del sistema\n\n¿En qué puedo asistirte hoy?';
-      
       const welcomeMessage: ChatMessage = {
         text: welcomeText,
         isUser: false,
@@ -390,8 +391,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   toggleChat(): void {
-    // Solo permitir chat para dentistas
-    if (this.user?.tipoUsuario === 'dentista') {
+    // Solo permitir chat para profesionales
+    if (this.esProfesional(this.user?.tipoUsuario)) {
       this.chatOpen = !this.chatOpen;
       if (this.chatOpen && this.messages.length === 0) {
         this.addWelcomeMessage();
@@ -440,16 +441,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private handleHybridChat(message: string): void {
-    // Solo procesar mensajes para dentistas
-    if (this.user?.tipoUsuario !== 'dentista') {
+    // Solo procesar mensajes para profesionales
+    if (!this.esProfesional(this.user?.tipoUsuario)) {
       return;
     }
-    
     this.isTyping = true;
-    
-    // Determinar el tipo de usuario (siempre dentista en este contexto)
+    // Determinar el tipo de usuario (mantener 'dentist' para compatibilidad interna)
     const userType = 'dentist';
-    
     // Verificar si es una continuación de conversación
     const isContinuing = this.chatService.isContinuingConversation();
     const lastTopic = this.chatService.getLastTopic();
@@ -2585,5 +2583,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const years = Math.floor(diffInSeconds / 31536000);
       return `Hace ${years} año${years > 1 ? 's' : ''} (${fechaAccion} ${horaAccion})`;
     }
+  }
+
+  public esProfesional(tipo: string | undefined): boolean {
+    return tipo !== 'paciente' && tipo !== 'administrador' && tipo !== 'secretario' && tipo !== 'secretaria';
+  }
+
+  get turnosActivos(): number {
+    // Considerar como activos los turnos que no estén cancelados ni completados ni ausentes
+    return this.turnos.filter(turno => ['reservado', 'pagado', 'pendiente_pago_efectivo', 'pendiente_pago_online'].includes(turno.estado)).length;
+  }
+
+  getTiempoRestante(turno: Turno): string {
+    if (!turno || !turno.fecha || !turno.hora) return '';
+    const ahora = new Date();
+    const fechaTurno = new Date(turno.fecha + 'T' + (turno.hora || '00:00'));
+    const diffMs = fechaTurno.getTime() - ahora.getTime();
+    const diffMin = Math.round(diffMs / 60000);
+    const diffHoras = Math.floor(diffMin / 60);
+    const diffDias = Math.floor(diffHoras / 24);
+
+    if (diffMin < 1) return '¡Ahora!';
+    if (diffMin < 60) return `En ${diffMin} min`;
+    if (diffHoras < 24) return `En ${diffHoras} horas`;
+    if (diffDias === 1) return 'Mañana';
+    if (diffDias > 1) return `En ${diffDias} días`;
+    return '';
+  }
+
+  getNombrePaciente(pacienteId: string | number | undefined): string {
+    if (!pacienteId || !this.pacientes) return 'Paciente';
+    const idStr = String(pacienteId);
+    const paciente = this.pacientes.find(p => String(p._id) === idStr || String(p.id) === idStr);
+    return paciente ? `${paciente.nombre} ${paciente.apellido}` : 'Paciente';
   }
 }

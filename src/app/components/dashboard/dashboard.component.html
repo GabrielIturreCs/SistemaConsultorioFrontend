@@ -2,7 +2,7 @@
 <div class="container-fluid dashboard-container py-4" 
      [ngClass]="{
        'admin-dashboard': user?.tipoUsuario === 'administrador' && !isPacienteView,
-       'dentist-dashboard': user?.tipoUsuario === 'dentista' || user?.tipoUsuario === 'secretario',
+       'dentist-dashboard': esProfesional(user?.tipoUsuario) || user?.tipoUsuario === 'secretario',
        'paciente-dashboard': user?.tipoUsuario === 'paciente'
      }">
   <div *ngIf="user?.tipoUsuario === 'paciente'" class="dashboard-bg-blur"></div>
@@ -331,348 +331,318 @@
   </div>
 
   <!-- Dashboard para Pacientes y Dentistas (mantiene la funcionalidad original) -->
-  <div *ngIf="user?.tipoUsuario !== 'administrador' || isPacienteView">
-    <!-- Estadísticas Mejoradas -->
+  <div *ngIf="!isPacienteView && (esProfesional(user?.tipoUsuario) || user?.tipoUsuario === 'secretario')">
     <div class="row mb-4 g-4">
-      <div class="col-md-3 col-6">
-        <div class="card text-center bg-primary text-white shadow-sm h-100">
+      <div class="col-md-4 col-12 d-flex align-items-stretch">
+        <div class="card text-center bg-success text-white shadow-sm flex-fill" style="min-height: 220px; display: flex; flex-direction: column; justify-content: center;">
           <div class="card-body py-4">
-            <div class="stat-icon mb-3">
-              <i class="fas fa-calendar-alt fa-2x"></i>
+            <div class="stat-icon mb-2">
+              <i class="bi bi-calendar-event"></i>
             </div>
-            <h3 class="card-title display-6 mb-2 fw-bold">{{ totalTurnos }}</h3>
-            <p class="card-text mb-0">
-              {{ isPacienteView ? 'Total Turnos del Paciente' : 'Total Turnos' }}
-            </p>
-            <div class="stat-trend mt-2">
-              <i class="fas fa-chart-line"></i>
-              <small>Este mes</small>
+            <h5 class="card-title display-6 mb-1">{{ turnosHoy }}</h5>
+            <p class="card-text mb-0">Turnos Hoy</p>
+            <div class="stat-trend neutral mt-2">
+              <i class="fas fa-calendar-day"></i> Hoy
             </div>
           </div>
         </div>
       </div>
-      <div class="col-md-3 col-6">
-        <div class="card text-center bg-success text-white shadow-sm h-100">
+      <div class="col-md-4 col-12 d-flex align-items-stretch">
+        <div class="card text-center bg-info text-white shadow-sm flex-fill" style="min-height: 220px; display: flex; flex-direction: column; justify-content: center;">
           <div class="card-body py-4">
-            <div class="stat-icon mb-3">
-              <i class="fas fa-clock fa-2x"></i>
+            <div class="stat-icon mb-2">
+              <i class="bi bi-calendar-check-fill"></i>
             </div>
-            <h3 class="card-title display-6 mb-2 fw-bold">{{ turnosHoy }}</h3>
-            <p class="card-text mb-0">
-              {{ isPacienteView ? 'Turnos Hoy del Paciente' : 'Turnos Hoy' }}
-            </p>
-            <div class="stat-trend mt-2">
-              <i class="fas fa-calendar-day"></i>
-              <small>Hoy</small>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3 col-6">
-        <div class="card text-center bg-info text-white shadow-sm h-100">
-          <div class="card-body py-4">
-            <div class="stat-icon mb-3">
-              <i class="fas fa-calendar-check fa-2x"></i>
-            </div>
-            <div *ngIf="proximoTurno; else noProximoTurno">
-              <h5 class="card-title mb-1 fw-bold">{{ formatTurnoDate(proximoTurno.fecha) }}</h5>
-              <p class="card-text mb-1">{{ formatTurnoTime(proximoTurno.hora) }}</p>
-              <p class="card-text mb-0 small">{{ proximoTurno.nombre }} {{ proximoTurno.apellido }}</p>
-              <div class="mt-2 d-flex justify-content-center align-items-center gap-2">
-                <span [class]="getStatusClass(getTurnoEstadoReal(proximoTurno))" class="badge">
-                  <i [class]="getStatusIcon(getTurnoEstadoReal(proximoTurno))" class="me-1"></i>
-                  {{ getStatusText(getTurnoEstadoReal(proximoTurno)) }}
-                </span>
-              </div>
-            </div>
+            <ng-container *ngIf="proximoTurno; else noProximoTurno">
+              <h5 class="card-title mb-1 fw-bold">{{ proximoTurno.fecha | date:'EEEE, d MMMM y':'':'es-AR' }} - {{ proximoTurno.hora }}</h5>
+              <p class="card-text mb-1">Paciente: <b>{{ proximoTurno.nombre }} {{ proximoTurno.apellido }}</b></p>
+              <p class="card-text mb-1">Estado: <span class="badge bg-light text-dark">{{ proximoTurno.estado | titlecase }}</span></p>
+              <p class="card-text mb-0"><i class="bi bi-clock"></i> {{ getTiempoRestante(proximoTurno) }}</p>
+            </ng-container>
             <ng-template #noProximoTurno>
-              <h5 class="card-title mb-1 fw-bold">Sin turnos</h5>
-              <p class="card-text mb-0">No hay turnos programados</p>
+              <h5 class="card-title mb-1 fw-bold">Sin próximos turnos</h5>
+              <p class="card-text">No tienes turnos agendados próximamente.</p>
             </ng-template>
-            <div class="stat-trend mt-2">
-              <i class="fas fa-arrow-up"></i>
-              <small>Próximo</small>
+            <div class="stat-trend neutral mt-2">
+              <i class="fas fa-arrow-up"></i> Próximo
             </div>
           </div>
         </div>
       </div>
-      <div class="col-md-3 col-6">
-        <div class="card text-center bg-warning text-white shadow-sm h-100">
+      <div class="col-md-4 col-12 d-flex align-items-stretch">
+        <div class="card text-center bg-warning text-white shadow-sm flex-fill" style="min-height: 220px; display: flex; flex-direction: column; justify-content: center;">
           <div class="card-body py-4">
-            <div class="stat-icon mb-3">
-              <i class="fas fa-users fa-2x"></i>
+            <div class="stat-icon mb-2">
+              <i class="bi bi-people"></i>
             </div>
-            <h3 class="card-title display-6 mb-2 fw-bold">{{ filteredTurnos.length }}</h3>
-            <p class="card-text mb-0">
-              {{ isPacienteView ? 'Turnos Activos del Paciente' : 'Turnos Activos' }}
-            </p>
-            <div class="stat-trend mt-2">
-              <i class="fas fa-check-circle"></i>
-              <small>Confirmados</small>
+            <h5 class="card-title display-6 mb-1">{{ turnosActivos }}</h5>
+            <p class="card-text mb-0">Turnos Activos</p>
+            <div class="stat-trend neutral mt-2">
+              <i class="fas fa-check-circle"></i> Confirmados
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Información de Configuración Personalizada (Solo para dentistas) -->
-    <div class="card shadow-sm mt-4" *ngIf="user?.tipoUsuario === 'dentista'">
-      <div class="card-header d-flex justify-content-between align-items-center bg-gradient-info text-white">
-        <h5 class="mb-0">
-          <i class="fas fa-cog me-2"></i> 
-          <span class="fw-bold">Mi Configuración de Disponibilidad</span>
-        </h5>
-        <button class="btn btn-outline-light btn-sm" (click)="navigateToConfiguracion()" title="Configurar disponibilidad">
-          <i class="fas fa-edit me-1"></i>
-          Configurar
+  <!-- Información de Configuración Personalizada (Solo para dentistas) -->
+  <div class="card shadow-sm mt-4" *ngIf="esProfesional(user?.tipoUsuario)">
+    <div class="card-header d-flex justify-content-between align-items-center bg-gradient-info text-white">
+      <h5 class="mb-0">
+        <i class="fas fa-cog me-2"></i> 
+        <span class="fw-bold">Mi Configuración de Disponibilidad</span>
+      </h5>
+      <button class="btn btn-outline-light btn-sm" (click)="navigateToConfiguracion()" title="Configurar disponibilidad">
+        <i class="fas fa-edit me-1"></i>
+        Configurar
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="config-info">
+            <h6 class="text-info mb-2">
+              <i class="fas fa-clock me-1"></i>
+              Horarios de Trabajo
+            </h6>
+            <p class="mb-1">
+              <strong>Inicio:</strong> {{ getConfiguracionDetallada().horarioInicio }}
+            </p>
+            <p class="mb-1">
+              <strong>Fin:</strong> {{ getConfiguracionDetallada().horarioFin }}
+            </p>
+            <p class="mb-1">
+              <strong>Intervalo:</strong> {{ getConfiguracionDetallada().intervaloMinutos }} min
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="config-info">
+            <h6 class="text-success mb-2">
+              <i class="fas fa-calendar-day me-1"></i>
+              Días Laborables
+            </h6>
+            <p class="mb-1">
+              <strong>Días:</strong> {{ getConfiguracionDetallada().diasLaborables.join(', ') }}
+            </p>
+            <p class="mb-1" *ngIf="getConfiguracionDetallada().diasNoDisponibles > 0">
+              <strong>Días no disponibles:</strong> {{ getConfiguracionDetallada().diasNoDisponibles }}
+            </p>
+            <p class="mb-1" *ngIf="getConfiguracionDetallada().franjasBloqueadas > 0">
+              <strong>Franjas bloqueadas:</strong> {{ getConfiguracionDetallada().franjasBloqueadas }}
+            </p>
+            <p class="mb-1" *ngIf="getConfiguracionDetallada().pausas > 0">
+              <strong>Pausas configuradas:</strong> {{ getConfiguracionDetallada().pausas }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="alert alert-info mt-3 mb-0">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Configuración personalizada aplicada:</strong> 
+        Esta configuración se aplica automáticamente a todos los turnos y reservas.
+        <span *ngIf="!tieneConfiguracionPersonalizada()" class="text-warning">
+          <br><i class="fas fa-exclamation-triangle me-1"></i>
+          Usando configuración por defecto. Haz clic en "Configurar" para personalizar.
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Próximos Turnos (Nueva sección) - AHORA PRIMERO -->
+  <div class="card shadow-sm mt-4" *ngIf="(esProfesional(user?.tipoUsuario) || user?.tipoUsuario === 'secretario') && proximosTurnos.length > 0">
+    <div class="card-header d-flex justify-content-between align-items-center bg-gradient-primary text-white">
+      <h5 class="mb-0">
+        <i class="fas fa-calendar-check me-2"></i> 
+        <span class="fw-bold">Próximos Turnos</span>
+        <span class="badge bg-light text-primary ms-2">{{ proximosTurnos.length }}</span>
+      </h5>
+      <div class="d-flex gap-2">
+        <button class="btn btn-info btn-sm" (click)="refreshDashboard()" title="Actualizar datos">
+          <i class="fas fa-sync-alt me-1"></i>
+          Actualizar
+        </button>
+        <button class="btn btn-success btn-sm" (click)="navigateToAgenda()" *ngIf="user?.tipoUsuario !== 'paciente'" title="Ver agenda completa">
+          <i class="fas fa-calendar-week me-1"></i>
+          Ver Agenda
         </button>
       </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-6">
-            <div class="config-info">
-              <h6 class="text-info mb-2">
-                <i class="fas fa-clock me-1"></i>
-                Horarios de Trabajo
-              </h6>
-              <p class="mb-1">
-                <strong>Inicio:</strong> {{ getConfiguracionDetallada().horarioInicio }}
-              </p>
-              <p class="mb-1">
-                <strong>Fin:</strong> {{ getConfiguracionDetallada().horarioFin }}
-              </p>
-              <p class="mb-1">
-                <strong>Intervalo:</strong> {{ getConfiguracionDetallada().intervaloMinutos }} min
-              </p>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="config-info">
-              <h6 class="text-success mb-2">
-                <i class="fas fa-calendar-day me-1"></i>
-                Días Laborables
-              </h6>
-              <p class="mb-1">
-                <strong>Días:</strong> {{ getConfiguracionDetallada().diasLaborables.join(', ') }}
-              </p>
-              <p class="mb-1" *ngIf="getConfiguracionDetallada().diasNoDisponibles > 0">
-                <strong>Días no disponibles:</strong> {{ getConfiguracionDetallada().diasNoDisponibles }}
-              </p>
-              <p class="mb-1" *ngIf="getConfiguracionDetallada().franjasBloqueadas > 0">
-                <strong>Franjas bloqueadas:</strong> {{ getConfiguracionDetallada().franjasBloqueadas }}
-              </p>
-              <p class="mb-1" *ngIf="getConfiguracionDetallada().pausas > 0">
-                <strong>Pausas configuradas:</strong> {{ getConfiguracionDetallada().pausas }}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="alert alert-info mt-3 mb-0">
-          <i class="fas fa-info-circle me-2"></i>
-          <strong>Configuración personalizada aplicada:</strong> 
-          Esta configuración se aplica automáticamente a todos los turnos y reservas.
-          <span *ngIf="!tieneConfiguracionPersonalizada()" class="text-warning">
-            <br><i class="fas fa-exclamation-triangle me-1"></i>
-            Usando configuración por defecto. Haz clic en "Configurar" para personalizar.
-          </span>
-        </div>
-      </div>
     </div>
-
-    <!-- Próximos Turnos (Nueva sección) - AHORA PRIMERO -->
-    <div class="card shadow-sm mt-4" *ngIf="proximosTurnos.length > 0">
-      <div class="card-header d-flex justify-content-between align-items-center bg-gradient-primary text-white">
-        <h5 class="mb-0">
-          <i class="fas fa-calendar-check me-2"></i> 
-          <span class="fw-bold">Próximos Turnos</span>
-          <span class="badge bg-light text-primary ms-2">{{ proximosTurnos.length }}</span>
-        </h5>
-        <div class="d-flex gap-2">
-          <button class="btn btn-info btn-sm" (click)="refreshDashboard()" title="Actualizar datos">
-            <i class="fas fa-sync-alt me-1"></i>
-            Actualizar
-          </button>
-          <button class="btn btn-success btn-sm" (click)="navigateToAgenda()" *ngIf="user?.tipoUsuario !== 'paciente'" title="Ver agenda completa">
-            <i class="fas fa-calendar-week me-1"></i>
-            Ver Agenda
-          </button>
-        </div>
-      </div>
-      <div class="card-body p-0">
-        <div class="proximos-turnos-container">
-          <div class="row g-0">
-            <div class="col-12 col-md-6 col-lg-4" *ngFor="let turno of proximosTurnos.slice(0, 6)">
-              <div class="proximo-turno-card" 
-                   [class]="getTurnoPriorityClass(turno)"
-                   [class.urgente]="getTurnoPriority(turno) === 'high'"
-                   [class.proximo]="getTurnoPriority(turno) === 'medium'"
-                   [class.normal]="getTurnoPriority(turno) === 'low'">
-                
-                <!-- Header del turno con indicador de prioridad -->
-                <div class="turno-header">
-                  <div class="turno-priority-indicator" [class]="'priority-' + getTurnoPriority(turno)">
-                    <i [class]="getTurnoPriorityIcon(turno)"></i>
+    <div class="card-body p-0">
+      <div class="proximos-turnos-container">
+        <div class="row g-0">
+          <div class="col-12 col-md-6 col-lg-4" *ngFor="let turno of proximosTurnos.slice(0, 6)">
+            <div class="proximo-turno-card" 
+                 [class]="getTurnoPriorityClass(turno)"
+                 [class.urgente]="getTurnoPriority(turno) === 'high'"
+                 [class.proximo]="getTurnoPriority(turno) === 'medium'"
+                 [class.normal]="getTurnoPriority(turno) === 'low'">
+              
+              <!-- Header del turno con indicador de prioridad -->
+              <div class="turno-header">
+                <div class="turno-priority-indicator" [class]="'priority-' + getTurnoPriority(turno)">
+                  <i [class]="getTurnoPriorityIcon(turno)"></i>
+                </div>
+                <div class="turno-info">
+                  <div class="turno-number">
+                    <span class="badge bg-primary rounded-pill">#{{ turno.nroTurno || 'N/A' }}</span>
                   </div>
-                  <div class="turno-info">
-                    <div class="turno-number">
-                      <span class="badge bg-primary rounded-pill">#{{ turno.nroTurno || 'N/A' }}</span>
-                    </div>
-                    <div [class]="getStatusClass(getTurnoEstadoReal(turno))" class="turno-status">
-                      <i [class]="getStatusIcon(getTurnoEstadoReal(turno))" class="me-1"></i>
-                      {{ getStatusText(getTurnoEstadoReal(turno)) }}
-                    </div>
-                  </div>
-                  <div class="turno-time-remaining" [class]="'time-' + getTurnoPriority(turno)">
-                    <i class="fas fa-clock me-1"></i>
-                    {{ getTurnoTimeRemaining(turno) }}
+                  <div [class]="getStatusClass(getTurnoEstadoReal(turno))" class="turno-status">
+                    <i [class]="getStatusIcon(getTurnoEstadoReal(turno))" class="me-1"></i>
+                    {{ getStatusText(getTurnoEstadoReal(turno)) }}
                   </div>
                 </div>
+                <div class="turno-time-remaining" [class]="'time-' + getTurnoPriority(turno)">
+                  <i class="fas fa-clock me-1"></i>
+                  {{ getTurnoTimeRemaining(turno) }}
+                </div>
+              </div>
 
-                <!-- Información del paciente -->
-                <div class="patient-section">
-                  <div class="patient-avatar">
-                    <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center">
-                      {{ turno.nombre?.charAt(0) }}{{ turno.apellido?.charAt(0) }}
-                    </div>
-                  </div>
-                  <div class="patient-details">
-                    <h6 class="patient-name">{{ turno.nombre }} {{ turno.apellido }}</h6>
+              <!-- Información del paciente -->
+              <div class="patient-section">
+                <div class="patient-avatar">
+                  <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center">
+                    {{ turno.nombre?.charAt(0) }}{{ turno.apellido?.charAt(0) }}
                   </div>
                 </div>
-
-                <!-- Detalles del turno -->
-                <div class="turno-details">
-                  <div class="detail-row">
-                    <i class="fas fa-calendar-day text-primary"></i>
-                    <span class="detail-label">Fecha:</span>
-                    <span class="detail-value">{{ formatTurnoDate(turno.fecha) }}</span>
-                  </div>
-                  <div class="detail-row">
-                    <i class="fas fa-clock text-primary"></i>
-                    <span class="detail-label">Hora:</span>
-                    <span class="detail-value fw-bold">{{ formatTurnoTime(turno.hora) }}</span>
-                  </div>
-                  <div class="detail-row">
-                    <i class="fas fa-tooth text-primary"></i>
-                    <span class="detail-label">Tratamiento:</span>
-                    <span class="detail-value">{{ turno.tratamiento }}</span>
-                  </div>
-                  <div class="detail-row">
-                    <i class="fas fa-dollar-sign text-success"></i>
-                    <span class="detail-label">Precio:</span>
-                    <span class="detail-value fw-bold">${{ turno.precioFinal ? turno.precioFinal.toLocaleString() : '0' }}</span>
-                  </div>
+                <div class="patient-details">
+                  <h6 class="patient-name">{{ turno.nombre }} {{ turno.apellido }}</h6>
                 </div>
+              </div>
 
-                <!-- Acciones -->
-                <div class="turno-actions mt-3 pt-3 border-top">
-                  <div class="action-buttons">
-                    <!-- Botón para marcar como pagado (solo si está reservado o pendiente y es futuro) -->
-                    <button 
-                      *ngIf="(getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pendiente_pago_efectivo' || getTurnoEstadoReal(turno) === 'pendiente_pago_online') && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
-                      class="action-btn action-btn-success action-btn-large"
-                      (click)="marcarComoPagado(turno)"
-                      title="💰 Marcar como pagado">
-                      <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M8 12l3 3 5-5"></path>
-                      </svg>
-                      <span class="btn-text">Pagar</span>
-                    </button>
-                    
-                    <!-- Botón para marcar como reservado (solo si está cancelado y es futuro) -->
-                    <button 
-                      *ngIf="getTurnoEstadoReal(turno) === 'cancelado' && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
-                      class="action-btn action-btn-warning action-btn-large"
-                      (click)="marcarComoReservado(turno)"
-                      title="📅 Reactivar turno">
-                      <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-                        <path d="M21 3v5h-5"></path>
-                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-                        <path d="M3 21v-5h5"></path>
-                      </svg>
-                      <span class="btn-text">Reactivar</span>
-                    </button>
-                    
-                    <!-- Botón para completar (solo si está pagado o reservado y es futuro) -->
-                    <button 
-                      *ngIf="(getTurnoEstadoReal(turno) === 'pagado' || getTurnoEstadoReal(turno) === 'reservado') && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
-                      class="action-btn action-btn-success action-btn-large"
-                      (click)="completarTurno(turno)"
-                      title="✅ Marcar como completado">
-                      <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                        <polyline points="22,4 12,14.01 9,11.01"></polyline>
-                      </svg>
-                      <span class="btn-text">Completar</span>
-                    </button>
-                    
-                    <!-- Botón para reprogramar (prioritario para turnos ausentes o pasados) -->
-                    <button 
-                      *ngIf="(getTurnoEstadoReal(turno) === 'ausente' || isTurnoPasado(turno) || getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pagado') && user?.tipoUsuario !== 'paciente'" 
-                      class="action-btn action-btn-info action-btn-large"
-                      (click)="reprogramarTurno(turno)"
-                      title="✏️ Reprogramar fecha/hora">
-                      <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12,6 12,12 16,14"></polyline>
-                      </svg>
-                      <span class="btn-text">Reprogramar</span>
-                    </button>
-                    
-                    <!-- Botón para cancelar (solo si está reservado o pagado y es futuro) -->
-                    <button 
-                      *ngIf="(getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pagado') && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
-                      class="action-btn action-btn-danger action-btn-large"
-                      (click)="cancelarTurno(turno)"
-                      title="❌ Cancelar turno">
-                      <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                      <span class="btn-text">Cancelar</span>
-                    </button>
-                    
-                    <!-- Indicador para turnos completados -->
-                    <span 
-                      *ngIf="getTurnoEstadoReal(turno) === 'completado'"
-                      class="action-btn action-btn-disabled action-btn-large"
-                      title="Turno completado - No se pueden realizar acciones">
-                      <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <circle cx="12" cy="16" r="1"></circle>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                      </svg>
-                      <span class="btn-text">Completado</span>
-                    </span>
-                    
-                    <!-- Indicador para turnos ausentes -->
-                    <span 
-                      *ngIf="getTurnoEstadoReal(turno) === 'ausente' && !isTurnoFuturo(turno)"
-                      class="action-btn action-btn-disabled action-btn-large"
-                      title="Paciente ausente - Solo se puede reprogramar">
-                      <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="8.5" cy="7" r="4"></circle>
-                        <line x1="18" y1="8" x2="23" y2="13"></line>
-                        <line x1="23" y1="8" x2="18" y2="13"></line>
-                      </svg>
-                      <span class="btn-text">Ausente</span>
-                    </span>
-                    
-                    <!-- Botón para ver detalles (siempre disponible) -->
-                    <button 
-                      class="action-btn action-btn-outline action-btn-large"
-                      (click)="verDetallesTurno(turno)"
-                      title="👁️ Ver información detallada">
-                      <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                      <span class="btn-text">Ver</span>
-                    </button>
-                  </div>
+              <!-- Detalles del turno -->
+              <div class="turno-details">
+                <div class="detail-row">
+                  <i class="fas fa-calendar-day text-primary"></i>
+                  <span class="detail-label">Fecha:</span>
+                  <span class="detail-value">{{ formatTurnoDate(turno.fecha) }}</span>
+                </div>
+                <div class="detail-row">
+                  <i class="fas fa-clock text-primary"></i>
+                  <span class="detail-label">Hora:</span>
+                  <span class="detail-value fw-bold">{{ formatTurnoTime(turno.hora) }}</span>
+                </div>
+                <div class="detail-row">
+                  <i class="fas fa-tooth text-primary"></i>
+                  <span class="detail-label">Tratamiento:</span>
+                  <span class="detail-value">{{ turno.tratamiento }}</span>
+                </div>
+                <div class="detail-row">
+                  <i class="fas fa-dollar-sign text-success"></i>
+                  <span class="detail-label">Precio:</span>
+                  <span class="detail-value fw-bold">${{ turno.precioFinal ? turno.precioFinal.toLocaleString() : '0' }}</span>
+                </div>
+              </div>
+
+              <!-- Acciones -->
+              <div class="turno-actions mt-3 pt-3 border-top">
+                <div class="action-buttons">
+                  <!-- Botón para marcar como pagado (solo si está reservado o pendiente y es futuro) -->
+                  <button 
+                    *ngIf="(getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pendiente_pago_efectivo' || getTurnoEstadoReal(turno) === 'pendiente_pago_online') && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
+                    class="action-btn action-btn-success action-btn-large"
+                    (click)="marcarComoPagado(turno)"
+                    title="💰 Marcar como pagado">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M8 12l3 3 5-5"></path>
+                    </svg>
+                    <span class="btn-text">Pagar</span>
+                  </button>
+                  
+                  <!-- Botón para marcar como reservado (solo si está cancelado y es futuro) -->
+                  <button 
+                    *ngIf="getTurnoEstadoReal(turno) === 'cancelado' && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
+                    class="action-btn action-btn-warning action-btn-large"
+                    (click)="marcarComoReservado(turno)"
+                    title="📅 Reactivar turno">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                      <path d="M21 3v5h-5"></path>
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                      <path d="M3 21v-5h5"></path>
+                    </svg>
+                    <span class="btn-text">Reactivar</span>
+                  </button>
+                  
+                  <!-- Botón para completar (solo si está pagado o reservado y es futuro) -->
+                  <button 
+                    *ngIf="(getTurnoEstadoReal(turno) === 'pagado' || getTurnoEstadoReal(turno) === 'reservado') && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
+                    class="action-btn action-btn-success action-btn-large"
+                    (click)="completarTurno(turno)"
+                    title="✅ Marcar como completado">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                      <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                    </svg>
+                    <span class="btn-text">Completar</span>
+                  </button>
+                  
+                  <!-- Botón para reprogramar (prioritario para turnos ausentes o pasados) -->
+                  <button 
+                    *ngIf="(getTurnoEstadoReal(turno) === 'ausente' || isTurnoPasado(turno) || getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pagado') && user?.tipoUsuario !== 'paciente'" 
+                    class="action-btn action-btn-info action-btn-large"
+                    (click)="reprogramarTurno(turno)"
+                    title="✏️ Reprogramar fecha/hora">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12,6 12,12 16,14"></polyline>
+                    </svg>
+                    <span class="btn-text">Reprogramar</span>
+                  </button>
+                  
+                  <!-- Botón para cancelar (solo si está reservado o pagado y es futuro) -->
+                  <button 
+                    *ngIf="(getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pagado') && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
+                    class="action-btn action-btn-danger action-btn-large"
+                    (click)="cancelarTurno(turno)"
+                    title="❌ Cancelar turno">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    <span class="btn-text">Cancelar</span>
+                  </button>
+                  
+                  <!-- Indicador para turnos completados -->
+                  <span 
+                    *ngIf="getTurnoEstadoReal(turno) === 'completado'"
+                    class="action-btn action-btn-disabled action-btn-large"
+                    title="Turno completado - No se pueden realizar acciones">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <circle cx="12" cy="16" r="1"></circle>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span class="btn-text">Completado</span>
+                  </span>
+                  
+                  <!-- Indicador para turnos ausentes -->
+                  <span 
+                    *ngIf="getTurnoEstadoReal(turno) === 'ausente' && !isTurnoFuturo(turno)"
+                    class="action-btn action-btn-disabled action-btn-large"
+                    title="Paciente ausente - Solo se puede reprogramar">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="8.5" cy="7" r="4"></circle>
+                      <line x1="18" y1="8" x2="23" y2="13"></line>
+                      <line x1="23" y1="8" x2="18" y2="13"></line>
+                    </svg>
+                    <span class="btn-text">Ausente</span>
+                  </span>
+                  
+                  <!-- Botón para ver detalles (siempre disponible) -->
+                  <button 
+                    class="action-btn action-btn-outline action-btn-large"
+                    (click)="verDetallesTurno(turno)"
+                    title="👁️ Ver información detallada">
+                    <svg class="icon-action" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span class="btn-text">Ver</span>
+                  </button>
                 </div>
               </div>
             </div>
