@@ -255,7 +255,7 @@ export class OdontogramaComponent implements OnInit, OnDestroy, OnChanges {
       }
       import('html2canvas').then(html2canvas => {
         html2canvas.default(odontogramaElement, { useCORS: true }).then(canvas => {
-          const imgData = canvas.toDataURL('image/png', 0.7);
+          const imgData = canvas.toDataURL('image/png', 0.4);
           const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [canvas.width, canvas.height] });
           pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
           pdf.save('odontograma_grafico.pdf');
@@ -310,7 +310,7 @@ export class OdontogramaComponent implements OnInit, OnDestroy, OnChanges {
       }
       import('html2canvas').then(html2canvas => {
         html2canvas.default(odontogramaElem, { useCORS: true }).then(canvas => {
-          const imgData = canvas.toDataURL('image/png', 0.7);
+          const imgData = canvas.toDataURL('image/png', 0.4);
           const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [canvas.width, canvas.height] });
           pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
           pdf.save('odontograma.pdf');
