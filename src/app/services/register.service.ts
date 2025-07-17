@@ -25,6 +25,18 @@ export class RegisterService {
     return this._http.post(this.hostBase,body,httpOptions);
   }
 
+  // Crear usuario y paciente con contraseña automática
+  addUsuarioAutomatico(usuario: any): Observable<any> {
+    let httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json'
+      })
+    };
+    let body: any = JSON.stringify(usuario);
+    // Llama a /usuario/automatico
+    return this._http.post(this.hostBase + 'automatico', body, httpOptions);
+  }
+
   getUsuarios(): Observable<any[]> {
     return this._http.get<any[]>(this.hostBase);
   }

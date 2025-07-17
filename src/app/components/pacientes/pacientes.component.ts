@@ -75,6 +75,10 @@ export class PacientesComponent implements OnInit {
   odontogramaPaciente: any = null;
   pacienteSeleccionado: any = null;
   showOdontograma: boolean = false;
+  formErrors: string[] = [];
+  showSuccessMessage: boolean = false;
+  submitted: boolean = false;
+  generatedPassword: string = '';
 
   constructor(
     private pacienteService: PacienteService,
@@ -198,70 +202,74 @@ export class PacientesComponent implements OnInit {
     };
   }
 
-  createPaciente(): void {
-    if (!this.isValidForm()) {
-      this.notificationService.showWarning('Por favor, completa todos los campos obligatorios');
+  private generarPasswordSeguro(): string {
+    const mayus = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const minus = 'abcdefghijklmnopqrstuvwxyz';
+    const nums = '0123456789';
+    const especiales = '!@#$%^&*()_+-=~';
+    let password = '';
+    password += mayus[Math.floor(Math.random() * mayus.length)];
+    password += minus[Math.floor(Math.random() * minus.length)];
+    password += nums[Math.floor(Math.random() * nums.length)];
+    password += especiales[Math.floor(Math.random() * especiales.length)];
+    const all = mayus + minus + nums + especiales;
+    for (let i = 4; i < 12; i++) {
+      password += all[Math.floor(Math.random() * all.length)];
+    }
+    return password.split('').sort(() => 0.5 - Math.random()).join('');
+  }
+
+  async createPaciente(): Promise<void> {
+    console.log('Intentando crear paciente', this.pacienteForm);
+    this.submitted = true;
+    this.formErrors = [];
+    this.showSuccessMessage = false;
+    // Solo valido los campos realmente obligatorios
+    if (!this.pacienteForm.nombreUsuario ||
+        !this.pacienteForm.email ||
+        !this.pacienteForm.nombre ||
+        !this.pacienteForm.apellido ||
+        !this.isDniValido(this.pacienteForm.dni) ||
+        !this.pacienteForm.obraSocial) {
+      this.formErrors = ['Por favor, completa todos los campos obligatorios.'];
       return;
     }
-
-    // Solo verificar contraseñas si no es secretario
-    if (!this.isSecretario() && this.pacienteForm.password !== this.pacienteForm.confirmPassword) {
-      this.notificationService.showError('Las contraseñas no coinciden');
-      return;
-    }
-
+    if (this.isCreating) return; // Evita doble submit
     this.isCreating = true;
-
-    // Preparar datos para el registro usando la estructura de RegisterForm
-    let registerData: RegisterForm = {
-      nombreUsuario: this.pacienteForm.nombreUsuario.trim(),
-      password: this.pacienteForm.password,
-      confirmPassword: this.pacienteForm.confirmPassword,
-      nombre: this.pacienteForm.nombre.trim(),
-      apellido: this.pacienteForm.apellido.trim(),
-      telefono: this.pacienteForm.telefono.trim(),
-      direccion: this.pacienteForm.direccion.trim(),
-      dni: this.pacienteForm.dni.trim(),
+    // Preparo los datos sin password ni confirmPassword
+    const usuarioData = {
+      nombreUsuario: this.pacienteForm.nombreUsuario,
       tipoUsuario: 'paciente',
-      obraSocial: this.pacienteForm.obraSocial.trim(),
-      email: this.pacienteForm.email.trim()
+      email: this.pacienteForm.email,
+      nombre: this.pacienteForm.nombre,
+      apellido: this.pacienteForm.apellido,
+      telefono: this.pacienteForm.telefono,
+      direccion: this.pacienteForm.direccion,
+      dni: this.pacienteForm.dni,
+      obraSocial: this.pacienteForm.obraSocial
     };
-
-    // Si es secretario, generar contraseña automáticamente
-    if (this.isSecretario()) {
-      const autoPassword = this.generateAutoPassword();
-      registerData.password = autoPassword;
-      registerData.confirmPassword = autoPassword;
-      console.log('🔐 Contraseña automática generada para secretario:', autoPassword);
-    }
-
-    // Usar el RegisterService para crear el usuario completo (usuario + paciente)
-    this.registerService.addUsuario(registerData).subscribe({
-      next: (response) => {
-        console.log('Usuario y paciente creados exitosamente:', response);
-        this.isCreating = false;
-        this.closeModal();
-        const successMessage = this.isSecretario() 
-          ? 'Paciente creado exitosamente. Se ha generado una contraseña automática para el paciente.'
-          : 'Paciente creado exitosamente. Se ha creado una cuenta de usuario para el paciente.';
-        this.notificationService.showSuccess(successMessage);
-        if (response.token && response.user) {
-          this.authService.setToken(response.token);
-          this.authService.setCurrentUser(response.user);
-        }
-        this.loadPacientes(); // Recarga la lista sin recargar la página
-      },
-      error: (error) => {
-        console.error('Error al crear paciente:', error);
-        this.isCreating = false;
-        
-        if (error.status === 400) {
-          this.notificationService.showError('Error: Verifica que el nombre de usuario no esté en uso y que todos los datos sean válidos.');
-        } else {
-          this.notificationService.showError('Error al crear el paciente. Por favor, intenta nuevamente.');
-        }
+    try {
+      const res: any = await this.registerService.addUsuarioAutomatico(usuarioData).toPromise();
+      console.log('[PACIENTES] Respuesta del backend al crear usuario automático:', res);
+      this.isCreating = false;
+      this.showSuccessMessage = true;
+      this.formErrors = [];
+      this.submitted = false;
+      this.generatedPassword = res.password;
+      this.loadPacientes();
+      // Mostrar notificación amigable y cerrar modal
+      this.notificationService.showSuccess('¡Paciente creado exitosamente!');
+      this.closeModal();
+    } catch (error: any) {
+      this.isCreating = false;
+      if (error && error.error && error.error.msg) {
+        this.formErrors = [error.error.msg];
+        console.error('[PACIENTES] Error del backend:', error.error.msg);
+      } else {
+        this.formErrors = ['Error al crear el paciente. Por favor, intenta nuevamente.'];
+        console.error('[PACIENTES] Error desconocido al crear paciente:', error);
       }
-    });
+    }
   }
 
   isValidForm(): boolean {
@@ -285,7 +293,14 @@ export class PacientesComponent implements OnInit {
   }
 
   get canCreatePaciente(): boolean {
-    return this.isValidForm() && !this.isCreating;
+    return !!(
+      this.pacienteForm.nombreUsuario &&
+      this.pacienteForm.email &&
+      this.pacienteForm.nombre &&
+      this.pacienteForm.apellido &&
+      this.isDniValido(this.pacienteForm.dni) &&
+      this.pacienteForm.obraSocial
+    );
   }
 
   // Métodos para el modal de editar paciente
@@ -440,5 +455,9 @@ export class PacientesComponent implements OnInit {
 
   navigateToAgenda(): void {
     this.router.navigate(['/agenda']);
+  }
+
+  isDniValido(dni: string): boolean {
+    return !!dni && /^[0-9]{7,8}$/.test(dni);
   }
 }

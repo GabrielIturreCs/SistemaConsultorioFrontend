@@ -142,6 +142,17 @@
           <button type="button" class="btn-close btn-close-white" (click)="closeModal()" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
+          <!-- Resumen de errores -->
+          <div *ngIf="formErrors && formErrors.length > 0" class="alert alert-danger">
+            <ul class="mb-0">
+              <li *ngFor="let err of formErrors">{{ err }}</li>
+            </ul>
+          </div>
+          <!-- Mensaje de éxito -->
+          <div *ngIf="showSuccessMessage" class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>
+            Paciente creado correctamente.
+          </div>
           <div class="alert alert-info mb-4">
             <div class="d-flex align-items-center">
               <i class="bi bi-info-circle-fill me-3 fs-4"></i>
@@ -151,8 +162,7 @@
               </div>
             </div>
           </div>
-
-          <form (ngSubmit)="createPaciente()" #pacienteFormRef="ngForm">
+          <form #pacienteFormRef="ngForm" autocomplete="off" novalidate>
             <!-- Datos de acceso -->
             <div class="card mb-4">
               <div class="card-header">
@@ -175,9 +185,13 @@
                       [(ngModel)]="pacienteForm.nombreUsuario"
                       name="nombreUsuario"
                       required
-                      placeholder="ej: juan.perez"
+                      placeholder="Ej: juan.perez"
+                      [ngClass]="{'is-invalid': submitted && !pacienteForm.nombreUsuario}"
                     >
                     <div class="form-text">Debe ser único en el sistema</div>
+                    <div *ngIf="submitted && !pacienteForm.nombreUsuario" class="invalid-feedback">
+                      El nombre de usuario es obligatorio.
+                    </div>
                   </div>
                   <div class="col-md-6 mb-3">
                     <label for="email" class="form-label">
@@ -192,56 +206,16 @@
                       name="email"
                       required
                       placeholder="correo@ejemplo.com"
+                      [ngClass]="{'is-invalid': submitted && !pacienteForm.email}"
                     >
+                    <div *ngIf="submitted && !pacienteForm.email" class="invalid-feedback">
+                      El correo electrónico es obligatorio.
+                    </div>
                   </div>
                 </div>
-                
-                <!-- Campos de contraseña (solo para no secretarios) -->
-                <div class="row" *ngIf="!isSecretario()">
-                  <div class="col-md-6 mb-3">
-                    <label for="password" class="form-label">
-                      <i class="bi bi-lock"></i>
-                      Contraseña *
-                    </label>
-                    <input 
-                      type="password" 
-                      class="form-control" 
-                      id="password"
-                      [(ngModel)]="pacienteForm.password"
-                      name="password"
-                      required
-                      placeholder="Mínimo 6 caracteres"
-                      minlength="6"
-                    >
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label for="confirmPassword" class="form-label">
-                      <i class="bi bi-lock-fill"></i>
-                      Confirmar Contraseña *
-                    </label>
-                    <input 
-                      type="password" 
-                      class="form-control" 
-                      id="confirmPassword"
-                      [(ngModel)]="pacienteForm.confirmPassword"
-                      name="confirmPassword"
-                      required
-                      placeholder="Repite la contraseña"
-                      minlength="6"
-                    >
-                  </div>
-                </div>
-                
-                <!-- Mensaje para secretarios -->
                 <div class="alert alert-info" *ngIf="isSecretario()">
                   <i class="bi bi-info-circle-fill me-2"></i>
                   <strong>Modo Secretario:</strong> La contraseña se generará automáticamente para el paciente.
-                </div>
-                
-                <!-- Validación de contraseñas (solo para no secretarios) -->
-                <div class="alert alert-warning" *ngIf="!isSecretario() && pacienteForm.password && pacienteForm.confirmPassword && pacienteForm.password !== pacienteForm.confirmPassword">
-                  <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                  Las contraseñas no coinciden. Por favor, verifica que sean idénticas.
                 </div>
               </div>
             </div>
@@ -268,8 +242,12 @@
                       [(ngModel)]="pacienteForm.nombre"
                       name="nombre"
                       required
-                      placeholder="Nombre del paciente"
+                      placeholder="Ej: Juan"
+                      [ngClass]="{'is-invalid': submitted && !pacienteForm.nombre}"
                     >
+                    <div *ngIf="submitted && !pacienteForm.nombre" class="invalid-feedback">
+                      El nombre es obligatorio.
+                    </div>
                   </div>
                   <div class="col-md-6 mb-3">
                     <label for="apellido" class="form-label">
@@ -283,8 +261,12 @@
                       [(ngModel)]="pacienteForm.apellido"
                       name="apellido"
                       required
-                      placeholder="Apellido del paciente"
+                      placeholder="Ej: Pérez"
+                      [ngClass]="{'is-invalid': submitted && !pacienteForm.apellido}"
                     >
+                    <div *ngIf="submitted && !pacienteForm.apellido" class="invalid-feedback">
+                      El apellido es obligatorio.
+                    </div>
                   </div>
                 </div>
                 
@@ -301,10 +283,14 @@
                       [(ngModel)]="pacienteForm.dni"
                       name="dni"
                       required
-                      placeholder="12345678"
+                      placeholder="Ej: 12345678"
                       maxlength="8"
                       pattern="[0-9]{7,8}"
+                      [ngClass]="{'is-invalid': submitted && !isDniValido(pacienteForm.dni)}"
                     >
+                    <div *ngIf="submitted && !isDniValido(pacienteForm.dni)" class="invalid-feedback">
+                      El DNI es obligatorio y debe tener 7 u 8 dígitos numéricos.
+                    </div>
                   </div>
                   <div class="col-md-6 mb-3">
                     <label for="telefono" class="form-label">
@@ -317,8 +303,9 @@
                       id="telefono"
                       [(ngModel)]="pacienteForm.telefono"
                       name="telefono"
-                      placeholder="(código área) número"
+                      placeholder="Ej: 3511234567"
                     >
+                    <div class="form-text">Opcional, pero recomendable para contacto rápido.</div>
                   </div>
                 </div>
                 
@@ -334,8 +321,9 @@
                       id="direccion"
                       [(ngModel)]="pacienteForm.direccion"
                       name="direccion"
-                      placeholder="Calle, número, ciudad, provincia"
+                      placeholder="Ej: Av. Siempre Viva 123, Córdoba, Argentina"
                     >
+                    <div class="form-text">Opcional, pero útil para ubicar al paciente.</div>
                   </div>
                   <div class="col-md-4 mb-3">
                     <label for="obraSocial" class="form-label">
@@ -348,6 +336,7 @@
                       [(ngModel)]="pacienteForm.obraSocial"
                       name="obraSocial"
                       required
+                      [ngClass]="{'is-invalid': submitted && !pacienteForm.obraSocial}"
                     >
                       <option value="">Seleccionar...</option>
                       <option value="OSDE">OSDE</option>
@@ -358,6 +347,9 @@
                       <option value="IOMA">IOMA</option>
                       <option value="Particular">Particular</option>
                     </select>
+                    <div *ngIf="submitted && !pacienteForm.obraSocial" class="invalid-feedback">
+                      La obra social es obligatoria.
+                    </div>
                   </div>
                 </div>
               </div>
@@ -370,15 +362,21 @@
             Cancelar
           </button>
           <button 
-            type="button" 
-            class="btn btn-success" 
+            type="button"
+            class="btn btn-success"
             (click)="createPaciente()"
-            [disabled]="!canCreatePaciente"
+            [disabled]="!canCreatePaciente || isCreating"
           >
             <span *ngIf="isCreating" class="spinner-border spinner-border-sm me-2"></span>
             <i *ngIf="!isCreating" class="bi bi-check-circle me-2"></i>
             {{ isCreating ? 'Creando Paciente...' : 'Crear Paciente' }}
           </button>
+        </div>
+
+        <!-- Mensaje de éxito personalizado -->
+        <div *ngIf="showSuccessMessage" class="alert alert-success mt-3">
+          <i class="bi bi-check-circle me-2"></i>
+          ¡Paciente creado correctamente! El paciente ya puede acceder con sus credenciales.
         </div>
       </div>
     </div>

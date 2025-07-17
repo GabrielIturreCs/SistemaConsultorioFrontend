@@ -66,7 +66,7 @@ export interface Tratamiento {
 }
 
 export interface Paciente {
-  id: number;
+  id?: number;
   _id?: string;
   nombre: string;
   apellido: string;
