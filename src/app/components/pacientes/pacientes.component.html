@@ -119,7 +119,7 @@
               <button mat-icon-button color="warn" matTooltip="Eliminar" (click)="eliminarPaciente(paciente)">
                 <mat-icon>delete</mat-icon>
               </button>
-              <button mat-icon-button color="accent" matTooltip="Odontograma" (click)="abrirOdontograma(paciente)">
+              <button mat-icon-button color="accent" matTooltip="Odontograma" (click)="abrirOdontograma(paciente)" *ngIf="isOdontologo()">
                 <mat-icon>medical_services</mat-icon>
               </button>
             </td>
@@ -195,7 +195,9 @@
                     >
                   </div>
                 </div>
-                <div class="row">
+                
+                <!-- Campos de contraseña (solo para no secretarios) -->
+                <div class="row" *ngIf="!isSecretario()">
                   <div class="col-md-6 mb-3">
                     <label for="password" class="form-label">
                       <i class="bi bi-lock"></i>
@@ -230,8 +232,14 @@
                   </div>
                 </div>
                 
-                <!-- Validación de contraseñas -->
-                <div class="alert alert-warning" *ngIf="pacienteForm.password && pacienteForm.confirmPassword && pacienteForm.password !== pacienteForm.confirmPassword">
+                <!-- Mensaje para secretarios -->
+                <div class="alert alert-info" *ngIf="isSecretario()">
+                  <i class="bi bi-info-circle-fill me-2"></i>
+                  <strong>Modo Secretario:</strong> La contraseña se generará automáticamente para el paciente.
+                </div>
+                
+                <!-- Validación de contraseñas (solo para no secretarios) -->
+                <div class="alert alert-warning" *ngIf="!isSecretario() && pacienteForm.password && pacienteForm.confirmPassword && pacienteForm.password !== pacienteForm.confirmPassword">
                   <i class="bi bi-exclamation-triangle-fill me-2"></i>
                   Las contraseñas no coinciden. Por favor, verifica que sean idénticas.
                 </div>

@@ -44,8 +44,8 @@
           </li>
         </ng-container>
 
-        <!-- Si es DENTISTA -->
-        <ng-container *ngIf="isLoggedIn && role === 'dentista'">
+        <!-- Si es DENTISTA o ESPECIALISTA (no paciente, no admin) -->
+        <ng-container *ngIf="isLoggedIn && role !== 'paciente' && role !== 'administrador'">
           <li class="nav-item">
             <a class="nav-link d-flex align-items-center gap-1" [routerLink]="['agenda']">
               <i class="bi bi-journal-medical"></i> Agenda

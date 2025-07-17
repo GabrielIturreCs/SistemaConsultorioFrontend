@@ -5,10 +5,12 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
 import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
+import { DentistNavbarComponent } from '../layouts/dentist-navbar/dentist-navbar.component';
+import { DentistaService } from '../../services/dentista.service';
 
 @Component({
   selector: 'app-tratamiento',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminNavbarComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminNavbarComponent, DentistNavbarComponent],
   templateUrl: './tratamiento.component.html',
   styleUrls: ['./tratamiento.component.css']
 })
@@ -26,10 +28,18 @@ export class TratamientoComponent implements OnInit {
   filteredTratamientos: Tratamiento[] = [];
   loading: boolean = false;
 
+  // Variables para detectar tipo de usuario
+  user: any = null;
+  isAdmin: boolean = false;
+  isProfesional: boolean = false;
+
+  especialistas: any[] = [];
+
   constructor(
     private tratamientoService: TratamientoService, 
     private fb: FormBuilder,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private dentistaService: DentistaService
   ) {
     this.formulario = this.fb.group({
       nroTratamiento: ['', Validators.required],
@@ -39,23 +49,52 @@ export class TratamientoComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.loadUserData();
     this.cargarTratamientos();
+    this.loadEspecialistas();
+  }
+
+  loadUserData() {
+    // Cargar datos del usuario desde sessionStorage
+    const userData = sessionStorage.getItem('user');
+    if (userData) {
+      this.user = JSON.parse(userData);
+      this.isAdmin = this.user?.tipoUsuario === 'administrador';
+      this.isProfesional = this.user?.tipoUsuario !== 'paciente' && this.user?.tipoUsuario !== 'administrador';
+    }
   }
 
   cargarTratamientos() {
     this.loading = true;
-    this.tratamientoService.getTratamientos().subscribe({
-      next: (data) => {
-        this.tratamientos = data;
-        this.filterTratamientos();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error al cargar tratamientos:', error);
-        this.loading = false;
-      }
-    });
+    
+    // Si es profesional, cargar sus tratamientos específicos + globales
+    if (this.isProfesional && this.user?.id) {
+      this.tratamientoService.getTratamientos(this.user.id.toString()).subscribe({
+        next: (data) => {
+          this.tratamientos = data;
+          this.filterTratamientos();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error al cargar tratamientos del profesional:', error);
+          this.loading = false;
+        }
+      });
+    } else {
+      // Si es admin, cargar solo tratamientos globales
+      this.tratamientoService.getTratamientos().subscribe({
+        next: (data) => {
+          this.tratamientos = data;
+          this.filterTratamientos();
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error al cargar tratamientos:', error);
+          this.loading = false;
+        }
+      });
+    }
   }
 
   // Función de filtrado
@@ -95,7 +134,11 @@ export class TratamientoComponent implements OnInit {
         });
       }
     } else {
-      this.tratamientoService.crearTratamiento(tratamientoData).subscribe({
+      // Crear tratamiento con información del profesional
+      const esGlobal = this.isAdmin;
+      const profesionalId = this.isProfesional ? this.user?.id?.toString() : undefined;
+      
+      this.tratamientoService.crearTratamiento(tratamientoData, profesionalId, esGlobal).subscribe({
         next: (response) => {
           if (response.status === '1') {
             this.cargarTratamientos();
@@ -151,5 +194,13 @@ export class TratamientoComponent implements OnInit {
     this.editando = false;
     this.nroEditando = null;
     this.formulario.reset();
+  }
+
+  loadEspecialistas(): void {
+    // Usar el mismo servicio que en reservas para traer todos los profesionales
+    this.dentistaService.getDentistas().subscribe({
+      next: (especialistas) => this.especialistas = especialistas,
+      error: () => this.especialistas = []
+    });
   }
 }

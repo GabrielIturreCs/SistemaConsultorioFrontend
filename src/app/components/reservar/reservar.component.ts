@@ -18,6 +18,7 @@ import { DisponibilidadService } from '../../services/disponibilidad.service';
 import { Disponibilidad } from '../../interfaces';
 import { PdfExportService } from '../../services/pdf-export.service';
 import { PatientNavbarComponent } from '../layouts/patient-navbar/patient-navbar.component';
+import { TratamientoService } from '../../services/tratamiento.service';
 
 interface User {
   id: number;
@@ -94,7 +95,7 @@ export class ReservarComponent implements OnInit {
 
   turnoForm = {
     pacienteId: '',
-    dentistaId: '',
+    profesionalId: '', // antes era dentistaId
     fecha: '',
     hora: '',
     tratamientoId: ''
@@ -105,6 +106,7 @@ export class ReservarComponent implements OnInit {
   showCancelReservaModal: boolean = false;
   dentistas: any[] = [];
   selectedDentista: any = null;
+  loadingDentistas: boolean = false;
   
   // Propiedades para disponibilidad personalizada
   disponibilidadDentista: Disponibilidad | null = null;
@@ -130,7 +132,8 @@ export class ReservarComponent implements OnInit {
     private notificationService: NotificationService,
     private dentistaService: DentistaService,
     private disponibilidadService: DisponibilidadService,
-    private pdfExportService: PdfExportService
+    private pdfExportService: PdfExportService,
+    private tratamientoService: TratamientoService
   ) {
     this.chatForm = this.fb.group({
       message: ['', [Validators.required, Validators.minLength(1)]]
@@ -144,26 +147,26 @@ export class ReservarComponent implements OnInit {
     this.loadChatHistory();
     this.addWelcomeMessage();
     
-    // Cargar configuración personalizada del dentista si es dentista
-    if (this.user?.tipoUsuario === 'dentista') {
-      console.log('🦷 Usuario es dentista, cargando configuración personalizada...');
-      // Establecer el dentista seleccionado como el usuario actual
+    // Cargar configuración personalizada del profesional si no es paciente
+    if (this.user?.tipoUsuario !== 'paciente') {
+      console.log('👨‍⚕️ Usuario es profesional, cargando configuración personalizada...');
+      // Establecer el profesional seleccionado como el usuario actual
       this.selectedDentista = {
-        _id: this.user.id.toString(),
-        id: this.user.id,
-        nombre: this.user.nombre,
-        apellido: this.user.apellido
+        _id: this.user?.id?.toString() || '',
+        id: this.user?.id || 0,
+        nombre: this.user?.nombre || '',
+        apellido: this.user?.apellido || ''
       };
       
-      // Cargar disponibilidad personalizada del dentista
-      this.cargarDisponibilidadDentista(this.user.id.toString());
+      // Cargar disponibilidad personalizada del profesional
+      this.cargarDisponibilidadProfesional(this.user?.id?.toString() || '');
     }
     
-    // Solo generar calendario si no es paciente (para dentistas/administradores)
-    // Los pacientes necesitan seleccionar un dentista primero
+    // Solo generar calendario si no es paciente (para profesionales/administradores)
+    // Los pacientes necesitan seleccionar un profesional primero
     if (this.user?.tipoUsuario !== 'paciente') {
-      // Para dentistas, esperar a que se cargue la configuración personalizada
-      if (this.user?.tipoUsuario === 'dentista') {
+      // Para profesionales, esperar a que se cargue la configuración personalizada
+      if (this.user?.tipoUsuario !== 'paciente') {
         setTimeout(() => {
           this.generateCalendar();
         }, 1500); // Dar tiempo a que se cargue la disponibilidad
@@ -173,7 +176,8 @@ export class ReservarComponent implements OnInit {
     }
     
     this.loadOccupiedSlots();
-    if (this.user?.tipoUsuario === 'paciente') {
+    // Cargar todos los profesionales para pacientes y secretarios
+    if (this.user?.tipoUsuario === 'paciente' || this.user?.tipoUsuario === 'secretario') {
       this.loadDentistas();
     }
     
@@ -562,7 +566,21 @@ export class ReservarComponent implements OnInit {
 
   loadTratamientos(): void {
     console.log('Cargando tratamientos...');
-    this.turnoService.getTratamientos().subscribe({
+    
+    // Determinar qué tratamientos cargar
+    let profesionalId: string | undefined;
+    
+    if (this.user?.tipoUsuario === 'paciente') {
+      // Si es paciente, cargar tratamientos del profesional seleccionado
+      profesionalId = this.selectedDentista?._id || this.selectedDentista?.id;
+    } else {
+      // Si es profesional, cargar sus propios tratamientos
+      profesionalId = this.user?.id?.toString();
+    }
+    
+    console.log('Profesional ID para tratamientos:', profesionalId);
+    
+    this.tratamientoService.getTratamientos(profesionalId).subscribe({
       next: (tratamientos) => {
         console.log('Tratamientos recibidos:', tratamientos);
         this.tratamientos = tratamientos;
@@ -621,10 +639,14 @@ export class ReservarComponent implements OnInit {
     if (!this.canRegisterTurno) return;
     this.isLoading = true;
     const turnoData = {
-      pacienteId: this.user?.tipoUsuario === 'paciente' ? this.user.id : parseInt(this.turnoForm.pacienteId),
-      fecha: this.turnoForm.fecha,
-      hora: this.turnoForm.hora,
-      tratamientoId: parseInt(this.turnoForm.tratamientoId)
+      pacienteId: this.selectedPaciente?._id || this.selectedPaciente?.id,
+      profesionalId: this.user?.id, // Asociar el turno al userId del profesional (no solo dentista)
+      fecha: this.selectedDate,
+      hora: this.selectedTime,
+      tratamientoId: this.selectedTreatment?._id || this.selectedTreatment?.id,
+      estado: 'reservado',
+      metodoPago: 'online',
+      // Puedes agregar más campos si es necesario
     };
     this.turnoService.createTurno(turnoData).subscribe({
       next: () => {
@@ -796,21 +818,21 @@ export class ReservarComponent implements OnInit {
   generateTimeSlots(): void {
     if (!this.selectedDate) return;
 
-    // Obtener el ID del dentista correcto
-    let dentistaId = '';
-    if (this.user?.tipoUsuario === 'dentista') {
-      // Si es dentista, usar su propio ID
-      dentistaId = this.user.id.toString();
+    // Usar this.user.id directamente si es especialista, o this.selectedProfesional?.id si aplica
+    let profesionalId = '';
+    if (this.user && this.user.tipoUsuario !== 'paciente') {
+      // Si es profesional, usar su propio ID
+      profesionalId = this.user.id.toString();
     } else {
-      // Si es paciente, usar el dentista seleccionado
-      dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
+      // Si es paciente, usar el profesional seleccionado
+      profesionalId = this.selectedDentista?._id || this.selectedDentista?.id;
     }
     
-    console.log('🦷 generateTimeSlots - dentistaId:', dentistaId);
+    console.log('🦷 generateTimeSlots - profesionalId:', profesionalId);
     console.log('🦷 generateTimeSlots - user tipo:', this.user?.tipoUsuario);
     
     // Cargar horarios ocupados desde el backend
-    this.turnoService.getHorariosOcupados(this.selectedDate, dentistaId).subscribe({
+    this.turnoService.getHorariosOcupados(this.selectedDate, profesionalId).subscribe({
       next: (response) => {
         const horasOcupadas = response?.horasOcupadas || [];
         
@@ -841,7 +863,7 @@ export class ReservarComponent implements OnInit {
         this.availableTimeSlots = slots;
         console.log('✅ Slots de tiempo generados con configuración personalizada:', {
           fecha: this.selectedDate,
-          dentistaId: dentistaId,
+          profesionalId: profesionalId,
           totalSlots: slots.length,
           ocupados: horasOcupadas.length,
           disponibles: slots.filter(s => s.available).length,
@@ -901,9 +923,9 @@ export class ReservarComponent implements OnInit {
   selectPaciente(paciente: Paciente): void {
     this.selectedPaciente = paciente;
     
-    // Si es dentista, regenerar el calendario con su configuración personalizada
-    if (this.user?.tipoUsuario === 'dentista') {
-      console.log('🦷 Dentista seleccionó paciente, regenerando calendario con configuración personalizada...');
+    // Si es profesional, regenerar el calendario con su configuración personalizada
+    if (this.user?.tipoUsuario !== 'paciente') {
+      console.log('👨‍⚕️ Profesional seleccionó paciente, regenerando calendario con configuración personalizada...');
       setTimeout(() => {
         this.generateCalendar();
         this.loadOccupiedSlots();
@@ -915,7 +937,8 @@ export class ReservarComponent implements OnInit {
 
   // Determinar si el usuario debe seleccionar paciente
   get shouldSelectPaciente(): boolean {
-    return this.user?.tipoUsuario === 'dentista' || this.user?.tipoUsuario === 'administrador';
+    // Siempre retorna booleano
+    return !!(this.user && this.user.tipoUsuario !== 'paciente');
   }
 
   // Determinar cuál es el paso actual basado en el tipo de usuario
@@ -955,20 +978,20 @@ export class ReservarComponent implements OnInit {
     const mes = (this.currentMonth.getMonth() + 1).toString().padStart(2, '0');
     const anio = this.currentMonth.getFullYear().toString();
     
-    // Obtener el ID del dentista correcto
-    let dentistaId = '';
-    if (this.user?.tipoUsuario === 'dentista') {
-      // Si es dentista, usar su propio ID
-      dentistaId = this.user.id.toString();
+    // Usar this.user.id directamente si es profesional, o this.selectedProfesional?.id si aplica
+    let profesionalId = '';
+    if (this.user?.tipoUsuario !== 'paciente') {
+      // Si es profesional, usar su propio ID
+      profesionalId = this.user?.id?.toString() || '';
     } else {
-      // Si es paciente, usar el dentista seleccionado
-      dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
+      // Si es paciente, usar el profesional seleccionado
+      profesionalId = this.selectedDentista?._id || this.selectedDentista?.id;
     }
     
-    console.log('🦷 loadOccupiedSlots - dentistaId:', dentistaId);
-    console.log('🦷 loadOccupiedSlots - user tipo:', this.user?.tipoUsuario);
+    console.log('👨‍⚕️ loadOccupiedSlots - profesionalId:', profesionalId);
+    console.log('👨‍⚕️ loadOccupiedSlots - user tipo:', this.user?.tipoUsuario);
 
-    this.turnoService.getDisponibilidadFechas(mes, anio, dentistaId).subscribe({
+    this.turnoService.getDisponibilidadFechas(mes, anio, profesionalId).subscribe({
       next: (response) => {
         if (response.status === '1' && response.disponibilidad) {
           // Convertir la respuesta del backend al formato esperado
@@ -1058,9 +1081,6 @@ export class ReservarComponent implements OnInit {
     }
     this.isLoading = true;
 
-    // Asegurar que el dentistaId sea el correcto
-    this.turnoForm.dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
-
     const pacienteId = await this.getPacienteId();
     if (!pacienteId) {
       this.isLoading = false;
@@ -1109,7 +1129,6 @@ export class ReservarComponent implements OnInit {
     // 1. Crear el turno en el backend primero
     const turnoData: any = {
       pacienteId: pacienteId,
-      dentistaId: this.turnoForm.dentistaId, // Usar el dentistaId del formulario
       fecha: this.selectedDate,
       hora: this.selectedTime,
       tratamientoId: this.selectedTreatment._id || this.selectedTreatment.id,
@@ -1119,7 +1138,6 @@ export class ReservarComponent implements OnInit {
     };
 
     console.log('💳 confirmBooking - turnoData a enviar:', turnoData);
-    console.log('💳 confirmBooking - dentistaId usado:', this.turnoForm.dentistaId);
 
     this.turnoService.createTurno(turnoData).subscribe({
       next: (turnoCreado: any) => {
@@ -1185,10 +1203,6 @@ export class ReservarComponent implements OnInit {
     console.log('💰 Método de pago establecido:', this.metodoPago);
 
     try {
-      // Asegurar que el dentistaId sea el correcto
-      this.turnoForm.dentistaId = this.selectedDentista?._id || this.selectedDentista?.id;
-      console.log('🦷 Dentista ID configurado:', this.turnoForm.dentistaId);
-
       // Obtener el pacienteId correcto
       console.log('👤 Obteniendo ID del paciente...');
       const pacienteId = await this.getPacienteId();
@@ -1204,7 +1218,6 @@ export class ReservarComponent implements OnInit {
       // Crear el turno con pago en efectivo
       const turnoData: any = {
         pacienteId: pacienteId,
-        dentistaId: this.turnoForm.dentistaId, // Usar el dentistaId del formulario
         fecha: this.selectedDate,
         hora: this.selectedTime,
         tratamientoId: this.selectedTreatment._id || this.selectedTreatment.id,
@@ -1216,7 +1229,6 @@ export class ReservarComponent implements OnInit {
 
       console.log('📤 ENVIANDO DATOS DEL TURNO AL BACKEND:');
       console.log('  - Paciente ID:', turnoData.pacienteId);
-      console.log('  - Dentista ID:', turnoData.dentistaId);
       console.log('  - Fecha:', turnoData.fecha);
       console.log('  - Hora:', turnoData.hora);
       console.log('  - Tratamiento ID:', turnoData.tratamientoId);
@@ -1648,7 +1660,7 @@ export class ReservarComponent implements OnInit {
       }
       const turnoData = {
         pacienteId: pacienteId,
-        dentistaId: this.turnoForm.dentistaId, // Agregar el dentistaId del formulario
+        profesionalId: this.user?.id, // Asociar el turno al userId del profesional (no solo dentista)
         fecha: this.selectedDate,
         hora: this.selectedTime,
         tratamientoId: this.selectedTreatment?._id || this.selectedTreatment?.id,
@@ -1682,9 +1694,17 @@ export class ReservarComponent implements OnInit {
   }
 
   loadDentistas(): void {
+    this.loadingDentistas = true;
     this.dentistaService.getDentistas().subscribe({
-      next: (dentistas) => this.dentistas = dentistas,
-      error: () => this.dentistas = []
+      next: (dentistas) => {
+        this.dentistas = dentistas;
+        this.loadingDentistas = false;
+      },
+      error: (error) => {
+        console.error('❌ Error cargando especialistas:', error);
+        this.dentistas = [];
+        this.loadingDentistas = false;
+      }
     });
   }
 
@@ -1694,12 +1714,11 @@ export class ReservarComponent implements OnInit {
     console.log('🦷 selectDentista - dentista.id:', dentista.id);
     
     this.selectedDentista = dentista;
-    this.turnoForm.dentistaId = dentista._id || dentista.id;
-    
-    console.log('🦷 selectDentista - turnoForm.dentistaId guardado:', this.turnoForm.dentistaId);
+    // Eliminar: this.turnoForm.dentistaId = dentista._id || dentista.id;
+    // Eliminar: console.log('🦷 selectDentista - turnoForm.dentistaId guardado:', this.turnoForm.dentistaId);
     
     // Cargar disponibilidad personalizada del dentista
-    this.cargarDisponibilidadDentista(dentista._id || dentista.id);
+    this.cargarDisponibilidadProfesional(dentista._id || dentista.id);
     
     // Recargar horarios ocupados para el dentista seleccionado
     this.loadOccupiedSlots();
@@ -1739,11 +1758,11 @@ export class ReservarComponent implements OnInit {
     return this.disponibilidadDentista !== null;
   }
 
-  // Cargar disponibilidad personalizada del dentista
-  cargarDisponibilidadDentista(dentistaId: string): void {
-    console.log('📅 Cargando disponibilidad personalizada para dentista:', dentistaId);
+  // Cargar disponibilidad personalizada del profesional
+  cargarDisponibilidadProfesional(profesionalId: string): void {
+    console.log('📅 Cargando disponibilidad personalizada para profesional:', profesionalId);
     
-    this.disponibilidadService.getDisponibilidad(dentistaId).subscribe({
+    this.disponibilidadService.getDisponibilidad(profesionalId).subscribe({
       next: (response) => {
         if (response && response.disponibilidad) {
           this.disponibilidadDentista = response.disponibilidad;
@@ -1794,7 +1813,7 @@ export class ReservarComponent implements OnInit {
     });
   }
 
-  // Generar horarios personalizados basados en la configuración del dentista
+  // Generar horarios personalizados basados en la configuración del profesional
   generarHorariosPersonalizados(): void {
     if (!this.disponibilidadDentista) {
       console.log('⚠️ No hay configuración de disponibilidad, usando horarios por defecto');
@@ -1813,7 +1832,7 @@ export class ReservarComponent implements OnInit {
     console.log('⏰ Horarios personalizados generados:', this.horariosPersonalizados);
   }
 
-  // Verificar si una fecha es disponible según la configuración del dentista
+  // Verificar si una fecha es disponible según la configuración del profesional
   esFechaDisponible(fecha: string): boolean {
     if (!this.disponibilidadDentista) {
       console.log('📅 No hay configuración de disponibilidad, fecha disponible:', fecha);
@@ -1850,7 +1869,7 @@ export class ReservarComponent implements OnInit {
     return true;
   }
 
-  // Verificar si un horario está disponible según la configuración del dentista
+  // Verificar si un horario está disponible según la configuración del profesional
   esHorarioDisponible(hora: string): boolean {
     if (!this.disponibilidadDentista) return true;
 
@@ -1877,7 +1896,7 @@ export class ReservarComponent implements OnInit {
     return true;
   }
 
-  // Función para confirmar turno como administrador/dentista
+  // Función para confirmar turno como administrador/profesional
   async confirmarTurnoAdmin(): Promise<void> {
     if (!this.selectedDate || !this.selectedTime || !this.selectedTreatment || !this.selectedPaciente) {
       this.notificationService.showError('Por favor completa todos los campos requeridos');
@@ -1886,23 +1905,20 @@ export class ReservarComponent implements OnInit {
 
     this.isLoading = true;
 
-    // Asegurar que los IDs sean strings
-    const pacienteId = String(this.selectedPaciente._id || this.selectedPaciente.id);
-    
-    // Obtener el _id correcto del dentista
-    let dentistaId = '';
-    if (this.user?.tipoUsuario === 'dentista') {
-      // Si es dentista, usar el userId como dentistaId (el backend lo manejará)
-      dentistaId = String(this.user.id);
-    } else {
-      dentistaId = String(this.user?.id || this.user?.patientId);
+    // Asegurar que los IDs sean strings y existan
+    const pacienteId = String(this.selectedPaciente._id || this.selectedPaciente.id || '');
+    const tratamientoId = String(this.selectedTreatment._id || this.selectedTreatment.id || '');
+    const profesionalId = String(this.user?.id || '');
+
+    if (!pacienteId || !tratamientoId || !profesionalId) {
+      this.isLoading = false;
+      this.notificationService.showError('Faltan datos obligatorios para crear el turno');
+      return;
     }
-    
-    const tratamientoId = String(this.selectedTreatment._id || this.selectedTreatment.id);
 
     const turnoData: any = {
       pacienteId: pacienteId,
-      dentistaId: dentistaId,
+      profesionalId: profesionalId,
       fecha: this.selectedDate,
       hora: this.selectedTime,
       tratamientoId: tratamientoId,
@@ -1912,10 +1928,7 @@ export class ReservarComponent implements OnInit {
       descripcion: this.selectedTreatment.descripcion
     };
 
-    console.log('🦷 confirmarTurnoAdmin - turnoData:', turnoData);
-    console.log('🦷 confirmarTurnoAdmin - pacienteId:', pacienteId);
-    console.log('🦷 confirmarTurnoAdmin - dentistaId:', dentistaId);
-    console.log('🦷 confirmarTurnoAdmin - tratamientoId:', tratamientoId);
+    console.log('👨‍⚕️ confirmarTurnoAdmin - turnoData:', turnoData);
 
     this.turnoService.createTurno(turnoData).subscribe({
       next: (response) => {
@@ -1954,23 +1967,20 @@ export class ReservarComponent implements OnInit {
 
     this.isLoading = true;
 
-    // Asegurar que los IDs sean strings
-    const pacienteId = String(this.selectedPaciente._id || this.selectedPaciente.id);
-    
-    // Obtener el _id correcto del dentista
-    let dentistaId = '';
-    if (this.user?.tipoUsuario === 'dentista') {
-      // Si es dentista, usar el userId como dentistaId (el backend lo manejará)
-      dentistaId = String(this.user.id);
-    } else {
-      dentistaId = String(this.user?.id || this.user?.patientId);
+    // Asegurar que los IDs sean strings y existan
+    const pacienteId = String(this.selectedPaciente._id || this.selectedPaciente.id || '');
+    const tratamientoId = String(this.selectedTreatment._id || this.selectedTreatment.id || '');
+    const profesionalId = String(this.user?.id || '');
+
+    if (!pacienteId || !tratamientoId || !profesionalId) {
+      this.isLoading = false;
+      this.notificationService.showError('Faltan datos obligatorios para crear el turno');
+      return;
     }
-    
-    const tratamientoId = String(this.selectedTreatment._id || this.selectedTreatment.id);
 
     const turnoData: any = {
       pacienteId: pacienteId,
-      dentistaId: dentistaId,
+      profesionalId: profesionalId,
       fecha: this.selectedDate,
       hora: this.selectedTime,
       tratamientoId: tratamientoId,
@@ -1981,9 +1991,6 @@ export class ReservarComponent implements OnInit {
     };
 
     console.log('📅 soloReservar - turnoData:', turnoData);
-    console.log('📅 soloReservar - pacienteId:', pacienteId);
-    console.log('📅 soloReservar - dentistaId:', dentistaId);
-    console.log('📅 soloReservar - tratamientoId:', tratamientoId);
 
     this.turnoService.createTurno(turnoData).subscribe({
       next: (response) => {
@@ -2047,6 +2054,16 @@ export class ReservarComponent implements OnInit {
     } catch (error) {
       console.error('Error al generar PDF:', error);
       this.notificationService.showError('Error al generar el PDF del turno');
+    }
+  }
+
+  // Método para obtener el número de paso según el tipo de usuario
+  getStepNumber(step: number): number {
+    if (this.user?.tipoUsuario === 'secretario') {    // Para secretarios, el paso 1 es seleccionar especialista
+      return step;
+    } else {
+      // Para otros usuarios, el paso 1 es seleccionar paciente
+      return step;
     }
   }
 }

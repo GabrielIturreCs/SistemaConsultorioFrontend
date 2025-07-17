@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DisponibilidadService } from '../../services/disponibilidad.service';
 import { NotificationService } from '../../services/notification.service';
 import { Disponibilidad, DiaNoLaborable, FranjaNoDisponible, Pausa } from '../../interfaces';
@@ -65,7 +66,8 @@ export class ConfiguracionDisponibilidadComponent implements OnInit {
 
   constructor(
     private disponibilidadService: DisponibilidadService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private router: Router
   ) {
     this.configuracion = this.disponibilidadService.getConfiguracionPorDefecto();
   }
@@ -79,8 +81,8 @@ export class ConfiguracionDisponibilidadComponent implements OnInit {
     const userStr = localStorage.getItem('user');
     if (userStr) {
       this.user = JSON.parse(userStr);
-      if (this.user?.tipoUsuario !== 'dentista') {
-        this.notificationService.showError('Solo los dentistas pueden configurar disponibilidad');
+      if (this.user?.tipoUsuario === 'paciente') {
+        this.notificationService.showError('Los pacientes no pueden configurar disponibilidad');
         return;
       }
     } else {
@@ -212,12 +214,33 @@ export class ConfiguracionDisponibilidadComponent implements OnInit {
   }
 
   getColorTipo(tipo: string): string {
-    const colores = {
+    const colores: { [key: string]: string } = {
       'feriado': 'danger',
       'vacaciones': 'warning',
       'personal': 'info',
       'otro': 'secondary'
     };
-    return colores[tipo as keyof typeof colores] || 'secondary';
+    return colores[tipo] || 'secondary';
+  }
+
+  // Métodos de navegación para el navbar
+  navigateToReservar(): void {
+    this.router.navigate(['/reservar-turno']);
+  }
+
+  navigateToConfiguracion(): void {
+    // Ya estamos en configuración
+  }
+
+  navigateToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
+  navigateToPacientes(): void {
+    this.router.navigate(['/pacientes']);
+  }
+
+  navigateToAgenda(): void {
+    this.router.navigate(['/agenda']);
   }
 } 

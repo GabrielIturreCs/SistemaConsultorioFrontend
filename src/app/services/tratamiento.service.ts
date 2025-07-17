@@ -19,9 +19,23 @@ export class TratamientoService {
 
   constructor(private http: HttpClient) { }
 
-  // Obtener todos los tratamientos
-  getTratamientos(): Observable<Tratamiento[]> {
-    return this.http.get<Tratamiento[]>(this.apiUrl);
+  // Obtener todos los tratamientos (globales + del profesional si se especifica)
+  getTratamientos(profesionalId?: string): Observable<Tratamiento[]> {
+    console.log('🔄 Servicio getTratamientos() llamado');
+    console.log('👨‍⚕️ ProfesionalId:', profesionalId);
+    
+    let url = this.apiUrl;
+    if (profesionalId) {
+      url += `?profesionalId=${profesionalId}`;
+    }
+    
+    console.log('🌐 URL final:', url);
+    return this.http.get<Tratamiento[]>(url);
+  }
+
+  // Obtener tratamientos de un profesional específico
+  getTratamientosByProfesional(profesionalId: string): Observable<Tratamiento[]> {
+    return this.http.get<Tratamiento[]>(`${this.apiUrl}/profesional/${profesionalId}`);
   }
 
   // Obtener un tratamiento por ID
@@ -30,8 +44,22 @@ export class TratamientoService {
   }
 
   // Crear un nuevo tratamiento
-  crearTratamiento(tratamiento: Tratamiento): Observable<ApiResponse<Tratamiento>> {
-    return this.http.post<ApiResponse<Tratamiento>>(this.apiUrl, tratamiento);
+  crearTratamiento(tratamiento: Tratamiento, profesionalId?: string, esGlobal: boolean = false): Observable<ApiResponse<Tratamiento>> {
+    console.log('🟢 Servicio crearTratamiento() llamado');
+    console.log('📤 Tratamiento recibido:', tratamiento);
+    console.log('👨‍⚕️ ProfesionalId:', profesionalId);
+    console.log('🌍 EsGlobal:', esGlobal);
+    
+    const tratamientoData = {
+      ...tratamiento,
+      profesionalId: profesionalId,
+      esGlobal: esGlobal
+    };
+    
+    console.log('📤 Datos finales a enviar:', tratamientoData);
+    console.log('🌐 URL de la API:', this.apiUrl);
+    
+    return this.http.post<ApiResponse<Tratamiento>>(this.apiUrl, tratamientoData);
   }
 
   // Actualizar un tratamiento existente

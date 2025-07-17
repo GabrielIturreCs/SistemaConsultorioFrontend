@@ -204,7 +204,8 @@ export class PacientesComponent implements OnInit {
       return;
     }
 
-    if (this.pacienteForm.password !== this.pacienteForm.confirmPassword) {
+    // Solo verificar contraseñas si no es secretario
+    if (!this.isSecretario() && this.pacienteForm.password !== this.pacienteForm.confirmPassword) {
       this.notificationService.showError('Las contraseñas no coinciden');
       return;
     }
@@ -212,7 +213,7 @@ export class PacientesComponent implements OnInit {
     this.isCreating = true;
 
     // Preparar datos para el registro usando la estructura de RegisterForm
-    const registerData: RegisterForm = {
+    let registerData: RegisterForm = {
       nombreUsuario: this.pacienteForm.nombreUsuario.trim(),
       password: this.pacienteForm.password,
       confirmPassword: this.pacienteForm.confirmPassword,
@@ -226,13 +227,24 @@ export class PacientesComponent implements OnInit {
       email: this.pacienteForm.email.trim()
     };
 
+    // Si es secretario, generar contraseña automáticamente
+    if (this.isSecretario()) {
+      const autoPassword = this.generateAutoPassword();
+      registerData.password = autoPassword;
+      registerData.confirmPassword = autoPassword;
+      console.log('🔐 Contraseña automática generada para secretario:', autoPassword);
+    }
+
     // Usar el RegisterService para crear el usuario completo (usuario + paciente)
     this.registerService.addUsuario(registerData).subscribe({
       next: (response) => {
         console.log('Usuario y paciente creados exitosamente:', response);
         this.isCreating = false;
         this.closeModal();
-        this.notificationService.showSuccess('Paciente creado exitosamente. Se ha creado una cuenta de usuario para el paciente.');
+        const successMessage = this.isSecretario() 
+          ? 'Paciente creado exitosamente. Se ha generado una contraseña automática para el paciente.'
+          : 'Paciente creado exitosamente. Se ha creado una cuenta de usuario para el paciente.';
+        this.notificationService.showSuccess(successMessage);
         if (response.token && response.user) {
           this.authService.setToken(response.token);
           this.authService.setCurrentUser(response.user);
@@ -253,14 +265,22 @@ export class PacientesComponent implements OnInit {
   }
 
   isValidForm(): boolean {
-    return this.pacienteForm.nombreUsuario.trim() !== '' &&
-           this.pacienteForm.password.trim() !== '' &&
-           this.pacienteForm.confirmPassword.trim() !== '' &&
+    const baseValidation = this.pacienteForm.nombreUsuario.trim() !== '' &&
            this.pacienteForm.email.trim() !== '' &&
            this.pacienteForm.nombre.trim() !== '' &&
            this.pacienteForm.apellido.trim() !== '' &&
            this.pacienteForm.dni.trim() !== '' &&
-           this.pacienteForm.obraSocial.trim() !== '' &&
+           this.pacienteForm.obraSocial.trim() !== '';
+    
+    // Si es secretario, no requiere contraseña
+    if (this.isSecretario()) {
+      return baseValidation;
+    }
+    
+    // Para otros usuarios, requiere contraseña
+    return baseValidation &&
+           this.pacienteForm.password.trim() !== '' &&
+           this.pacienteForm.confirmPassword.trim() !== '' &&
            this.pacienteForm.password === this.pacienteForm.confirmPassword;
   }
 
@@ -365,7 +385,29 @@ export class PacientesComponent implements OnInit {
   }
 
   isDentist(): boolean {
-    return this.user?.tipoUsuario === 'dentista';
+    // Antes: return this.user?.tipoUsuario === 'dentista';
+    // Ahora: cualquier profesional puede acceder a pacientes
+    return !!(this.user && this.user.tipoUsuario !== 'paciente');
+  }
+
+  isSecretario(): boolean {
+    return this.user?.tipoUsuario === 'secretario';
+  }
+
+  // Generar contraseña automática para secretarios
+  generateAutoPassword(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  }
+
+  isOdontologo(): boolean {
+    // Solo dentistas pueden ver odontograma (es específico de odontología)
+    const user = this.authService.getCurrentUser();
+    return user?.tipoUsuario === 'dentista';
   }
 
   // Devuelve lista única de obras sociales para el filtro
@@ -378,5 +420,26 @@ export class PacientesComponent implements OnInit {
     const fecha = new Date();
     fecha.setDate(fecha.getDate() + offsetDias);
     return fecha.toISOString();
+  }
+
+  // Métodos de navegación para el navbar
+  navigateToReservar(): void {
+    this.router.navigate(['/reservarTurno']);
+  }
+
+  navigateToConfiguracion(): void {
+    this.router.navigate(['/configuracion-disponibilidad']);
+  }
+
+  navigateToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
+  navigateToPacientes(): void {
+    this.router.navigate(['/pacientes']);
+  }
+
+  navigateToAgenda(): void {
+    this.router.navigate(['/agenda']);
   }
 }

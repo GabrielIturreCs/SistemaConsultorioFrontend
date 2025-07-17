@@ -81,7 +81,10 @@ export class AdminComponent implements OnInit {
   }
 
   getUserBorderClass(tipoUsuario: string) {
-    return `border-${tipoUsuario === 'administrador' ? 'danger' : tipoUsuario === 'dentista' ? 'primary' : 'warning'}`;
+    if (tipoUsuario === 'administrador') return 'border-danger';
+    if (tipoUsuario === 'dentista') return 'border-primary';
+    if (tipoUsuario === 'secretario') return 'border-success';
+    return 'border-warning';
   }
 
   getTipoClass(tipoUsuario: string) {

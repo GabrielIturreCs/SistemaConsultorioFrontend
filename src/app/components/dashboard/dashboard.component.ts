@@ -19,9 +19,8 @@ import { PdfExportService } from '../../services/pdf-export.service';
 import { AuthService } from '../../services/auth.service';
 import { DataRefreshService } from '../../services/data-refresh.service';
 import { DisponibilidadService } from '../../services/disponibilidad.service';
-import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
 import { DentistNavbarComponent } from '../layouts/dentist-navbar/dentist-navbar.component';
-import { PatientNavbarComponent } from '../layouts/patient-navbar/patient-navbar.component';
+import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
 
 interface AdminStats {
   totalUsuarios: number;
@@ -48,7 +47,13 @@ interface AdminStats {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminNavbarComponent, DentistNavbarComponent, PatientNavbarComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    AdminNavbarComponent,
+    DentistNavbarComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -160,24 +165,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    console.log('🚀 ngOnInit - Dashboard iniciando...');
     this.loadUserData();
     this.checkPacienteView();
     // loadTurnosData() se llamará desde loadUserData después de cargar el usuario
     this.loadAdminStats();
     // Suscribirse a refresh global de turnos
     this.refreshSubscription = this.dataRefreshService?.refresh$?.subscribe((component) => {
+      console.log('🔄 Refresh solicitado para componente:', component);
       if (component === 'all' || component === 'dashboard' || component === 'agenda') {
         this.loadTurnosData();
         // Verificar turnos ausentes después de cargar datos
         setTimeout(() => this.marcarTurnosAusentes(), 1000);
       }
     });
-    // Solo cargar chat para dentistas
+    // Cargar configuración personalizada solo para dentistas (no secretarios)
     if (this.user?.tipoUsuario === 'dentista') {
+      this.cargarDisponibilidadDentista();
+    }
+    
+    // Solo cargar chat para dentistas y secretarios
+    if (this.user?.tipoUsuario === 'dentista' || this.user?.tipoUsuario === 'secretario') {
       this.loadChatHistory();
       this.addWelcomeMessage();
-      // Cargar configuración personalizada del dentista
-      this.cargarDisponibilidadDentista();
     }
     this.loadDentistasActividad();
     this.loadPacientesActividad();
@@ -218,8 +228,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Cargar historial del chat desde ChatService con localStorage
   loadChatHistory(): void {
-    // Solo cargar historial si es dentista (no administrador)
-    if (this.user?.tipoUsuario === 'dentista') {
+    // Solo cargar historial si es dentista o secretario (no administrador)
+    if (this.user?.tipoUsuario === 'dentista' || this.user?.tipoUsuario === 'secretario') {
       // Cambiar al usuario actual para cargar su historial específico
       this.chatService.switchUser();
       
@@ -366,8 +376,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Chatbot methods
   addWelcomeMessage(): void {
-    // Solo mostrar mensaje de bienvenida para dentistas
-    if (this.user?.tipoUsuario === 'dentista') {
+    // Solo mostrar mensaje de bienvenida para dentistas y secretarios
+    if (this.user?.tipoUsuario === 'dentista' || this.user?.tipoUsuario === 'secretario') {
       const welcomeText = 'Hola Doctor/a. Soy DentalBot, tu asistente para la gestión de la clínica. Puedo ayudarte con:\n\n🔹 Gestión de citas y agenda\n🔹 Información de pacientes\n🔹 Seguimiento de tratamientos\n🔹 Reportes y estadísticas\n🔹 Control de inventario\n🔹 Configuración del sistema\n\n¿En qué puedo asistirte hoy?';
       
       const welcomeMessage: ChatMessage = {
@@ -563,30 +573,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
     console.log('🔍 loadTurnosData() - Tipo de usuario:', this.user?.tipoUsuario);
     console.log('🔍 loadTurnosData() - ID del usuario:', this.user?.id);
     
-    // Si es un dentista, cargar solo sus turnos
-    if (this.user?.tipoUsuario === 'dentista' && this.user?.id) {
-      console.log('🦷 Cargando turnos del dentista:', this.user.id);
-      this.turnoService.getTurnosByDentista(this.user.id.toString()).subscribe({
-        next: (turnos) => {
-          console.log('✅ Turnos del dentista cargados:', turnos);
+    // Determinar qué turnos cargar según el tipo de usuario
+    // Para cualquier especialista (no admin, secretario, paciente), cargar solo sus turnos
+    if (
+      this.user?.tipoUsuario &&
+      this.user.tipoUsuario !== 'administrador' &&
+      this.user.tipoUsuario !== 'secretario' &&
+      this.user.tipoUsuario !== 'paciente'
+    ) {
+      // Cualquier especialista (dentista, médico, pediatra, etc.)
+      console.log('🦷 Cargando turnos del especialista:', this.user.id, 'Tipo:', this.user.tipoUsuario);
+      this.turnoService.getTurnosFromAPI({ profesionalId: this.user.id.toString() }).subscribe({
+        next: (response) => {
+          const turnos = response.turnos;
+          console.log('✅ Turnos del especialista cargados:', turnos);
           // Solo filtra por paciente si está en modo vista de paciente
           if (this.isPacienteView && this.selectedPaciente) {
             this.turnos = turnos.filter(turno => String(turno.pacienteId) === String(this.selectedPaciente!.id));
           } else {
-            this.turnos = turnos; // Solo los turnos del dentista
+            this.turnos = turnos; // Solo los turnos del especialista
           }
           console.log('📊 Turnos finales asignados:', this.turnos);
           // Forzar detección de cambios con OnPush
           this.cdr.detectChanges();
         },
         error: (error) => { 
-          console.error('❌ Error cargando turnos del dentista:', error);
+          console.error('❌ Error cargando turnos del especialista:', error);
           this.turnos = []; 
         }
       });
-    } else {
-      console.log('👥 Cargando todos los turnos (no es dentista o no tiene ID)');
-      // Para administradores y pacientes, cargar todos los turnos (comportamiento original)
+    } else if (this.user?.tipoUsuario === 'administrador' || this.user?.tipoUsuario === 'secretario') {
+      // Para administradores y secretarios, cargar todos los turnos
+      console.log('👥 Cargando todos los turnos (admin o secretario)');
       this.turnoService.getTurnosFromAPI().subscribe({
         next: (response) => {
           console.log('✅ Todos los turnos cargados:', response.turnos);
@@ -596,6 +614,39 @@ export class DashboardComponent implements OnInit, OnDestroy {
           } else {
             this.turnos = response.turnos; // TODOS los turnos
           }
+          console.log('📊 Turnos finales asignados:', this.turnos);
+          // Forzar detección de cambios con OnPush
+          this.cdr.detectChanges();
+        },
+        error: (error) => { 
+          console.error('❌ Error cargando todos los turnos:', error);
+          this.turnos = []; 
+        }
+      });
+    } else if (this.user?.tipoUsuario === 'paciente') {
+      // Para pacientes, cargar solo sus turnos
+      console.log('👤 Cargando turnos del paciente:', this.user.id);
+      this.turnoService.getTurnosFromAPI({ pacienteId: this.user.id.toString() }).subscribe({
+        next: (response) => {
+          const turnos = response.turnos;
+          console.log('✅ Turnos del paciente cargados:', turnos);
+          this.turnos = turnos;
+          console.log('📊 Turnos finales asignados:', this.turnos);
+          // Forzar detección de cambios con OnPush
+          this.cdr.detectChanges();
+        },
+        error: (error) => { 
+          console.error('❌ Error cargando turnos del paciente:', error);
+          this.turnos = []; 
+        }
+      });
+    } else {
+      // Para cualquier otro caso, cargar todos los turnos
+      console.log('🔍 Cargando todos los turnos (caso por defecto)');
+      this.turnoService.getTurnosFromAPI().subscribe({
+        next: (response) => {
+          console.log('✅ Todos los turnos cargados:', response.turnos);
+          this.turnos = response.turnos;
           console.log('📊 Turnos finales asignados:', this.turnos);
           // Forzar detección de cambios con OnPush
           this.cdr.detectChanges();
@@ -1592,6 +1643,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       // Último fallback
       switch (this.user.tipoUsuario) {
         case 'dentista': return 'Dentista';
+        case 'secretario': return 'Secretario';
         case 'administrador': return 'Administrador';
         case 'paciente': return 'Paciente';
         default: return 'Usuario';
@@ -2232,14 +2284,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // ===== MÉTODOS PARA CONFIGURACIÓN PERSONALIZADA DEL DENTISTA =====
 
-  // Cargar configuración personalizada del dentista
+  // Cargar configuración personalizada del profesional
   cargarDisponibilidadDentista(): void {
-    if (!this.user?.id || this.user?.tipoUsuario !== 'dentista') {
-      console.log('⚠️ No es dentista o no tiene ID, no se carga configuración personalizada');
+    if (!this.user?.id || this.user?.tipoUsuario === 'paciente') {
+      console.log('⚠️ Es paciente o no tiene ID, no se carga configuración personalizada');
       return;
     }
 
-    console.log('🦷 Cargando configuración personalizada del dentista:', this.user.id);
+    console.log('👨‍⚕️ Cargando configuración personalizada del profesional:', this.user.id);
     
     this.disponibilidadService.getDisponibilidad(this.user.id.toString()).subscribe({
       next: (response) => {

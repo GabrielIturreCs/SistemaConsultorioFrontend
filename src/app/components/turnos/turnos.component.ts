@@ -57,7 +57,7 @@ export class TurnosComponent implements OnInit {
   // Formulario de turno
   turnoForm = {
     pacienteId: '',
-    dentistaId: '',
+    profesionalId: '',
     fecha: '',
     hora: '',
     tratamientoId: ''
@@ -244,7 +244,7 @@ export class TurnosComponent implements OnInit {
     this.isTyping = true;
     
     // Determinar el tipo de usuario
-    const userType = this.user?.tipoUsuario === 'dentista' ? 'dentist' : 'patient';
+    const userType = (this.user?.tipoUsuario === 'dentista' || this.user?.tipoUsuario === 'secretario') ? 'dentist' : 'patient';
     
     // Verificar si es una continuación de conversación
     const isContinuing = this.chatService.isContinuingConversation();
@@ -329,10 +329,13 @@ export class TurnosComponent implements OnInit {
     // Preparar parámetros de filtrado
     const params: any = {};
 
-    // Filtrar por paciente si el usuario es paciente
+    // Filtrar por paciente si el usuario es paciente (no secretarios)
     if (this.user?.tipoUsuario === 'paciente' && this.pacienteActual) {
       params.pacienteId = this.pacienteActual._id || this.pacienteActual.id;
     }
+    
+    // Los secretarios ven todos los turnos (no filtran por paciente)
+    // Los dentistas ven sus propios turnos y los globales
 
     // Aplicar filtros adicionales
     if (this.filterEstado !== 'todos') {
@@ -441,7 +444,7 @@ export class TurnosComponent implements OnInit {
     this.isLoading = true;
     const turnoData = {
       pacienteId: this.turnoForm.pacienteId,
-      dentistaId: this.turnoForm.dentistaId,
+      profesionalId: this.turnoForm.profesionalId,
       fecha: this.turnoForm.fecha,
       hora: this.turnoForm.hora,
       tratamientoId: this.turnoForm.tratamientoId
@@ -467,7 +470,7 @@ export class TurnosComponent implements OnInit {
 
   get canRegisterTurno(): boolean {
     return this.turnoForm.pacienteId !== '' &&
-           this.turnoForm.dentistaId !== '' &&
+           this.turnoForm.profesionalId !== '' &&
            this.turnoForm.fecha !== '' &&
            this.turnoForm.hora !== '' &&
            this.turnoForm.tratamientoId !== '';
@@ -920,33 +923,22 @@ export class TurnosComponent implements OnInit {
   }
 
   getDentistaName(turno: Turno): string {
-    // Si el dentista viene como objeto populate del backend
-    if (turno.dentistaId && typeof turno.dentistaId === 'object' && 'nombre' in turno.dentistaId) {
-      const dentista = turno.dentistaId as any;
-      return `${dentista.nombre || 'Dr.'} ${dentista.apellido || ''}`.trim();
+    // Si el profesional viene como objeto populate del backend
+    if (turno.profesionalId && typeof turno.profesionalId === 'object' && 'nombre' in turno.profesionalId) {
+      const profesional = turno.profesionalId as any;
+      return `${profesional.nombre || 'Dr.'} ${profesional.apellido || ''}`.trim();
     }
-    
-    // Si viene como campos separados
-    if (turno.dentistaNombre || turno.dentistaApellido) {
-      return `${turno.dentistaNombre || 'Dr.'} ${turno.dentistaApellido || ''}`.trim();
-    }
-    
-    // Fallback
-    return 'Dr. No asignado';
+    // Si no hay datos, retornar vacío
+    return '';
   }
 
   getDentistaEspecialidad(turno: Turno): string | null {
-    // Si el dentista viene como objeto populate del backend
-    if (turno.dentistaId && typeof turno.dentistaId === 'object' && 'especialidad' in turno.dentistaId) {
-      const dentista = turno.dentistaId as any;
-      return dentista.especialidad || null;
+    // Si el profesional viene como objeto populate del backend
+    if (turno.profesionalId && typeof turno.profesionalId === 'object' && 'especialidad' in turno.profesionalId) {
+      const profesional = turno.profesionalId as any;
+      return profesional.especialidad || null;
     }
-    
-    // Si viene como campo separado
-    if (turno.dentistaEspecialidad) {
-      return turno.dentistaEspecialidad;
-    }
-    
+    // Si no hay datos, retornar null
     return null;
   }
 

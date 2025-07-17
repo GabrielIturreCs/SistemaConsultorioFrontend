@@ -44,14 +44,12 @@ export class DentistaComponent implements OnInit, OnDestroy {
   usuarios: User[] = [];
   dentistas: Dentista[] = [];
   dentistaForm: Dentista = {
-    legajo: '',
-    email: '',
     nombre: '',
     apellido: '',
-    telefono: '',
-    direccion: '',
-    dni: '',
-    userId: ''
+    nombreUsuario: '',
+    email: '',
+    especialidad: '',
+    password: ''
   };
   isEditMode: boolean = false;
 
@@ -229,8 +227,21 @@ export class DentistaComponent implements OnInit, OnDestroy {
     this.clearFormErrors();
     let isValid = true;
 
-    if (!this.dentistaForm.legajo?.trim()) {
-      this.formErrors['legajo'] = 'El legajo es requerido';
+    if (!this.dentistaForm.nombre?.trim()) {
+      this.formErrors['nombre'] = 'El nombre es requerido';
+      isValid = false;
+    }
+
+    if (!this.dentistaForm.apellido?.trim()) {
+      this.formErrors['apellido'] = 'El apellido es requerido';
+      isValid = false;
+    }
+
+    if (!this.dentistaForm.nombreUsuario?.trim()) {
+      this.formErrors['nombreUsuario'] = 'El nombre de usuario es requerido';
+      isValid = false;
+    } else if (this.dentistas.some(d => d.nombreUsuario === this.dentistaForm.nombreUsuario && (!this.isEditMode || d._id !== (this.dentistaForm as any)._id))) {
+      this.formErrors['nombreUsuario'] = 'El nombre de usuario ya está en uso';
       isValid = false;
     }
 
@@ -242,32 +253,26 @@ export class DentistaComponent implements OnInit, OnDestroy {
       isValid = false;
     }
 
-    if (!this.dentistaForm.nombre?.trim()) {
-      this.formErrors['nombre'] = 'El nombre es requerido';
+    if (!this.dentistaForm.especialidad?.trim()) {
+      this.formErrors['especialidad'] = 'La especialidad es requerida';
       isValid = false;
     }
 
-    if (!this.dentistaForm.apellido?.trim()) {
-      this.formErrors['apellido'] = 'El apellido es requerido';
+    if (!this.dentistaForm.password?.trim()) {
+      this.formErrors['password'] = 'La contraseña es requerida';
       isValid = false;
-    }
-
-    if (!this.dentistaForm.dni?.trim()) {
-      this.formErrors['dni'] = 'El DNI es requerido';
-      isValid = false;
-    } else if (!this.isValidDNI(this.dentistaForm.dni)) {
-      this.formErrors['dni'] = 'El DNI debe tener 8 dígitos';
-      isValid = false;
-    }
-
-    if (!this.dentistaForm.telefono?.trim()) {
-      this.formErrors['telefono'] = 'El teléfono es requerido';
-      isValid = false;
-    }
-
-    if (!this.dentistaForm.direccion?.trim()) {
-      this.formErrors['direccion'] = 'La dirección es requerida';
-      isValid = false;
+    } else {
+      const pass = this.dentistaForm.password;
+      if (pass.length < 6) {
+        this.formErrors['password'] = 'La contraseña debe tener al menos 6 caracteres';
+        isValid = false;
+      } else if (!/[A-Za-z]/.test(pass)) {
+        this.formErrors['password'] = 'La contraseña debe contener al menos una letra';
+        isValid = false;
+      } else if (!/\d/.test(pass)) {
+        this.formErrors['password'] = 'La contraseña debe contener al menos un número';
+        isValid = false;
+      }
     }
 
     return isValid;
@@ -324,11 +329,11 @@ export class DentistaComponent implements OnInit, OnDestroy {
     if (this.searchTerm) {
       const searchLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter(dentista =>
-        dentista.nombre.toLowerCase().includes(searchLower) ||
-        dentista.apellido.toLowerCase().includes(searchLower) ||
-        dentista.legajo.toLowerCase().includes(searchLower) ||
-        dentista.dni.toLowerCase().includes(searchLower) ||
-        dentista.email.toLowerCase().includes(searchLower)
+        (dentista.nombre?.toLowerCase().includes(searchLower) || '') ||
+        (dentista.apellido?.toLowerCase().includes(searchLower) || '') ||
+        (dentista.legajo?.toLowerCase().includes(searchLower) || '') ||
+        (dentista.dni?.toLowerCase().includes(searchLower) || '') ||
+        (dentista.email?.toLowerCase().includes(searchLower) || '')
       );
     }
     return filtered;
@@ -448,15 +453,19 @@ export class DentistaComponent implements OnInit, OnDestroy {
   }
 
   saveDentista(): void {
+    console.log('Intentando guardar dentista:', this.dentistaForm);
     if (!this.validateDentistaForm()) {
       this.showAlert('Por favor, corrija los errores en el formulario', 'warning');
+      console.warn('Validación fallida:', this.formErrors);
       return;
     }
-
+    // Copia segura del formulario solo con los campos requeridos
+    const { nombre, apellido, nombreUsuario, email, especialidad, password } = this.dentistaForm;
+    const dentistaData = { nombre, apellido, nombreUsuario, email, especialidad, password };
     this.isSubmitting = true;
-
+    console.log('Enviando datos al backend:', dentistaData);
     if (this.isEditMode) {
-      this.dentistaService.updateDentista(this.dentistaForm._id!, this.dentistaForm)
+      this.dentistaService.updateDentista((this.dentistaForm as any)._id, dentistaData)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -464,16 +473,16 @@ export class DentistaComponent implements OnInit, OnDestroy {
             this.showAlert('Dentista actualizado correctamente', 'success');
             this.clearDentistaForm();
           },
-          error: (error) => {
+          error: (error: any) => {
+            this.showAlert(error?.error?.msg || 'Error al actualizar dentista', 'danger');
             console.error('Error al actualizar dentista:', error);
-            this.showAlert('Error al actualizar el dentista', 'danger');
           },
           complete: () => {
             this.isSubmitting = false;
           }
         });
     } else {
-      this.dentistaService.createDentista(this.dentistaForm)
+      this.dentistaService.createDentista(dentistaData)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -481,9 +490,9 @@ export class DentistaComponent implements OnInit, OnDestroy {
             this.showAlert('Dentista creado correctamente', 'success');
             this.clearDentistaForm();
           },
-          error: (error) => {
+          error: (error: any) => {
+            this.showAlert(error?.error?.msg || 'Error al crear dentista', 'danger');
             console.error('Error al crear dentista:', error);
-            this.showAlert('Error al crear el dentista', 'danger');
           },
           complete: () => {
             this.isSubmitting = false;
@@ -504,14 +513,12 @@ export class DentistaComponent implements OnInit, OnDestroy {
 
   clearDentistaForm(): void {
     this.dentistaForm = {
-      legajo: '',
-      email: '',
       nombre: '',
       apellido: '',
-      telefono: '',
-      direccion: '',
-      dni: '',
-      userId: ''
+      nombreUsuario: '',
+      email: '',
+      especialidad: '',
+      password: ''
     };
     this.isEditMode = false;
     this.clearFormErrors();

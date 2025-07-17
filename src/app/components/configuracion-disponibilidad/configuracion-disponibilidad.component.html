@@ -1,5 +1,6 @@
-<!-- Dentist Navbar - Fijo en todas las rutas del dentista -->
-<app-dentist-navbar></app-dentist-navbar>
+<!-- Navbar condicional según el tipo de usuario -->
+<app-dentist-navbar *ngIf="user?.tipoUsuario === 'dentista'"></app-dentist-navbar>
+<app-dentist-navbar *ngIf="user?.tipoUsuario !== 'dentista' && user?.tipoUsuario !== 'paciente'"></app-dentist-navbar>
 
 <div class="configuracion-container">
   <!-- Header -->

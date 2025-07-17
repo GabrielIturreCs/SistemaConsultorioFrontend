@@ -227,14 +227,12 @@ export class AuthService {
       case 'administrador':
         this.router.navigate(['/dashboard']);
         break;
-      case 'dentista':
-        this.router.navigate(['/dashboard']);
-        break;
       case 'paciente':
         this.router.navigate(['/vistaPaciente']);
         break;
       default:
-        this.router.navigate(['/']);
+        // Cualquier otro tipo de usuario (especialista, dentista, etc.) va al dashboard de dentista
+        this.router.navigate(['/dashboard']);
     }
   }
 }

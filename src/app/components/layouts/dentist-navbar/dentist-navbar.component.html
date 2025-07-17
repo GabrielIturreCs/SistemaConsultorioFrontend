@@ -10,6 +10,7 @@
         Bienvenido, <span class="fw-semibold">{{ getUserGreeting() }}</span>
         <span [class]="getTipoClass(user?.tipoUsuario || '')" style="margin-left: 8px;">{{ user?.tipoUsuario }}</span>
       </span>
+      <span class="navbar-text ms-2 fw-bold text-primary" *ngIf="especialidadUsuario">{{ especialidadUsuario }}</span>
       <button class="btn btn-outline-light btn-sm ms-2" (click)="logout()">
         <i class="material-icons me-1">logout</i> Cerrar Sesión
       </button>
@@ -55,6 +56,13 @@
         [class.active]="isActiveRoute('configuracion-disponibilidad')"
         (click)="navigateToConfiguracion()">
         <i class="material-icons me-1">schedule</i> Configuración
+      </button>
+      <button 
+        type="button" 
+        class="btn nav-btn-tratamientos py-3"
+        [class.active]="isActiveRoute('tratamiento')"
+        (click)="navigateToTratamientos()">
+        <i class="material-icons me-1">medical_services</i> Tratamientos
       </button>
     </div>
   </div>

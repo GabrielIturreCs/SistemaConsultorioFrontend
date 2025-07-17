@@ -47,7 +47,7 @@ export class TurnoService {
     page?: number;
     limit?: number;
     pacienteId?: string;
-    dentistaId?: string;
+    profesionalId?: string;
     estado?: string;
     fecha?: string;
   }): Observable<{
@@ -62,7 +62,7 @@ export class TurnoService {
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.pacienteId) queryParams.append('pacienteId', params.pacienteId);
-    if (params?.dentistaId) queryParams.append('dentistaId', params.dentistaId);
+    if (params?.profesionalId) queryParams.append('profesionalId', params.profesionalId);
     if (params?.estado) queryParams.append('estado', params.estado);
     if (params?.fecha) queryParams.append('fecha', params.fecha);
 
@@ -96,12 +96,17 @@ export class TurnoService {
     return this.http.get<Turno[]>(`${this.apiUrl}/paciente/${pacienteId}`, { headers: this.getHeaders() });
   }
 
-  // Obtener turnos por dentista
-  getTurnosByDentista(dentistaId: string): Observable<Turno[]> {
-    const url = `${this.apiUrl}/dentista/${dentistaId}`;
-    this.logger.debug('getTurnosByDentista - URL llamada', LogCategory.API, { url, dentistaId });
+  // Obtener turnos por profesional
+  getTurnosByProfesional(profesionalId: string): Observable<Turno[]> {
+    const url = `${this.apiUrl}/profesional/${profesionalId}`;
+    this.logger.debug('getTurnosByProfesional - URL llamada', LogCategory.API, { url, profesionalId });
     
     return this.http.get<Turno[]>(url, { headers: this.getHeaders() });
+  }
+
+  // Obtener turnos por dentista (nuevo endpoint)
+  getTurnosByDentista(dentistaId: string): Observable<Turno[]> {
+    return this.http.get<Turno[]>(`${this.apiUrl}/dentista/${dentistaId}`, { headers: this.getHeaders() });
   }
 
   // Crear nuevo turno
@@ -188,9 +193,9 @@ export class TurnoService {
   }
 
   // Verificar disponibilidad de horario
-  verificarDisponibilidad(fecha: string, hora: string, dentistaId?: string): Observable<boolean> {
+  verificarDisponibilidad(fecha: string, hora: string, profesionalId?: string): Observable<boolean> {
     const params: any = { fecha, hora };
-    if (dentistaId) params.dentistaId = dentistaId;
+    if (profesionalId) params.profesionalId = profesionalId;
     
     return this.http.get<boolean>(`${this.apiUrl}/disponibilidad`, {
       headers: this.getHeaders(),
@@ -199,9 +204,9 @@ export class TurnoService {
   }
 
   // Obtener horarios disponibles para una fecha
-  getHorariosDisponibles(fecha: string, dentistaId?: string): Observable<string[]> {
+  getHorariosDisponibles(fecha: string, profesionalId?: string): Observable<string[]> {
     const params: any = { fecha };
-    if (dentistaId) params.dentistaId = dentistaId;
+    if (profesionalId) params.profesionalId = profesionalId;
     
     return this.http.get<string[]>(`${this.apiUrl}/horarios-disponibles`, {
       headers: this.getHeaders(),
@@ -220,9 +225,9 @@ export class TurnoService {
   }
 
   // Obtener horarios ocupados para una fecha específica
-  getHorariosOcupados(fecha: string, dentistaId?: string): Observable<any> {
+  getHorariosOcupados(fecha: string, profesionalId?: string): Observable<any> {
     const params: any = { fecha };
-    if (dentistaId) params.dentistaId = dentistaId;
+    if (profesionalId) params.profesionalId = profesionalId;
     
     return this.http.get<any>(`${this.apiUrl}/horarios-ocupados`, {
       headers: this.getHeaders(),
@@ -231,9 +236,9 @@ export class TurnoService {
   }
 
   // Obtener disponibilidad de fechas para un mes
-  getDisponibilidadFechas(mes: string, anio: string, dentistaId?: string): Observable<any> {
+  getDisponibilidadFechas(mes: string, anio: string, profesionalId?: string): Observable<any> {
     const params: any = { mes, anio };
-    if (dentistaId) params.dentistaId = dentistaId;
+    if (profesionalId) params.profesionalId = profesionalId;
     
     return this.http.get<any>(`${this.apiUrl}/disponibilidad-fechas`, {
       headers: this.getHeaders(),
@@ -241,9 +246,9 @@ export class TurnoService {
     });
   }
 
-  // Obtener agenda de un dentista específico
-  getAgendaDentista(dentistaId: string, fecha?: string): Observable<any> {
-    let url = `${this.apiUrl}/agenda-dentista/${dentistaId}`;
+  // Obtener agenda de un profesional específico
+  getAgendaProfesional(profesionalId: string, fecha?: string): Observable<any> {
+    let url = `${this.apiUrl}/agenda-profesional/${profesionalId}`;
     const params: any = {};
     
     if (fecha) params.fecha = fecha;

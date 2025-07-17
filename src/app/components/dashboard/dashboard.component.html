@@ -2,7 +2,7 @@
 <div class="container-fluid dashboard-container py-4" 
      [ngClass]="{
        'admin-dashboard': user?.tipoUsuario === 'administrador' && !isPacienteView,
-       'dentist-dashboard': user?.tipoUsuario === 'dentista',
+       'dentist-dashboard': user?.tipoUsuario === 'dentista' || user?.tipoUsuario === 'secretario',
        'paciente-dashboard': user?.tipoUsuario === 'paciente'
      }">
   <div *ngIf="user?.tipoUsuario === 'paciente'" class="dashboard-bg-blur"></div>
@@ -27,10 +27,30 @@
     </div>
   </div>
 
-  <!-- Navbar condicional según el tipo de usuario -->
+  <!-- Navbar global para todos los especialistas -->
   <app-admin-navbar *ngIf="user?.tipoUsuario === 'administrador'"></app-admin-navbar>
-  <app-dentist-navbar *ngIf="user?.tipoUsuario === 'dentista'"></app-dentist-navbar>
-  <app-patient-navbar *ngIf="user?.tipoUsuario === 'paciente'"></app-patient-navbar>
+  <app-dentist-navbar *ngIf="user && user.tipoUsuario !== 'administrador' && user.tipoUsuario !== 'paciente' && user.tipoUsuario !== 'secretario'"></app-dentist-navbar>
+  <app-dentist-navbar *ngIf="user?.tipoUsuario === 'secretario'"></app-dentist-navbar>
+
+  <!-- Bienvenida para secretario/a -->
+  <div *ngIf="user?.tipoUsuario === 'secretario'" class="alert alert-success d-flex align-items-center gap-3 mb-4">
+    <i class="bi bi-person-badge fs-2"></i>
+    <div>
+      <h4 class="mb-0">Bienvenido, {{ getUserGreeting() }}</h4>
+      <div class="text-muted">¡Que tengas un excelente día gestionando la clínica!</div>
+    </div>
+  </div>
+
+  <!-- Bienvenida para especialistas (no admin, no secretario, no paciente) -->
+  <div *ngIf="user && user.tipoUsuario !== 'administrador' && user.tipoUsuario !== 'paciente' && user.tipoUsuario !== 'secretario'" class="alert alert-info d-flex align-items-center gap-3 mb-4">
+    <i class="bi bi-person-badge fs-2"></i>
+    <div>
+      <h4 class="mb-0">Bienvenido, {{ getUserGreeting() }}</h4>
+      <div class="text-muted">¡Que tengas un excelente día en tu práctica profesional!</div>
+    </div>
+  </div>
+
+  <!-- Mostrar especialidad y nombre para especialistas -->
 
   <!-- Dashboard del Administrador -->
   <div *ngIf="user?.tipoUsuario === 'administrador' && !isPacienteView" class="admin-dashboard">
@@ -492,7 +512,7 @@
             <i class="fas fa-sync-alt me-1"></i>
             Actualizar
           </button>
-          <button class="btn btn-success btn-sm" (click)="navigateToAgenda()" *ngIf="user?.tipoUsuario === 'dentista'" title="Ver agenda completa">
+          <button class="btn btn-success btn-sm" (click)="navigateToAgenda()" *ngIf="user?.tipoUsuario !== 'paciente'" title="Ver agenda completa">
             <i class="fas fa-calendar-week me-1"></i>
             Ver Agenda
           </button>
@@ -570,7 +590,7 @@
                   <div class="action-buttons">
                     <!-- Botón para marcar como pagado (solo si está reservado o pendiente y es futuro) -->
                     <button 
-                      *ngIf="(getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pendiente_pago_efectivo' || getTurnoEstadoReal(turno) === 'pendiente_pago_online') && isTurnoFuturo(turno) && user?.tipoUsuario === 'dentista'" 
+                      *ngIf="(getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pendiente_pago_efectivo' || getTurnoEstadoReal(turno) === 'pendiente_pago_online') && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
                       class="action-btn action-btn-success action-btn-large"
                       (click)="marcarComoPagado(turno)"
                       title="💰 Marcar como pagado">
@@ -583,7 +603,7 @@
                     
                     <!-- Botón para marcar como reservado (solo si está cancelado y es futuro) -->
                     <button 
-                      *ngIf="getTurnoEstadoReal(turno) === 'cancelado' && isTurnoFuturo(turno) && user?.tipoUsuario === 'dentista'" 
+                      *ngIf="getTurnoEstadoReal(turno) === 'cancelado' && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
                       class="action-btn action-btn-warning action-btn-large"
                       (click)="marcarComoReservado(turno)"
                       title="📅 Reactivar turno">
@@ -598,7 +618,7 @@
                     
                     <!-- Botón para completar (solo si está pagado o reservado y es futuro) -->
                     <button 
-                      *ngIf="(getTurnoEstadoReal(turno) === 'pagado' || getTurnoEstadoReal(turno) === 'reservado') && isTurnoFuturo(turno) && user?.tipoUsuario === 'dentista'" 
+                      *ngIf="(getTurnoEstadoReal(turno) === 'pagado' || getTurnoEstadoReal(turno) === 'reservado') && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
                       class="action-btn action-btn-success action-btn-large"
                       (click)="completarTurno(turno)"
                       title="✅ Marcar como completado">
@@ -611,7 +631,7 @@
                     
                     <!-- Botón para reprogramar (prioritario para turnos ausentes o pasados) -->
                     <button 
-                      *ngIf="(getTurnoEstadoReal(turno) === 'ausente' || isTurnoPasado(turno) || getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pagado') && user?.tipoUsuario === 'dentista'" 
+                      *ngIf="(getTurnoEstadoReal(turno) === 'ausente' || isTurnoPasado(turno) || getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pagado') && user?.tipoUsuario !== 'paciente'" 
                       class="action-btn action-btn-info action-btn-large"
                       (click)="reprogramarTurno(turno)"
                       title="✏️ Reprogramar fecha/hora">
@@ -624,7 +644,7 @@
                     
                     <!-- Botón para cancelar (solo si está reservado o pagado y es futuro) -->
                     <button 
-                      *ngIf="(getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pagado') && isTurnoFuturo(turno) && user?.tipoUsuario === 'dentista'" 
+                      *ngIf="(getTurnoEstadoReal(turno) === 'reservado' || getTurnoEstadoReal(turno) === 'pagado') && isTurnoFuturo(turno) && user?.tipoUsuario !== 'paciente'" 
                       class="action-btn action-btn-danger action-btn-large"
                       (click)="cancelarTurno(turno)"
                       title="❌ Cancelar turno">
@@ -771,7 +791,7 @@
                   <div class="action-buttons">
                     <!-- Botón para marcar como pagado (solo si está reservado o pendiente) -->
                     <button 
-                      *ngIf="(turno.estado === 'reservado' || turno.estado === 'pendiente_pago_efectivo' || turno.estado === 'pendiente_pago_online') && user?.tipoUsuario === 'dentista'" 
+                      *ngIf="(turno.estado === 'reservado' || turno.estado === 'pendiente_pago_efectivo' || turno.estado === 'pendiente_pago_online') && user?.tipoUsuario !== 'paciente'" 
                       class="action-btn action-btn-success action-btn-large"
                       (click)="marcarComoPagado(turno)"
                       title="💰 Marcar como pagado">
@@ -784,7 +804,7 @@
                     
                     <!-- Botón para marcar como reservado (solo si está cancelado) -->
                     <button 
-                      *ngIf="turno.estado === 'cancelado' && user?.tipoUsuario === 'dentista'" 
+                      *ngIf="turno.estado === 'cancelado' && user?.tipoUsuario !== 'paciente'" 
                       class="action-btn action-btn-warning action-btn-large"
                       (click)="marcarComoReservado(turno)"
                       title="📅 Reactivar turno">
@@ -799,7 +819,7 @@
                     
                     <!-- Botón para completar (solo si está pagado o reservado) -->
                     <button 
-                      *ngIf="(turno.estado === 'pagado' || turno.estado === 'reservado') && user?.tipoUsuario === 'dentista'" 
+                      *ngIf="(turno.estado === 'pagado' || turno.estado === 'reservado') && user?.tipoUsuario !== 'paciente'" 
                       class="action-btn action-btn-success action-btn-large"
                       (click)="completarTurno(turno)"
                       title="✅ Marcar como completado">
@@ -812,7 +832,7 @@
                     
                     <!-- Botón para reprogramar (solo si está reservado o pagado) -->
                     <button 
-                      *ngIf="(turno.estado === 'reservado' || turno.estado === 'pagado') && user?.tipoUsuario === 'dentista'" 
+                      *ngIf="(turno.estado === 'reservado' || turno.estado === 'pagado') && user?.tipoUsuario !== 'paciente'" 
                       class="action-btn action-btn-info action-btn-large"
                       (click)="reprogramarTurno(turno)"
                       title="✏️ Reprogramar fecha/hora">

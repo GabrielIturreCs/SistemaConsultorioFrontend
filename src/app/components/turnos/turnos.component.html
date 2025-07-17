@@ -410,8 +410,8 @@
                   </label>
                   <select 
                     class="form-select" 
-                    [(ngModel)]="turnoForm.dentistaId" 
-                    name="dentistaId"
+                    [(ngModel)]="turnoForm.profesionalId" 
+                    name="profesionalId"
                     required>
                     <option value="">Selecciona un dentista</option>
                     <option *ngFor="let dentista of dentistas" [value]="dentista._id || dentista.id">

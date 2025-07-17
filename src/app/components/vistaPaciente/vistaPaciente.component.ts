@@ -843,19 +843,19 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
 
   // Función para obtener el nombre del dentista
   getDentistaName(turno: Turno): string {
-    // Si el dentista viene como objeto populate del backend
-    if (turno.dentistaId && typeof turno.dentistaId === 'object' && 'nombre' in turno.dentistaId) {
-      const dentista = turno.dentistaId as any;
-      return `${dentista.nombre || 'Dr.'} ${dentista.apellido || ''}`.trim();
+    if (turno.profesionalId && typeof turno.profesionalId === 'object' && 'nombre' in turno.profesionalId) {
+      const profesional = turno.profesionalId as any;
+      return `${profesional.nombre || 'Dr.'} ${profesional.apellido || ''}`.trim();
     }
-    
-    // Si viene como campos separados
-    if (turno.dentistaNombre || turno.dentistaApellido) {
-      return `${turno.dentistaNombre || 'Dr.'} ${turno.dentistaApellido || ''}`.trim();
+    return '';
+  }
+
+  getDentistaEspecialidad(turno: Turno): string | null {
+    if (turno.profesionalId && typeof turno.profesionalId === 'object' && 'especialidad' in turno.profesionalId) {
+      const profesional = turno.profesionalId as any;
+      return profesional.especialidad || null;
     }
-    
-    // Fallback
-    return 'Dr. No asignado';
+    return null;
   }
 
   // Función para calcular el tiempo restante hasta el turno

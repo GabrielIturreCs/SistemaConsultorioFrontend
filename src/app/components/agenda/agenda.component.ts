@@ -75,44 +75,52 @@ export class AgendaComponent implements OnInit {
 
   loadUserData(): void {
     const userStr = localStorage.getItem('user');
-    if (userStr) {
-      this.user = JSON.parse(userStr);
-      if (this.user?.tipoUsuario !== 'dentista') {
-        this.router.navigate(['/dashboard']);
-      }
-    } else {
+    if (!userStr) {
       this.router.navigate(['/login']);
+      return;
+    }
+    this.user = JSON.parse(userStr);
+    // Antes: solo dentista podía ver agenda
+    // if (this.user?.tipoUsuario !== 'dentista') {
+    //   this.router.navigate(['/dashboard']);
+    // }
+    // Ahora: cualquier profesional puede ver su agenda
+    if (!this.user || this.user.tipoUsuario === 'paciente') {
+      this.router.navigate(['/dashboard']);
     }
   }
 
   loadTurnosData(): void {
     this.isLoading = true;
     
-    // Si es un dentista, cargar solo sus turnos
-    if (this.user?.tipoUsuario === 'dentista' && this.user?.id) {
-      this.turnoService.getTurnosByDentista(this.user.id.toString()).subscribe({
-        next: (turnos) => {
-          this.turnos = turnos; // Solo los turnos del dentista
-          this.isLoading = false;
-          console.log('Turnos cargados:', turnos.length);
-        },
-        error: (error) => {
-          console.error('Error cargando turnos:', error);
-          this.turnos = [];
-          this.isLoading = false;
-          this.notificationService.showError('Error al cargar los turnos');
-        }
-      });
-    } else {
-      // Para otros tipos de usuario, cargar todos los turnos (comportamiento original)
+    // Para secretarios, cargar TODOS los turnos
+    if (this.user?.tipoUsuario === 'secretario') {
+      console.log('👥 Secretario: Cargando TODOS los turnos');
       this.turnoService.getTurnosFromAPI().subscribe({
         next: (response) => {
-          this.turnos = response.turnos; // Guarda todos los turnos
+          this.turnos = response.turnos;
           this.isLoading = false;
-          console.log('Turnos cargados:', response.turnos.length);
+          console.log('✅ Todos los turnos cargados para secretario:', this.turnos.length);
         },
         error: (error) => {
-          console.error('Error cargando turnos:', error);
+          console.error('❌ Error cargando todos los turnos:', error);
+          this.turnos = [];
+          this.isLoading = false;
+          this.notificationService.showError('Error al cargar todos los turnos');
+        }
+      });
+    }
+    // Para cualquier otro profesional (no secretario, no paciente), cargar solo sus turnos
+    else if (this.user && this.user.tipoUsuario !== 'paciente' && this.user.tipoUsuario !== 'secretario' && this.user.id) {
+      console.log('🦷 Profesional: Cargando turnos del especialista:', this.user.id);
+      this.turnoService.getTurnosFromAPI({ profesionalId: this.user.id.toString() }).subscribe({
+        next: (response) => {
+          this.turnos = response.turnos;
+          this.isLoading = false;
+          console.log('✅ Turnos del especialista cargados:', this.turnos.length);
+        },
+        error: (error) => {
+          console.error('❌ Error cargando turnos del especialista:', error);
           this.turnos = [];
           this.isLoading = false;
           this.notificationService.showError('Error al cargar los turnos');
@@ -141,6 +149,10 @@ export class AgendaComponent implements OnInit {
 
   navigateToConfiguracion(): void {
     this.router.navigate(['/configuracion-disponibilidad']);
+  }
+
+  navigateToPacientes(): void {
+    this.router.navigate(['/pacientes']);
   }
 
   completarTurno(turno: Turno): void {

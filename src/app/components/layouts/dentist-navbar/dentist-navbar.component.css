@@ -140,6 +140,22 @@
   box-shadow: 0 8px 25px rgba(97, 97, 97, 0.4);
 }
 
+/* Tratamientos Button - Rojo */
+.nav-btn-tratamientos {
+  background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+  color: #fff;
+  font-weight: bold;
+}
+
+.nav-btn-tratamientos:focus,
+.nav-btn-tratamientos:hover,
+.nav-btn-tratamientos.active {
+  background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(211, 47, 47, 0.4);
+}
+
 /* Material Icons */
 .material-icons {
   font-size: 1.2rem;

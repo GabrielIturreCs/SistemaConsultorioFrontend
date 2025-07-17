@@ -6,6 +6,7 @@ export interface User {
   nombre: string;
   apellido: string;
   tipoUsuario: string;
+  especialidad?: string;
   dni?: string;
   telefono?: string;
   direccion?: string;
@@ -33,7 +34,7 @@ export interface Turno {
   duracion?: number | string;
   pacienteId?: number | string;
   tratamientoId?: number | string;
-  dentistaId?: number | string | { nombre: string; apellido: string; especialidad?: string };
+  profesionalId?: number | string | { nombre: string; apellido: string; especialidad?: string };
   tipoUsuario?: string;
   // Información del dentista
   dentistaNombre?: string;
@@ -120,21 +121,24 @@ export interface Estadisticas {
 export type EstadoTurno = 'reservado' | 'completado' | 'cancelado';
 
 // Tipos de usuario
-export type TipoUsuario = 'administrador' | 'dentista' | 'paciente';
+export type TipoUsuario = 'administrador' | 'dentista' | 'paciente' | 'secretario' | 'medico' | 'profesional';
 
 // Tipos de alerta
 export type TipoAlerta = 'success' | 'danger' | 'warning' | 'info';
 
 export interface Dentista {
   _id?: string;
-  legajo: string;
+  legajo?: string;
   email: string;
   nombre: string;
   apellido: string;
-  telefono: string;
-  direccion: string;
-  dni: string;
-  userId: string;
+  nombreUsuario: string;
+  telefono?: string;
+  direccion?: string;
+  dni?: string;
+  userId?: string;
+  especialidad?: string;
+  password?: string;
 }
 
 // Interfaces para configuración de disponibilidad

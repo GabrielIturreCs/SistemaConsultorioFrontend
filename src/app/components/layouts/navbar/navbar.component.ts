@@ -12,18 +12,26 @@ export class NavbarComponent implements OnInit {
   role = ''; //para el rol usuario y paciente
 
   ngOnInit(): void {
-    const token = localStorage.getItem('token'); //se obtiene el token del localStorage
-    const userRole = localStorage.getItem('rol'); // se obtiene el rol del usuario
+    this.updateNavbarState();
+    window.addEventListener('storage', () => this.updateNavbarState());
+  }
 
+  updateNavbarState(): void {
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('rol');
     if (token) {
       this.isLoggedIn = true;
-      this.role = userRole || ''; 
+      this.role = userRole || '';
+    } else {
+      this.isLoggedIn = false;
+      this.role = '';
     }
   }
+
   logout(): void {
     localStorage.clear();
-    window.location.href = '/login'; // redirige al usuario a la página de inicio de sesión
-    this.isLoggedIn = false; // se actualiza el estado
-    this.role = ''; // se limpia el rol del usuario
+    window.location.href = '/login';
+    this.isLoggedIn = false;
+    this.role = '';
   }
 }

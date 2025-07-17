@@ -13,6 +13,7 @@ import { User } from '../../../interfaces';
 export class DentistNavbarComponent implements OnInit {
   user: User | null = null;
   currentRoute: string = '';
+  especialidadUsuario: string = '';
 
   constructor(
     private authService: AuthService,
@@ -22,11 +23,16 @@ export class DentistNavbarComponent implements OnInit {
   ngOnInit(): void {
     this.user = this.authService.getCurrentUser();
     this.currentRoute = this.router.url;
+    if (this.user) {
+      this.especialidadUsuario = this.user.especialidad || '';
+    } else {
+      this.especialidadUsuario = '';
+    }
   }
 
   getUserGreeting(): string {
-    if (!this.user) return 'Dentista';
-    return `${this.user.nombre} ${this.user.apellido}`;
+    if (!this.user) return '';
+    return `${this.user.nombre || ''} ${this.user.apellido || ''}`.trim();
   }
 
   getTipoClass(tipo: string): string {
@@ -65,6 +71,10 @@ export class DentistNavbarComponent implements OnInit {
 
   navigateToConfiguracion(): void {
     this.router.navigate(['/configuracion-disponibilidad']);
+  }
+
+  navigateToTratamientos(): void {
+    this.router.navigate(['/tratamiento']);
   }
 
   isActiveRoute(route: string): boolean {

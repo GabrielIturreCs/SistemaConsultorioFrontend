@@ -34,11 +34,19 @@ export function authGuard(role: string | string[] = ''): CanActivateFn {
       router.navigate(['/login']);
       return false;
     }
-    
+
+    // Si no se especifica rol, permitir a todos menos pacientes
+    if (!role || role.length === 0) {
+      if (currentUser?.tipoUsuario === 'paciente') {
+        router.navigate(['/vistaPaciente']);
+        return false;
+      }
+      return true;
+    }
+
     // Verificar rol si se especificó
     if (role && role.length > 0) {
       const userRole = currentUser?.tipoUsuario;
-      
       // Si es un array de roles, verificar si el usuario tiene alguno de ellos
       if (Array.isArray(role)) {
         if (!role.includes(userRole || '')) {
@@ -53,7 +61,6 @@ export function authGuard(role: string | string[] = ''): CanActivateFn {
         }
       }
     }
-    
     return true;
   };
 }

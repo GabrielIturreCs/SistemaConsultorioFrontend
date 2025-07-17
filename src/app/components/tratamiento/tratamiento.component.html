@@ -1,5 +1,6 @@
-<!-- Admin Navbar - Fijo en todas las rutas del administrador -->
-<app-admin-navbar></app-admin-navbar>
+<!-- Navbar condicional según el tipo de usuario -->
+<app-admin-navbar *ngIf="isAdmin"></app-admin-navbar>
+<app-dentist-navbar *ngIf="isProfesional"></app-dentist-navbar>
 
 <div class="container py-5">
   <!-- Header Section -->
@@ -8,7 +9,8 @@
       <span class="material-icons">medical_services</span>
     </div>
     <h1 class="main-title">Gestión de Tratamientos</h1>
-    <p class="subtitle">Administra y gestiona todos los tratamientos disponibles</p>
+    <p class="subtitle" *ngIf="isAdmin">Administra y gestiona todos los tratamientos disponibles</p>
+    <p class="subtitle" *ngIf="isProfesional">Gestiona tus tratamientos específicos</p>
   </div>
 
   <!-- Search and Actions Bar -->
@@ -166,6 +168,20 @@
         <form [formGroup]="formulario" (ngSubmit)="guardar(); showModal = false;" autocomplete="off">
           <div class="modal-body">
             <div class="form-grid">
+              <!-- Selector de especialista solo para secretarios -->
+              <div class="form-group" *ngIf="user?.tipoUsuario === 'secretario'">
+                <label class="form-label">
+                  <span class="material-icons me-2">person_search</span>Especialista
+                </label>
+                <div class="input-wrapper">
+                  <select class="form-control" formControlName="profesionalId" required>
+                    <option value="">Seleccione un especialista</option>
+                    <option *ngFor="let esp of especialistas" [value]="esp._id">{{ esp.nombre }} {{ esp.apellido }} ({{ esp.especialidad || 'Sin especialidad' }})</option>
+                  </select>
+                  <span class="material-icons input-icon">person_search</span>
+                </div>
+              </div>
+              <!-- Fin selector especialista -->
               <div class="form-group">
                 <label class="form-label">
                   <span class="material-icons me-2">tag</span>Número de Tratamiento
