@@ -158,17 +158,17 @@
 
   <!-- Botones de acción -->
   <div class="acciones">
-    <button class="btn btn-primary" (click)="guardarOdontograma()" [disabled]="guardando">
+    <button class="btn btn-primary" (click)="guardarOdontograma()" [disabled]="guardando || exportando">
       <i class="fas fa-save"></i>
       {{ guardando ? 'Guardando...' : 'Guardar' }}
     </button>
     
-    <button class="btn btn-secondary" (click)="imprimirGrafico()">
+    <button class="btn btn-secondary" (click)="imprimirGrafico()" [disabled]="exportando">
       <i class="fas fa-print"></i>
       Imprimir Gráfico
     </button>
     
-    <button class="btn btn-secondary" (click)="imprimirDatos()">
+    <button class="btn btn-secondary" (click)="imprimirDatos()" [disabled]="exportando">
       <i class="fas fa-list"></i>
       Imprimir Datos
     </button>
@@ -178,9 +178,14 @@
       Limpiar
     </button>
     
-    <button class="btn btn-info" (click)="exportarImagen()">
+    <button class="btn btn-info" (click)="exportarImagen()" [disabled]="exportando">
       <i class="fas fa-image"></i>
       Exportar Imagen
     </button>
+  </div>
+</div>
+<div *ngIf="exportando" class="odontograma-exportando-overlay">
+  <div class="odontograma-exportando-spinner">
+    <i class="fas fa-spinner fa-spin"></i> Procesando PDF...
   </div>
 </div>
