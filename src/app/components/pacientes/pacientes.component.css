@@ -1151,3 +1151,13 @@ button[mat-icon-button]:hover {
   background: #1976d2 !important;
   color: #fff !important;
 }
+
+/* Evitar doble scroll: solo el modal debe scrollear */
+body.modal-open {
+  overflow: hidden !important;
+}
+
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
