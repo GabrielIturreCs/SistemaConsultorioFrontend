@@ -32,15 +32,6 @@
   <app-dentist-navbar *ngIf="user && user.tipoUsuario !== 'administrador' && user.tipoUsuario !== 'paciente' && user.tipoUsuario !== 'secretario'"></app-dentist-navbar>
   <app-dentist-navbar *ngIf="user?.tipoUsuario === 'secretario'"></app-dentist-navbar>
 
-  <!-- Bienvenida para secretario/a -->
-  <div *ngIf="user?.tipoUsuario === 'secretario'" class="alert alert-success d-flex align-items-center gap-3 mb-4">
-    <i class="bi bi-person-badge fs-2"></i>
-    <div>
-      <h4 class="mb-0">Bienvenido, {{ getUserGreeting() }}</h4>
-      <div class="text-muted">¡Que tengas un excelente día gestionando la clínica!</div>
-    </div>
-  </div>
-
   <!-- Bienvenida para especialistas (no admin, no secretario, no paciente) -->
   <div *ngIf="user && user.tipoUsuario !== 'administrador' && user.tipoUsuario !== 'paciente' && user.tipoUsuario !== 'secretario'" class="alert alert-info d-flex align-items-center gap-3 mb-4">
     <i class="bi bi-person-badge fs-2"></i>

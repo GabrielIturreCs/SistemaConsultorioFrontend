@@ -1,5 +1,6 @@
 <!-- Patient Navbar - Fijo en todas las rutas del paciente -->
 <app-patient-navbar *ngIf="user?.tipoUsuario === 'paciente'"></app-patient-navbar>
+<app-dentist-navbar *ngIf="user?.tipoUsuario === 'secretario'"></app-dentist-navbar>
 
 <!-- Vista Reservar Turno con Wizard -->
 <div class="main-reservar-container">

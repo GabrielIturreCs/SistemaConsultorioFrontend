@@ -53,6 +53,7 @@
       <button 
         type="button" 
         class="btn nav-btn-configuracion py-3"
+        *ngIf="user?.tipoUsuario !== 'secretario'"
         [class.active]="isActiveRoute('configuracion-disponibilidad')"
         (click)="navigateToConfiguracion()">
         <i class="material-icons me-1">schedule</i> Configuración
@@ -60,6 +61,7 @@
       <button 
         type="button" 
         class="btn nav-btn-tratamientos py-3"
+        *ngIf="user?.tipoUsuario !== 'secretario'"
         [class.active]="isActiveRoute('tratamiento')"
         (click)="navigateToTratamientos()">
         <i class="material-icons me-1">medical_services</i> Tratamientos
