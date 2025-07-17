@@ -34,6 +34,7 @@ export interface OdontogramaData {
   providedIn: 'root'
 })
 export class OdontogramaService {
+  // Eliminar odontogramasPorPaciente y pacienteActualId
   private odontogramaSubject = new BehaviorSubject<OdontogramaData>(this.inicializarOdontograma());
   public odontograma$ = this.odontogramaSubject.asObservable();
 
@@ -115,10 +116,10 @@ export class OdontogramaService {
     this.estadoActualSubject.next(estado);
   }
 
+  // Al aplicar herramienta, actualizar el odontograma del paciente actual
   aplicarHerramienta(numeroPieza: number, zona: keyof PiezaDental["zonas"]): void {
     const odontogramaActual = this.odontogramaSubject.value;
     const piezaOriginal = odontogramaActual.piezas[numeroPieza];
-    console.log('🦷 ANTES DE PINTAR:', JSON.stringify(piezaOriginal, null, 2));
     const nuevaZonas = { ...piezaOriginal.zonas };
     if (this.herramientaActualSubject.value === 'borrar') {
       nuevaZonas[zona] = null;
@@ -132,8 +133,8 @@ export class OdontogramaService {
     }
     const nuevaPieza: PiezaDental = { ...piezaOriginal, zonas: nuevaZonas };
     const nuevasPiezas = { ...odontogramaActual.piezas, [numeroPieza]: nuevaPieza };
-    this.odontogramaSubject.next({ ...odontogramaActual, piezas: nuevasPiezas });
-    console.log('🦷 DESPUÉS DE PINTAR:', JSON.stringify(nuevaPieza, null, 2));
+    const nuevoOdontograma = { ...odontogramaActual, piezas: nuevasPiezas };
+    this.odontogramaSubject.next(nuevoOdontograma);
   }
 
   actualizarNotas(notas: string): void {
@@ -160,25 +161,27 @@ export class OdontogramaService {
   getOdontogramaByPacienteId(pacienteId: string): Observable<OdontogramaData> {
     return this.http.get<any>(`${this.baseUrl}/paciente/${pacienteId}`).pipe(
       map(res => {
-        // Adaptar si tu backend devuelve el odontograma en otra propiedad
         const data = res.odontograma || res;
-        // Convertir fecha a Date
         if (data.fecha) data.fecha = new Date(data.fecha);
-        // --- ARREGLO: Convertir piezas (Map de MongoDB) a objeto plano ---
-        if (data.piezas && typeof data.piezas === 'object' && !(data.piezas instanceof Array)) {
-          // Si viene como Map, convertir a objeto plano
-          data.piezas = Object.fromEntries(Object.entries(data.piezas));
-        }
+        // No modificar piezas, dejarlo tal cual lo recibe
         return data as OdontogramaData;
       }),
-      tap(data => this.odontogramaSubject.next(data))
+      tap(data => {
+        this.odontogramaSubject.next(data);
+      })
     );
   }
 
   // Guardar/actualizar odontograma de un paciente
   saveOdontograma(pacienteId: string): Observable<any> {
     const odontograma = this.odontogramaSubject.value;
-    return this.http.put(`${this.baseUrl}/paciente/${pacienteId}`, odontograma);
+    // Enviar el objeto piezas tal cual, asegurando claves string
+    const piezasStringKey: { [key: string]: PiezaDental } = {};
+    Object.entries(odontograma.piezas).forEach(([k, v]) => {
+      piezasStringKey[String(k)] = v;
+    });
+    const odontogramaToSend = { ...odontograma, piezas: piezasStringKey };
+    return this.http.put(`${this.baseUrl}/paciente/${pacienteId}`, odontogramaToSend);
   }
 
   // Usado por el componente para guardar (puedes adaptar para que reciba el pacienteId)

@@ -1,4 +1,9 @@
-<div class="odontograma-container">
+<div *ngIf="cargandoOdontograma" class="odontograma-loading">
+  <div style="text-align:center; padding: 40px; font-size: 1.3rem; color: #2563eb;">
+    <i class="fas fa-spinner fa-spin"></i> Cargando odontograma...
+  </div>
+</div>
+<div *ngIf="!cargandoOdontograma" class="odontograma-container">
   <!-- Barra de herramientas -->
   <div class="toolbar">
     <div class="toolbar-section">

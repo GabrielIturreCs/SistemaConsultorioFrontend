@@ -73,7 +73,7 @@ export class PacientesComponent implements OnInit {
   };
 
   odontogramaPaciente: any = null;
-  pacienteSeleccionado: Paciente | null = null;
+  pacienteSeleccionado: any = null;
   showOdontograma: boolean = false;
 
   constructor(
@@ -344,18 +344,15 @@ export class PacientesComponent implements OnInit {
     return this.isValidEditForm() && !this.isUpdating;
   }
 
-  abrirOdontograma(paciente: Paciente) {
+  abrirOdontograma(paciente: any): void {
     this.pacienteSeleccionado = paciente;
-    this.odontogramaPaciente = {}; // Deja que el componente hijo maneje la carga
     this.showOdontograma = true;
+    console.log('[PACIENTES] Abriendo odontograma para paciente:', paciente);
   }
-
-  cerrarOdontograma() {
+  cerrarOdontograma(): void {
     this.showOdontograma = false;
-    this.odontogramaPaciente = null;
     this.pacienteSeleccionado = null;
-    // Limpiar el estado del odontograma para evitar residuos
-    this.odontogramaService.limpiarOdontograma();
+    this.odontogramaPaciente = null;
   }
 
   verTurnosPaciente(paciente: Paciente) {
