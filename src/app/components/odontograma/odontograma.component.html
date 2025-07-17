@@ -38,70 +38,70 @@
       <span class="label-derecha-abs">DERECHA</span>
       <span class="label-izquierda-abs">IZQUIERDA</span>
     </div>
-    <!-- Fila superior: Cuadrante 2 | Separador | Cuadrante 1 -->
+    <!-- Fila superior: Cuadrante 2 | Separador | Cuadrante 1 (invertido) -->
     <div class="odontograma-fdi-row">
       <div class="odontograma-fdi-celda cuadrante-num">1</div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(2)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
       <div class="separador-central"></div>
-      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(1)">
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(1).slice().reverse()">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
       <div class="odontograma-fdi-celda cuadrante-num">2</div>
     </div>
-    <!-- Numeración superior (1-8 debajo de los dientes) -->
+    <!-- Numeración superior (derecha 1-8, izquierda 8-1) -->
     <div class="odontograma-fdi-header">
       <div class="odontograma-fdi-celda"></div>
-      <ng-container *ngFor="let pieza of getPiezasPorCuadrante(2)">
-        <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
+      <ng-container *ngFor="let n of [8,7,6,5,4,3,2,1]">
+        <div class="odontograma-fdi-celda">{{ n }}</div>
       </ng-container>
       <div class="separador-central"></div>
-      <ng-container *ngFor="let pieza of getPiezasPorCuadrante(1)">
-        <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
+      <ng-container *ngFor="let n of [1,2,3,4,5,6,7,8]">
+        <div class="odontograma-fdi-celda">{{ n }}</div>
       </ng-container>
       <div class="odontograma-fdi-celda"></div>
     </div>
-    <!-- Fila inferior: Cuadrante 3 | Separador | Cuadrante 4 -->
+    <!-- Fila inferior: Cuadrante 3 | Separador | Cuadrante 4 (invertido) -->
     <div class="odontograma-fdi-row">
       <div class="odontograma-fdi-celda cuadrante-num">4</div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(3)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
       <div class="separador-central"></div>
-      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(4)">
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(4).slice().reverse()">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
       <div class="odontograma-fdi-celda cuadrante-num">3</div>
     </div>
-    <!-- Temporales: Cuadrante 6 y 5 (superior) -->
+    <!-- Temporales: Cuadrante 6 y 5 (superior, 5 invertido) -->
     <div class="odontograma-fdi-row">
       <div class="odontograma-fdi-celda cuadrante-num">5</div>
       <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(6)">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
       <div class="separador-central"></div>
-      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(5)">
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(5).slice().reverse()">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
       <div class="odontograma-fdi-celda cuadrante-num">6</div>
     </div>
-    <!-- Numeración temporales superior (1-5 debajo de los dientes) -->
+    <!-- Numeración temporales superior (derecha 5-1, izquierda 1-5) -->
     <div class="odontograma-fdi-header">
       <div class="odontograma-fdi-celda"></div>
-      <ng-container *ngFor="let pieza of getPiezasPorCuadrante(6)">
-        <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
+      <ng-container *ngFor="let n of [5,4,3,2,1]">
+        <div class="odontograma-fdi-celda">{{ n }}</div>
       </ng-container>
       <div class="separador-central"></div>
-      <ng-container *ngFor="let pieza of getPiezasPorCuadrante(5)">
-        <div class="odontograma-fdi-celda">{{ pieza.numero.toString().slice(-1) }}</div>
+      <ng-container *ngFor="let n of [1,2,3,4,5]">
+        <div class="odontograma-fdi-celda">{{ n }}</div>
       </ng-container>
       <div class="odontograma-fdi-celda"></div>
     </div>
-    <!-- Temporales: Cuadrante 7 y 8 (inferior) -->
+    <!-- Temporales: Cuadrante 7 y 8 (inferior, 7 invertido) -->
     <div class="odontograma-fdi-row">
       <div class="odontograma-fdi-celda cuadrante-num">8</div>
-      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(7)">
+      <div class="odontograma-fdi-celda" *ngFor="let pieza of getPiezasPorCuadrante(7).slice().reverse()">
         <app-pieza-dental [pieza]="pieza" (zonaClic)="onZonaClic($event)"></app-pieza-dental>
       </div>
       <div class="separador-central"></div>

@@ -82,19 +82,19 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
     if (pacienteId) {
       this.odontogramaService.getOdontogramaByPacienteId(pacienteId).subscribe({
         next: (data) => {
-          // Si el odontograma viene vacío, inicializa uno nuevo
+          // Si el odontograma viene vacío, inicializa uno nuevo SOLO si el usuario lo decide
           if (!data || !data.piezas || Object.keys(data.piezas).length === 0) {
-            this.odontogramaService.limpiarOdontograma();
+            // No limpiar automáticamente, dejar que el usuario use el botón de limpiar
           }
           // Si viene con datos, el observable ya lo actualiza
         },
         error: () => {
-          this.odontogramaService.limpiarOdontograma();
+          // No limpiar automáticamente, dejar que el usuario use el botón de limpiar
         }
       });
       this.cargarHistorialOdontogramas(pacienteId);
     } else {
-      this.odontogramaService.limpiarOdontograma();
+      // No limpiar automáticamente, dejar que el usuario use el botón de limpiar
     }
 
     this.odontogramaService.odontograma$.pipe(takeUntil(this.destroy$)).subscribe((data: OdontogramaData) => {
@@ -156,6 +156,7 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
   }
 
   onZonaClic(event: { numeroPieza: number; zona: "superior" | "inferior" | "izquierda" | "derecha" | "centro" }): void {
+    console.log('🦷 CLICK EN ZONA:', event);
     this.odontogramaService.aplicarHerramienta(event.numeroPieza, event.zona)
   }
 
@@ -181,6 +182,8 @@ export class OdontogramaComponent implements OnInit, OnDestroy {
     this.guardando = true;
     const pacienteId = this.paciente?.id || this.paciente?._id;
     this.odontogramaData.odontologo = this.odontologoId;
+    // LOG: mostrar el objeto que se va a enviar
+    console.log('🦷 OBJETO A GUARDAR:', JSON.stringify(this.odontogramaData, null, 2));
     this.odontogramaService
       .guardarOdontograma(pacienteId)
       .pipe(takeUntil(this.destroy$))

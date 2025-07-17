@@ -117,19 +117,23 @@ export class OdontogramaService {
 
   aplicarHerramienta(numeroPieza: number, zona: keyof PiezaDental["zonas"]): void {
     const odontogramaActual = this.odontogramaSubject.value;
-    const herramientaActual = this.herramientaActualSubject.value;
-    const estadoActual = this.estadoActualSubject.value;
-    if (herramientaActual === 'borrar') {
-      odontogramaActual.piezas[numeroPieza].zonas[zona] = null;
+    const piezaOriginal = odontogramaActual.piezas[numeroPieza];
+    console.log('🦷 ANTES DE PINTAR:', JSON.stringify(piezaOriginal, null, 2));
+    const nuevaZonas = { ...piezaOriginal.zonas };
+    if (this.herramientaActualSubject.value === 'borrar') {
+      nuevaZonas[zona] = null;
     } else {
       const nuevoEstado: ZonaEstado = {
-        herramienta: herramientaActual,
-        color: this.coloresEstado[estadoActual as keyof typeof this.coloresEstado],
-        estado: estadoActual as any
+        herramienta: this.herramientaActualSubject.value,
+        color: this.coloresEstado[this.estadoActualSubject.value as keyof typeof this.coloresEstado],
+        estado: this.estadoActualSubject.value as any
       };
-      odontogramaActual.piezas[numeroPieza].zonas[zona] = nuevoEstado;
+      nuevaZonas[zona] = nuevoEstado;
     }
-    this.odontogramaSubject.next({ ...odontogramaActual });
+    const nuevaPieza: PiezaDental = { ...piezaOriginal, zonas: nuevaZonas };
+    const nuevasPiezas = { ...odontogramaActual.piezas, [numeroPieza]: nuevaPieza };
+    this.odontogramaSubject.next({ ...odontogramaActual, piezas: nuevasPiezas });
+    console.log('🦷 DESPUÉS DE PINTAR:', JSON.stringify(nuevaPieza, null, 2));
   }
 
   actualizarNotas(notas: string): void {
