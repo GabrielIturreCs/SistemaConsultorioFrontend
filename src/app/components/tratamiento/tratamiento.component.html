@@ -1,6 +1,9 @@
-<!-- Navbar condicional según el tipo de usuario -->
-<app-admin-navbar *ngIf="isAdmin"></app-admin-navbar>
-<app-dentist-navbar *ngIf="isProfesional"></app-dentist-navbar>
+<!-- Navbar y menú/tab-bar superior ÚNICOS -->
+<app-dentist-navbar *ngIf="user?.tipoUsuario === 'dentista'"></app-dentist-navbar>
+<app-dentist-navbar *ngIf="user?.tipoUsuario !== 'dentista' && user?.tipoUsuario !== 'paciente'"></app-dentist-navbar>
+<app-menu-navegacion [user]="user" currentView="tratamiento"></app-menu-navegacion>
+
+<!-- Elimino todos los navbars y barras duplicadas debajo -->
 
 <div class="container py-5">
   <!-- Header Section -->

@@ -7,10 +7,13 @@ import { NotificationService } from '../../services/notification.service';
 import { AdminNavbarComponent } from '../layouts/admin-navbar/admin-navbar.component';
 import { DentistNavbarComponent } from '../layouts/dentist-navbar/dentist-navbar.component';
 import { DentistaService } from '../../services/dentista.service';
+import { NavbarComponent } from '../layouts/navbar/navbar.component';
+import { PatientNavbarComponent } from '../layouts/patient-navbar/patient-navbar.component';
+import { MenuNavegacionComponent } from '../menu-navegacion/menu-navegacion.component';
 
 @Component({
   selector: 'app-tratamiento',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminNavbarComponent, DentistNavbarComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminNavbarComponent, DentistNavbarComponent, NavbarComponent, PatientNavbarComponent, MenuNavegacionComponent],
   templateUrl: './tratamiento.component.html',
   styleUrls: ['./tratamiento.component.css']
 })
@@ -51,13 +54,19 @@ export class TratamientoComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUserData();
-    this.cargarTratamientos();
-    this.loadEspecialistas();
+    // Esperar a que user esté bien cargado antes de cargar tratamientos
+    setTimeout(() => {
+      this.cargarTratamientos();
+      this.loadEspecialistas();
+    }, 0);
   }
 
   loadUserData() {
-    // Cargar datos del usuario desde sessionStorage
-    const userData = sessionStorage.getItem('user');
+    // Intenta primero sessionStorage, luego localStorage
+    let userData = sessionStorage.getItem('user');
+    if (!userData) {
+      userData = localStorage.getItem('user');
+    }
     if (userData) {
       this.user = JSON.parse(userData);
       this.isAdmin = this.user?.tipoUsuario === 'administrador';
@@ -67,8 +76,8 @@ export class TratamientoComponent implements OnInit {
 
   cargarTratamientos() {
     this.loading = true;
-    
-    // Si es profesional, cargar sus tratamientos específicos + globales
+    console.log('Usuario actual:', this.user);
+
     if (this.isProfesional && this.user?.id) {
       this.tratamientoService.getTratamientos(this.user.id.toString()).subscribe({
         next: (data) => {
@@ -81,8 +90,7 @@ export class TratamientoComponent implements OnInit {
           this.loading = false;
         }
       });
-    } else {
-      // Si es admin, cargar solo tratamientos globales
+    } else if (this.isAdmin) {
       this.tratamientoService.getTratamientos().subscribe({
         next: (data) => {
           this.tratamientos = data;
@@ -94,6 +102,11 @@ export class TratamientoComponent implements OnInit {
           this.loading = false;
         }
       });
+    } else {
+      // Si no es profesional ni admin, limpiar la lista
+      this.tratamientos = [];
+      this.filteredTratamientos = [];
+      this.loading = false;
     }
   }
 
@@ -134,8 +147,8 @@ export class TratamientoComponent implements OnInit {
         });
       }
     } else {
-      // Crear tratamiento con información del profesional
-      const esGlobal = this.isAdmin;
+      // Crear tratamiento SOLO para el profesional logueado (no global)
+      const esGlobal = false;
       const profesionalId = this.isProfesional ? this.user?.id?.toString() : undefined;
       
       this.tratamientoService.crearTratamiento(tratamientoData, profesionalId, esGlobal).subscribe({
@@ -202,5 +215,13 @@ export class TratamientoComponent implements OnInit {
       next: (especialistas) => this.especialistas = especialistas,
       error: () => this.especialistas = []
     });
+  }
+
+  logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('rol');
+    sessionStorage.removeItem('user');
+    window.location.href = '/login';
   }
 }

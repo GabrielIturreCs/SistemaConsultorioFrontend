@@ -5,6 +5,7 @@ import { User } from '../../interfaces';
 
 @Component({
   selector: 'app-menu-navegacion',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './menu-navegacion.component.html',
   styleUrl: './menu-navegacion.component.css'
