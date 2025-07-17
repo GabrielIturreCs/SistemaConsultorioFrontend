@@ -177,7 +177,6 @@
                   <strong>{{ turno.nombre }} {{ turno.apellido }}</strong>
                   <br>
                   <small class="text-muted">
-                    {{ turno.telefono || 'Sin teléfono' }}
                     <span *ngIf="turno.nroTurno" class="badge bg-primary ms-2">#{{ turno.nroTurno }}</span>
                   </small>
                 </div>
