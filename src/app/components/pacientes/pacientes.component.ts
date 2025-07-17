@@ -347,12 +347,14 @@ export class PacientesComponent implements OnInit {
   abrirOdontograma(paciente: any): void {
     this.pacienteSeleccionado = paciente;
     this.showOdontograma = true;
+    document.body.classList.add('modal-open'); // Bloquea scroll de fondo
     console.log('[PACIENTES] Abriendo odontograma para paciente:', paciente);
   }
   cerrarOdontograma(): void {
     this.showOdontograma = false;
     this.pacienteSeleccionado = null;
     this.odontogramaPaciente = null;
+    document.body.classList.remove('modal-open'); // Habilita scroll de fondo
   }
 
   verTurnosPaciente(paciente: Paciente) {

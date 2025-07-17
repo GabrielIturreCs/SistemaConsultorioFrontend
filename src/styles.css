@@ -570,3 +570,7 @@ input:focus, select:focus, textarea:focus {
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(253, 126, 20, 0.4);
 }
+
+body.modal-open {
+  overflow: hidden !important;
+}
