@@ -188,8 +188,12 @@ export class ReservarComponent implements OnInit {
     // Manejar el regreso desde el pago exitoso
     this.handlePaymentReturn();
     
-    // Ambos tipos de usuario tienen 6 pasos totales
-    this.totalSteps = 6;
+    // Ajustar totalSteps solo para secretario/a
+    if (this.user?.tipoUsuario === 'secretario') {
+      this.totalSteps = 7;
+    } else {
+      this.totalSteps = 6;
+    }
 
     // Detectar resultado de pago por query param con manejo mejorado
     this.route.queryParams.subscribe(params => {
@@ -1944,6 +1948,9 @@ export class ReservarComponent implements OnInit {
         
         // Ir al paso de éxito
         this.currentStep = 6;
+        if (this.user?.tipoUsuario === 'secretario') {
+          this.currentStep = 7;
+        }
         this.paymentSuccess = true;
         this.metodoPago = 'efectivo';
         
@@ -2006,6 +2013,9 @@ export class ReservarComponent implements OnInit {
         
         // Ir al paso de éxito
         this.currentStep = 6;
+        if (this.user?.tipoUsuario === 'secretario') {
+          this.currentStep = 7;
+        }
         this.paymentSuccess = true;
         this.metodoPago = 'efectivo';
         

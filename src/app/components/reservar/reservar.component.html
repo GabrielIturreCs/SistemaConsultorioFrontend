@@ -70,6 +70,14 @@
             <div class="step-number">{{ getStepNumber(6) }}</div>
             <div class="step-title">¡Listo!</div>
           </div>
+          <div class="progress-line" [class.completed]="currentStep > getStepNumber(6)"></div>
+          <!-- Paso 7: Solo para secretario/a -->
+          <ng-container *ngIf="user?.tipoUsuario === 'secretario'">
+            <div class="step" [class.active]="currentStep === 7">
+              <div class="step-number">7</div>
+              <div class="step-title">Resumen</div>
+            </div>
+          </ng-container>
         </div>
       </div>
 
