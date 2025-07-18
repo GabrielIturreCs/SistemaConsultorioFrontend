@@ -16,6 +16,8 @@ import { filter } from 'rxjs/operators';
 import { NotificationService } from '../../services/notification.service';
 import { FooterComponent } from '../layouts/footer/footer.component';
 import { PatientNavbarComponent } from '../layouts/patient-navbar/patient-navbar.component';
+import { AuthService } from '../../services/auth.service';
+import { firstValueFrom } from 'rxjs';
 
 interface PacienteStats {
   totalTurnos: number;
@@ -75,7 +77,8 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
     private tratamientoService: TratamientoService,
     private pacienteService: PacienteService,
     private dataRefreshService: DataRefreshService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private authService: AuthService
   ) {
     this.chatForm = this.fb.group({
       message: ['', [Validators.required, Validators.minLength(1)]]
@@ -137,69 +140,169 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
   }
 
   loadUserData(): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        this.user = JSON.parse(userData);
-        
-        // Verificar que sea realmente un paciente
-        if (this.user?.tipoUsuario !== 'paciente') {
-          console.warn('Usuario no es paciente, redirigiendo...');
-          this.router.navigate(['/dashboard']);
-          return;
-        }
-        
-        // Cargar información del paciente y luego los turnos
-        this.loadPacienteData();
-      } else {
-        this.router.navigate(['/login']);
-      }
+    // Usar AuthService para obtener el usuario actual
+    this.user = this.authService.getCurrentUser();
+    if (!this.user) {
+      this.notificationService.showError('Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.');
+      this.router.navigate(['/login']);
+      return;
     }
+    // Verificar que sea realmente un paciente
+    if (this.user?.tipoUsuario !== 'paciente') {
+      this.notificationService.showError('Solo los pacientes pueden acceder a esta vista.');
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+    // Si el paciente no tiene perfil completo, redirigir a completar perfil
+    if (this.user?.tipoUsuario === 'paciente' && !this.user.hasCompleteProfile) {
+      this.notificationService.showInfo('Por favor, completa tu perfil para continuar.');
+      this.router.navigate(['/complete-profile']);
+      return;
+    }
+    // Cargar información del paciente y luego los turnos
+    this.loadPacienteData();
   }
 
   loadPacienteData(): void {
     if (!this.user?.id) {
       console.error('No se encontró ID de usuario');
+      this.notificationService.showError('Error: No se encontró tu usuario. Por favor, vuelve a iniciar sesión.');
       return;
     }
 
     this.isLoading = true;
-    
+    console.log('[DEBUG] Usuario logueado:', this.user);
     // Obtener todos los pacientes y buscar el que corresponde al usuario logueado
     this.pacienteService.getPacientes().subscribe({
       next: (pacientes) => {
+        console.log('[DEBUG] Pacientes obtenidos:', pacientes);
         // Buscar el paciente que tiene el userId igual al id del usuario logueado
         this.paciente = pacientes.find((p: any) => p.userId === this.user?.id?.toString()) || null;
-        
         if (this.paciente) {
+          console.log('[DEBUG] Paciente asociado encontrado:', this.paciente);
+          // Si el paciente no tiene userId, asociarlo automáticamente al usuario logueado
+          if (this.paciente && this.user && (!this.paciente.userId || this.paciente.userId !== this.user.id.toString())) {
+            const pacienteId = String(this.paciente._id || this.paciente.id || '');
+            if (!pacienteId) {
+              this.notificationService.showError('No se pudo identificar tu perfil de paciente para repararlo. Contacta a la clínica.');
+              return;
+            }
+            this.pacienteService.updatePaciente(pacienteId, { ...this.paciente, userId: this.user.id.toString() }).subscribe({
+              next: (updated: any) => {
+                if (this.paciente && this.user) {
+                  this.paciente.userId = this.user.id.toString();
+                }
+                this.notificationService.showSuccess('Tu perfil fue reparado automáticamente. Ahora puedes ver y reservar turnos correctamente.');
+                this.loadMisTurnos();
+                this.loadTratamientos();
+                this.loadChatHistory();
+                this.addWelcomeMessage();
+              },
+              error: () => {
+                this.notificationService.showError('No se pudo reparar tu perfil automáticamente. Contacta a la clínica.');
+                this.loadMisTurnos();
+                this.loadTratamientos();
+                this.loadChatHistory();
+                this.addWelcomeMessage();
+              }
+            });
+            return;
+          }
           // Una vez que tenemos el paciente, cargar sus turnos y tratamientos
           this.loadMisTurnos();
           this.loadTratamientos();
           this.loadChatHistory();
           this.addWelcomeMessage(); // Agregar mensaje después de cargar datos
         } else {
-          console.error('No se encontró un paciente asociado al usuario logueado');
-          // Intentar buscar por nombre y apellido como respaldo
-          this.paciente = pacientes.find((p: any) => 
-            p.nombre?.toLowerCase().trim() === this.user?.nombre?.toLowerCase().trim() &&
-            p.apellido?.toLowerCase().trim() === this.user?.apellido?.toLowerCase().trim()
-          ) || null;
-          
-          if (this.paciente) {
-            this.loadMisTurnos();
-            this.loadTratamientos();
-            this.loadChatHistory();
-            this.addWelcomeMessage(); // Agregar mensaje después de cargar datos
+          console.warn('[DEBUG] No se encontró un paciente asociado al usuario logueado. Intentando reparación automática...');
+          // Intentar buscar por email primero
+          let pacienteEncontrado = null;
+          if (this.user?.email) {
+            pacienteEncontrado = pacientes.find((p: any) => p.email?.toLowerCase().trim() === this.user?.email?.toLowerCase().trim());
+          }
+          // Si no se encuentra por email, buscar por nombre y apellido
+          if (!pacienteEncontrado) {
+            pacienteEncontrado = pacientes.find((p: any) =>
+              p.nombre?.toLowerCase().trim() === this.user?.nombre?.toLowerCase().trim() &&
+              p.apellido?.toLowerCase().trim() === this.user?.apellido?.toLowerCase().trim()
+            );
+          }
+          if (pacienteEncontrado) {
+            // Reparar: actualizar el userId del paciente encontrado
+            const pacienteId = String(pacienteEncontrado?._id || pacienteEncontrado?.id || '');
+            if (!pacienteId) {
+              this.notificationService.showError('No se pudo identificar tu perfil de paciente para repararlo. Contacta a la clínica.');
+              this.isLoading = false;
+              return;
+            }
+            this.pacienteService.updatePaciente(pacienteId, { ...pacienteEncontrado, userId: this.user!.id.toString() }).subscribe({
+              next: (updated: any) => {
+                this.paciente = { ...pacienteEncontrado, userId: this.user!.id.toString() };
+                // Actualizar usuario en localStorage y AuthService
+                this.user!.hasCompleteProfile = true;
+                localStorage.setItem('user', JSON.stringify(this.user));
+                if (this.user && this.authService.setCurrentUser) {
+                  this.authService.setCurrentUser(this.user);
+                }
+                this.notificationService.showSuccess('Tu perfil fue reparado automáticamente. Ahora puedes ver y reservar turnos correctamente.');
+                this.loadMisTurnos();
+                this.loadTratamientos();
+                this.loadChatHistory();
+                this.addWelcomeMessage();
+              },
+              error: () => {
+                this.notificationService.showError('No se pudo reparar tu perfil automáticamente. Contacta a la clínica.');
+                this.loadMisTurnos();
+                this.loadTratamientos();
+                this.loadChatHistory();
+                this.addWelcomeMessage();
+              }
+            });
           } else {
-            console.error('No se pudo encontrar información del paciente');
-            this.loadChatHistory();
-            this.addWelcomeMessage(); // Agregar mensaje genérico si no se encuentra paciente
-            this.isLoading = false;
+            // No existe paciente: crear uno automáticamente
+            if (!this.user) {
+              this.notificationService.showError('No se encontró tu usuario. Por favor, vuelve a iniciar sesión.');
+              this.isLoading = false;
+              return;
+            }
+            const nuevoPaciente: any = {
+              nombre: this.user.nombre,
+              apellido: this.user.apellido,
+              dni: this.user.dni || '',
+              obraSocial: this.user.obraSocial || '',
+              telefono: this.user.telefono || '',
+              userId: this.user.id.toString(),
+              email: this.user.email || '',
+              direccion: this.user.direccion || ''
+            };
+            this.pacienteService.createPaciente(nuevoPaciente).subscribe({
+              next: (pacienteCreado: any) => {
+                this.paciente = pacienteCreado;
+                // Actualizar usuario en localStorage y AuthService
+                this.user!.hasCompleteProfile = true;
+                localStorage.setItem('user', JSON.stringify(this.user));
+                if (this.user && this.authService.setCurrentUser) {
+                  this.authService.setCurrentUser(this.user);
+                }
+                this.notificationService.showSuccess('Se creó tu perfil de paciente automáticamente. Ahora puedes ver y reservar turnos.');
+                this.loadMisTurnos();
+                this.loadTratamientos();
+                this.loadChatHistory();
+                this.addWelcomeMessage();
+              },
+              error: () => {
+                this.notificationService.showError('No se pudo crear tu perfil automáticamente. Contacta a la clínica.');
+                this.loadChatHistory();
+                this.addWelcomeMessage();
+                this.isLoading = false;
+              }
+            });
           }
         }
       },
       error: (error) => {
         console.error('Error al cargar datos del paciente:', error);
+        this.notificationService.showError('Error al cargar tus datos. Intenta recargar la página o vuelve a iniciar sesión.');
         this.isLoading = false;
       }
     });
@@ -207,35 +310,123 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
 
   loadMisTurnos(): void {
     this.isLoading = true;
-    
     this.turnoService.getTurnosFromAPI().subscribe({
       next: (response) => {
-        // Filtrar los turnos que pertenecen al paciente autenticado
-        const pacienteId = this.paciente?._id || this.paciente?.id;
+        const pacienteId = getPacienteIdSafe(this.paciente);
+        // Filtrar los turnos solo del paciente actual
         this.misTurnos = response.turnos.filter(turno => {
-          // Coincidencia por pacienteId
-          if (pacienteId && turno.pacienteId) {
-            if (turno.pacienteId.toString() === pacienteId.toString()) {
-              return true;
-            }
-          }
-          // Coincidencia por nombre y apellido (fallback)
-          if (this.paciente?.nombre && this.paciente?.apellido && turno.nombre && turno.apellido) {
-            const nombreMatch = turno.nombre.toLowerCase().trim() === this.paciente.nombre.toLowerCase().trim();
-            const apellidoMatch = turno.apellido.toLowerCase().trim() === this.paciente.apellido.toLowerCase().trim();
-            return nombreMatch && apellidoMatch;
-          }
-          return false;
+          return (
+            this.paciente &&
+            pacienteId &&
+            typeof turno.pacienteId !== 'undefined' && turno.pacienteId !== null &&
+            turno.pacienteId.toString() === pacienteId
+          );
         });
-        
-        this.calculateStats();
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error al cargar turnos:', error);
         this.isLoading = false;
+        this.notificationService.showError('Error al cargar los turnos. Por favor, intenta nuevamente.');
       }
     });
+  }
+
+  // Método para filtrar y mostrar turnos
+  private filtrarYMostrarTurnos(turnos: any[], pacienteId: string): void {
+    this.misTurnos = turnos.filter(turno => {
+      if (
+        this.paciente &&
+        pacienteId &&
+        typeof turno.pacienteId !== 'undefined' && turno.pacienteId !== null &&
+        turno.pacienteId.toString() === pacienteId
+      ) {
+        return true;
+      }
+      // Fallback: filtrar por nombre y apellido
+      if (
+        this.paciente &&
+        this.paciente.nombre &&
+        this.paciente.apellido &&
+        turno.nombre &&
+        turno.apellido
+      ) {
+        return (
+          turno.nombre.toLowerCase().trim() === this.paciente.nombre.toLowerCase().trim() &&
+          turno.apellido.toLowerCase().trim() === this.paciente.apellido.toLowerCase().trim()
+        );
+      }
+      return false;
+    });
+
+    console.log('[DEBUG] Turnos filtrados para el paciente:', this.misTurnos);
+    
+    if (this.misTurnos.length === 0) {
+      this.notificationService.showInfo('No tienes turnos programados. ¡Reserva tu primer turno!');
+    }
+    
+    this.calculateStats();
+    this.isLoading = false;
+  }
+
+  // Método para reparar turnos huérfanos automáticamente
+  private async repararTurnosHuerfanos(turnos: any[], pacienteIdCorrecto: string): Promise<void> {
+    if (!this.paciente || !pacienteIdCorrecto) {
+      console.log('[DEBUG] No se puede reparar turnos: paciente o pacienteId no disponible');
+      return;
+    }
+
+    const turnosHuerfanos = turnos.filter(turno => {
+      // Buscar turnos que coincidan por datos del paciente pero tengan un pacienteId diferente
+      const coincidePorDatos = (
+        turno.nombre?.toLowerCase().trim() === this.paciente!.nombre?.toLowerCase().trim() &&
+        turno.apellido?.toLowerCase().trim() === this.paciente!.apellido?.toLowerCase().trim()
+      );
+      
+      const pacienteIdDiferente = turno.pacienteId && turno.pacienteId.toString() !== pacienteIdCorrecto;
+      
+      return coincidePorDatos && pacienteIdDiferente;
+    });
+
+    if (turnosHuerfanos.length === 0) {
+      console.log('[DEBUG] No se encontraron turnos huérfanos para reparar');
+      return;
+    }
+
+    console.log(`[DEBUG] Encontrados ${turnosHuerfanos.length} turnos huérfanos para reparar:`, turnosHuerfanos);
+
+    // Reparar cada turno huérfano
+    const promesasReparacion = turnosHuerfanos.map(async (turno) => {
+      try {
+        console.log(`[DEBUG] Reparando turno ${turno._id || turno.id}: pacienteId ${turno.pacienteId} -> ${pacienteIdCorrecto}`);
+        
+        await firstValueFrom(this.turnoService.updateTurno(
+          turno._id || turno.id,
+          { pacienteId: pacienteIdCorrecto }
+        ));
+        
+        console.log(`[DEBUG] Turno ${turno._id || turno.id} reparado exitosamente`);
+        return { success: true, turnoId: turno._id || turno.id };
+      } catch (error) {
+        console.error(`[ERROR] Error al reparar turno ${turno._id || turno.id}:`, error);
+        return { success: false, turnoId: turno._id || turno.id, error };
+      }
+    });
+
+    const resultados = await Promise.all(promesasReparacion);
+    const exitosos = resultados.filter(r => r.success).length;
+    const fallidos = resultados.filter(r => !r.success).length;
+
+    console.log(`[DEBUG] Reparación completada: ${exitosos} exitosos, ${fallidos} fallidos`);
+
+    if (exitosos > 0) {
+      this.notificationService.showSuccess(
+        `Se repararon automáticamente ${exitosos} turno${exitosos > 1 ? 's' : ''} para que aparezcan correctamente.`
+      );
+    }
+
+    if (fallidos > 0) {
+      console.warn(`[WARN] ${fallidos} turnos no se pudieron reparar automáticamente`);
+    }
   }
 
   loadTratamientos(): void {
@@ -909,3 +1100,15 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
     this.loadPacienteData();
   }
 }
+
+// Función auxiliar para obtener el id del paciente de forma segura
+function getPacienteIdSafe(paciente: any): string {
+  if (paciente && typeof paciente._id !== 'undefined' && paciente._id !== null) {
+    return paciente._id.toString();
+  }
+  if (paciente && typeof paciente.id !== 'undefined' && paciente.id !== null) {
+    return paciente.id.toString();
+  }
+  return '';
+}
+

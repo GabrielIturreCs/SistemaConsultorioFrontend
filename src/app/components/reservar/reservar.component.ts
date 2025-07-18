@@ -640,17 +640,23 @@ export class ReservarComponent implements OnInit {
     });
   }
 
-  registrarTurno(): void {
+  async registrarTurno(): Promise<void> {
     if (!this.canRegisterTurno) return;
     this.isLoading = true;
+    let pacienteId = '';
+    if (this.user?.tipoUsuario === 'paciente') {
+      pacienteId = (await this.getPacienteId())?.toString() || '';
+    } else {
+      pacienteId = (this.selectedPaciente?._id || this.selectedPaciente?.id || '').toString();
+    }
     const turnoData = {
-      pacienteId: this.selectedPaciente?._id || this.selectedPaciente?.id,
-      profesionalId: this.user?.id, // Asociar el turno al userId del profesional (no solo dentista)
+      pacienteId: pacienteId,
       fecha: this.selectedDate,
       hora: this.selectedTime,
       tratamientoId: this.selectedTreatment?._id || this.selectedTreatment?.id,
       estado: 'reservado',
       metodoPago: 'online',
+      profesionalId: this.user?.tipoUsuario === 'paciente' ? (this.selectedDentista?._id || this.selectedDentista?.id) : this.user?.id,
       // Puedes agregar más campos si es necesario
     };
     this.turnoService.createTurno(turnoData).subscribe({
@@ -1139,6 +1145,7 @@ export class ReservarComponent implements OnInit {
       tratamientoId: this.selectedTreatment._id || this.selectedTreatment.id,
       estado: 'reservado',
       metodoPago: 'online',
+      profesionalId: this.user?.tipoUsuario === 'paciente' ? (this.selectedDentista?._id || this.selectedDentista?.id) : this.user?.id,
       // Puedes agregar más campos si es necesario
     };
 
@@ -1229,7 +1236,8 @@ export class ReservarComponent implements OnInit {
         estado: 'pendiente_pago_efectivo',
         metodoPago: 'efectivo',
         precio: this.selectedTreatment.precio,
-        descripcion: this.selectedTreatment.descripcion
+        descripcion: this.selectedTreatment.descripcion,
+        profesionalId: this.user?.tipoUsuario === 'paciente' ? (this.selectedDentista?._id || this.selectedDentista?.id) : this.user?.id,
       };
 
       console.log('📤 ENVIANDO DATOS DEL TURNO AL BACKEND:');
@@ -1837,43 +1845,6 @@ export class ReservarComponent implements OnInit {
     console.log('⏰ Horarios personalizados generados:', this.horariosPersonalizados);
   }
 
-  // Verificar si una fecha es disponible según la configuración del profesional
-  esFechaDisponible(fecha: string): boolean {
-    if (!this.disponibilidadDentista) {
-      console.log('📅 No hay configuración de disponibilidad, fecha disponible:', fecha);
-      return true;
-    }
-
-    const date = new Date(fecha);
-    const diaSemana = date.getDay();
-    const nombreDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][diaSemana];
-    
-    console.log(`📅 Verificando fecha ${fecha} (${nombreDia} - día ${diaSemana}):`);
-    console.log('📅 Días laborables configurados:', this.disponibilidadDentista.diasLaborables);
-    console.log('📅 Configuración completa:', this.disponibilidadDentista);
-    
-    // Verificar si es un día laborable
-    const esDiaLaborable = this.disponibilidadService.esDiaLaborable(diaSemana, this.disponibilidadDentista);
-    console.log('📅 ¿Es día laborable?', esDiaLaborable);
-    
-    if (!esDiaLaborable) {
-      console.log('❌ Fecha no disponible: No es día laborable');
-      return false;
-    }
-    
-    // Verificar si es un día no laborable específico
-    const esDiaNoLaborable = this.disponibilidadService.esDiaNoLaborable(fecha, this.disponibilidadDentista);
-    console.log('📅 ¿Es día no laborable específico?', esDiaNoLaborable);
-    
-    if (esDiaNoLaborable) {
-      console.log('❌ Fecha no disponible: Es día no laborable específico');
-      return false;
-    }
-    
-    console.log('✅ Fecha disponible según configuración');
-    return true;
-  }
-
   // Verificar si un horario está disponible según la configuración del profesional
   esHorarioDisponible(hora: string): boolean {
     if (!this.disponibilidadDentista) return true;
@@ -2077,4 +2048,17 @@ export class ReservarComponent implements OnInit {
       return step;
     }
   }
+
+  // Verifica si una fecha está disponible según los slots ocupados
+  esFechaDisponible(dateStr: string): boolean {
+    const occupiedSlots = this.occupiedSlots[dateStr] || [];
+    if (occupiedSlots.includes('COMPLETO')) {
+      return false;
+    }
+    // Si no hay datos específicos, asumir que hay disponibilidad
+    return true;
+  }
+
+  // Verifica si un horario está disponible según los slots ocupados y la fecha seleccionada
+
 }

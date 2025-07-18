@@ -29,6 +29,14 @@
           (click)="navigateTo('admin')">
           <i class="fas fa-cog"></i> Administración
         </button>
+
+        <button 
+          *ngIf="user?.tipoUsuario === 'paciente'"
+          type="button" 
+          class="btn btn-outline-success"
+          (click)="navigateTo('registrar-turno')">
+          <i class="fas fa-plus"></i> Reservar Turno
+        </button>
       </div>
     </div>
   </div>

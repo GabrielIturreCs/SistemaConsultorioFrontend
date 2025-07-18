@@ -52,7 +52,45 @@ export class PatientNavbarComponent implements OnInit {
   }
 
   navigateToReservar(): void {
-    this.router.navigate(['/reservarTurno']);
+    const user = this.authService.getCurrentUser();
+    console.log('[DEBUG] Estado del usuario antes de reservar:', user);
+    if (!user) {
+      alert('No hay usuario autenticado. Por favor, vuelve a iniciar sesión.');
+      this.router.navigate(['/login']);
+      return;
+    }
+    if (user.tipoUsuario !== 'paciente') {
+      alert('Solo los pacientes pueden reservar turnos.');
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+    if (!user.hasCompleteProfile) {
+      alert('Debes completar tu perfil antes de reservar turnos.');
+      this.router.navigate(['/complete-profile']);
+      return;
+    }
+    // Si ya está en /reservarTurno, navegar primero a /vistaPaciente y luego a /reservarTurno
+    if (this.router.url === '/reservarTurno') {
+      this.router.navigate(['/vistaPaciente']).then(() => {
+        setTimeout(() => {
+          this.router.navigate(['/reservarTurno'], { replaceUrl: false }).then(success => {
+            if (!success) {
+              alert('No se pudo navegar a la página de reserva. Intenta recargar la página o vuelve a iniciar sesión.');
+            } else {
+              window.scrollTo(0, 0);
+            }
+          });
+        }, 200);
+      });
+    } else {
+      this.router.navigate(['/reservarTurno'], { replaceUrl: false }).then(success => {
+        if (!success) {
+          alert('No se pudo navegar a la página de reserva. Intenta recargar la página o vuelve a iniciar sesión.');
+        } else {
+          window.scrollTo(0, 0);
+        }
+      });
+    }
   }
 
   navigateToTurnos(): void {

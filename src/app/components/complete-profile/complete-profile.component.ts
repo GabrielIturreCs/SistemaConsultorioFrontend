@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
+import { PacienteService } from '../../services/paciente.service';
 
 @Component({
   selector: 'app-complete-profile',
@@ -34,9 +35,10 @@ export class CompleteProfileComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
+    private pacienteService: PacienteService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private authService: AuthService
   ) {
     this.profileForm = this.fb.group({
       telefono: ['', [Validators.required, Validators.pattern(/^\d{8,15}$/)]],
@@ -47,30 +49,27 @@ export class CompleteProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.currentUser = this.authService.getCurrentUser();
-    if (!this.currentUser) {
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    // Si el usuario ya tiene perfil completo, redirigir
-    if (this.currentUser.hasCompleteProfile) {
-      this.authService.redirectByUserType();
-      return;
-    }
-
-    // Pre-llenar el formulario con datos disponibles
-    if (this.currentUser.telefono) {
-      this.profileForm.patchValue({ telefono: this.currentUser.telefono });
-    }
-    if (this.currentUser.dni) {
-      this.profileForm.patchValue({ dni: this.currentUser.dni });
-    }
-    if (this.currentUser.direccion) {
-      this.profileForm.patchValue({ direccion: this.currentUser.direccion });
-    }
-    if (this.currentUser.obraSocial) {
-      this.profileForm.patchValue({ obraSocial: this.currentUser.obraSocial });
+    // Verificar si ya existe un paciente asociado al usuario
+    const user = this.authService.getCurrentUser();
+    if (user && user.id) {
+      this.pacienteService.getPacientes().subscribe({
+        next: (pacientes) => {
+          const paciente = pacientes.find((p: any) => p.userId === user.id.toString());
+          if (paciente) {
+            // Ya existe, actualizar hasCompleteProfile y redirigir
+            user.hasCompleteProfile = true;
+            this.authService.setCurrentUser(user);
+            this.notificationService.showInfo('Tu perfil ya está completo. Redirigiendo a tu panel...');
+            this.router.navigate(['/vistaPaciente']).then(() => {
+              window.location.reload();
+            });
+          }
+          // Si no existe, mostrar el formulario normalmente
+        },
+        error: () => {
+          // Si hay error, mostrar el formulario normalmente
+        }
+      });
     }
   }
 

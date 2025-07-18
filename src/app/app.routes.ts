@@ -35,7 +35,7 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard()] },
   { path: 'vistaPaciente', component: VistaPacienteComponent, canActivate: [authGuard('paciente'), ProfileCompleteGuard] },
   { path: 'misTurnos', component: TurnosComponent, canActivate: [authGuard('paciente'), ProfileCompleteGuard] },
-  { path: 'reservarTurno', component: ReservarComponent, canActivate: [authGuard(), ProfileCompleteGuard] },
+  { path: 'reservarTurno', component: ReservarComponent, canActivate: [authGuard('paciente'), ProfileCompleteGuard] },
   { path: 'agenda', component: AgendaComponent, canActivate: [authGuard()] },
   { path: 'estadistica', component: EstadisticaComponent, canActivate: [authGuard('administrador')] },
   { path: 'admin', component: AdminComponent, canActivate: [authGuard('administrador')] },

@@ -1,4 +1,4 @@
-import { Component, type OnInit, type OnDestroy, Output, EventEmitter, Input, OnChanges, SimpleChanges } from "@angular/core"
+import { Component, type OnInit, type OnDestroy, Output, EventEmitter, Input, OnChanges, SimpleChanges, Renderer2 } from "@angular/core"
 import { Subject } from "rxjs"
 import { takeUntil } from "rxjs/operators"
 import { OdontogramaService, PiezaDental, OdontogramaData } from "../../services/odontograma.service"
@@ -59,7 +59,8 @@ export class OdontogramaComponent implements OnInit, OnDestroy, OnChanges {
   constructor(
     private odontogramaService: OdontogramaService,
     private snackBar: MatSnackBar,
-    private http: HttpClient
+    private http: HttpClient,
+    private renderer: Renderer2
   ) {
     this.herramientas = this.odontogramaService.getHerramientas();
     this.coloresEstado = this.odontogramaService.getColoresEstado();
@@ -104,6 +105,10 @@ export class OdontogramaComponent implements OnInit, OnDestroy, OnChanges {
     if (pacienteId) {
       this.cargarHistorialOdontogramas(pacienteId);
     }
+
+    if (!this.cargandoOdontograma) {
+      this.renderer.addClass(document.body, 'odontograma-open');
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -114,6 +119,7 @@ export class OdontogramaComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy(): void {
+    this.renderer.removeClass(document.body, 'odontograma-open');
     this.destroy$.next();
     this.destroy$.complete();
   }
