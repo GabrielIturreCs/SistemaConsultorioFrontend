@@ -19,8 +19,8 @@ export class ProfileCompleteGuard implements CanActivate {
       return false;
     }
 
-    // Si es un paciente y necesita completar el perfil
-    if (user.tipoUsuario === 'paciente' && user.needsProfileCompletion) {
+    // Solo redirigir si es paciente, necesita completar perfil y NO tiene nombreUsuario (usuario Google)
+    if (user.tipoUsuario === 'paciente' && user.needsProfileCompletion && !user.nombreUsuario) {
       this.router.navigate(['/complete-profile']);
       return false;
     }
