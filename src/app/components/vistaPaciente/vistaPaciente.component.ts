@@ -153,8 +153,8 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
       this.router.navigate(['/dashboard']);
       return;
     }
-    // Si el paciente no tiene perfil completo, redirigir a completar perfil
-    if (this.user?.tipoUsuario === 'paciente' && !this.user.hasCompleteProfile) {
+    // Solo redirigir a completar perfil si el usuario necesita completar su perfil
+    if (this.user?.tipoUsuario === 'paciente' && this.user.needsProfileCompletion) {
       this.notificationService.showInfo('Por favor, completa tu perfil para continuar.');
       this.router.navigate(['/complete-profile']);
       return;
