@@ -1,10 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RegisterForm } from '../../interfaces';
 import { RegisterService } from '../../services/register.service';
 import { NotificationService } from '../../services/notification.service';
+import { AuthService } from '../../services/auth.service';
+import { environment } from '../../environments/environment';
+
+declare var google: any;
 
 @Component({
   selector: 'app-registro',
@@ -12,7 +16,7 @@ import { NotificationService } from '../../services/notification.service';
   templateUrl: './registro.component.html',
   styleUrl: './registro.component.css',
 })
-export class RegistroComponent {
+export class RegistroComponent implements AfterViewInit {
   currentView: string = 'register';
   isLoading: boolean = false;
   registerForm: FormGroup;
@@ -21,7 +25,8 @@ export class RegistroComponent {
     private router: Router,
     private registerService: RegisterService,
     private fb: FormBuilder,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private authService: AuthService
   ) {
     this.registerForm = this.fb.group({
       nombreUsuario: ['', [
@@ -72,19 +77,8 @@ export class RegistroComponent {
       ]]
     }, { validators: this.passwordMatchValidator });
 
-    // Validación condicional para obra social
-    /*this.registerForm.get('tipoUsuario')?.valueChanges.subscribe(tipo => {
-      const obraSocialControl = this.registerForm.get('obraSocial');
-      if (tipo === 'paciente') {
-        obraSocialControl?.setValidators([Validators.required]);
-      } else {
-        obraSocialControl?.clearValidators();
-      }
-      obraSocialControl?.updateValueAndValidity();
-    });*/
     this.registerForm.get('tipoUsuario')?.valueChanges.subscribe(tipo => {
       const obraSocialControl = this.registerForm.get('obraSocial');
-      // Aquí agregamos:
       const legajoControl = this.registerForm.get('legajo');
       if (tipo === 'paciente') {
         obraSocialControl?.setValidators([Validators.required]);
@@ -99,10 +93,75 @@ export class RegistroComponent {
       obraSocialControl?.updateValueAndValidity();
       legajoControl?.updateValueAndValidity();
     });
-
   }
 
-  // Validador personalizado para fortaleza de contraseña
+  ngAfterViewInit(): void {
+    this.initializeGoogleButton();
+  }
+
+  initializeGoogleButton(): void {
+    if (typeof google === 'undefined' || !google.accounts) {
+      setTimeout(() => this.initializeGoogleButton(), 100);
+      return;
+    }
+
+    try {
+      const clientId = environment.googleClientId;
+
+      // @ts-ignore
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: (response: any) => this.handleGoogleCallback(response)
+      });
+
+      // @ts-ignore
+      google.accounts.id.renderButton(
+        document.getElementById('google-btn-wrapper-register'),
+        {
+          theme: 'outline',
+          size: 'large',
+          width: '100%',
+          text: 'signup_with',
+          shape: 'rectangular',
+          logo_alignment: 'left'
+        }
+      );
+    } catch (error) {
+      console.error('❌ Error initializing Google button:', error);
+    }
+  }
+
+  handleGoogleCallback(response: any): void {
+    console.log('🔍 Google response recibido:', response);
+
+    if (response.credential) {
+      console.log('✅ Credencial recibida, enviando al backend...');
+
+      this.authService.googleLogin(response.credential).subscribe(
+        (res) => {
+          console.log('✅ Respuesta del backend:', res);
+
+          if (res.success) {
+            this.authService.setToken(res.token);
+            this.authService.setCurrentUser(res.user);
+            this.notificationService.showSuccess(`¡Bienvenido ${res.user.nombre || res.user.nombreUsuario || 'Usuario'}!`);
+            this.authService.redirectByUserType();
+          } else {
+            console.error('❌ Error en respuesta del backend:', res);
+            this.notificationService.showError(res.message || 'Error al iniciar sesión con Google.');
+          }
+        },
+        (error) => {
+          console.error('❌ Error de conexión con el servidor:', error);
+          this.notificationService.showError('Error de conexión con el servidor al intentar Google Login.');
+        }
+      );
+    } else {
+      console.error('❌ No se recibió credencial de Google');
+      this.notificationService.showError('No se recibió credencial de Google.');
+    }
+  }
+
   passwordStrengthValidator(): Validators {
     return (control: AbstractControl): ValidationErrors | null => {
       const password = control.value;
@@ -119,7 +178,6 @@ export class RegistroComponent {
     };
   }
 
-  // Validador personalizado para confirmar contraseña
   passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
     const password = group.get('password');
     const confirmPassword = group.get('confirmPassword');
@@ -129,7 +187,6 @@ export class RegistroComponent {
     return password.value === confirmPassword.value ? null : { passwordMismatch: true };
   }
 
-  // Getters para facilitar el acceso en el template
   get f() {
     return this.registerForm.controls;
   }
@@ -149,8 +206,8 @@ export class RegistroComponent {
     if (!hasNumbers) requirements.push('número');
     if (!hasSpecialChar) requirements.push('carácter especial');
 
-    return requirements.length > 0 
-      ? `Falta: ${requirements.join(', ')}` 
+    return requirements.length > 0
+      ? `Falta: ${requirements.join(', ')}`
       : 'Contraseña segura';
   }
 
@@ -181,7 +238,6 @@ export class RegistroComponent {
     });
   }
 
-  // Marcar todos los campos como touched para mostrar errores
   markFormGroupTouched(): void {
     Object.keys(this.registerForm.controls).forEach(key => {
       const control = this.registerForm.get(key);
@@ -197,7 +253,6 @@ export class RegistroComponent {
     this.router.navigate(['/']);
   }
 
-  // Métodos para validación en tiempo real
   isFieldInvalid(fieldName: string): boolean {
     const field = this.registerForm.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
@@ -222,7 +277,7 @@ export class RegistroComponent {
       }
     }
     if (field.errors['passwordStrength']) return 'La contraseña debe tener mayúscula, minúscula, número y carácter especial';
-    
+
     return 'Campo inválido';
   }
 }

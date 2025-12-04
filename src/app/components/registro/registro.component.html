@@ -1,133 +1,205 @@
-<!-- Mejoro la estructura y responsividad del formulario manteniendo los colores -->
-<div
-  *ngIf="currentView === 'register'"
-  class="container-fluid min-vh-100 d-flex align-items-center justify-content-center registro-animate"
-  style="overflow-y: auto;"
->
-  <div class="card shadow-lg w-100" style="max-width: 600px;">
-    <div class="card-header text-center bg-primary text-white">
-      <h3><i class="fas fa-user-plus"></i> Registro de Usuario</h3>
+<div class="register-container">
+  <!-- Left Side: Brand/Info -->
+  <div class="register-brand-side">
+    <div class="brand-pattern"></div>
+    <div class="brand-content">
+      <div class="brand-logo">
+        <i class="fas fa-tooth"></i>
+      </div>
+      <h1 class="brand-title">Únase a la red líder en odontología</h1>
+
+      <ul class="feature-list">
+        <li class="feature-item">
+          <div class="feature-icon"><i class="bi bi-calendar-check"></i></div>
+          <span>Gestión de turnos simplificada</span>
+        </li>
+        <li class="feature-item">
+          <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+          <span>Seguridad de datos garantizada</span>
+        </li>
+        <li class="feature-item">
+          <div class="feature-icon"><i class="bi bi-graph-up"></i></div>
+          <span>Estadísticas en tiempo real</span>
+        </li>
+        <li class="feature-item">
+          <div class="feature-icon"><i class="bi bi-phone"></i></div>
+          <span>Acceso desde cualquier dispositivo</span>
+        </li>
+      </ul>
     </div>
-    <div class="card-body">
-      <form [formGroup]="registerForm" (ngSubmit)="register()">
-        <div class="row g-3">
-          <div class="col-12 col-md-6 mb-3">
-            <label for="regTipoUsuario" class="form-label fw-bold fs-6">Tipo de Usuario</label>
-            <select class="form-select form-select-lg" id="regTipoUsuario" formControlName="tipoUsuario" required>
+  </div>
+
+  <!-- Right Side: Form -->
+  <div class="register-form-side">
+    <div class="form-header">
+      <div class="header-content">
+        <h2 class="form-title">Crear Cuenta</h2>
+        <p class="form-subtitle">Complete sus datos para comenzar</p>
+      </div>
+      <div class="login-link">
+        ¿Ya tiene cuenta?
+        <a href="javascript:void(0)" (click)="navigateToLogin()">Iniciar Sesión</a>
+      </div>
+    </div>
+
+    <!-- Google Sign-In Section -->
+    <div class="google-auth-section">
+      <div id="google-btn-wrapper-register" class="google-btn-container"></div>
+    </div>
+
+    <div class="auth-divider">
+      <span class="divider-line"></span>
+      <span class="divider-text">o regístrese con su email</span>
+      <span class="divider-line"></span>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="register()">
+
+      <div class="form-section-title">Información de Cuenta</div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Tipo de Usuario</label>
+            <select class="form-select" formControlName="tipoUsuario">
               <option value="paciente">Paciente</option>
               <option value="dentista">Dentista</option>
               <option value="administrador">Administrador</option>
             </select>
-            <div *ngIf="isFieldInvalid('tipoUsuario')" class="text-danger mt-2">
-              <small class="fw-bold">{{ getFieldError('tipoUsuario') }}</small>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Nombre de Usuario</label>
+            <input type="text" class="form-control" formControlName="nombreUsuario" placeholder="Usuario único">
+            <span *ngIf="isFieldInvalid('nombreUsuario')" class="invalid-feedback">
+              {{ getFieldError('nombreUsuario') }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section-title">Datos Personales</div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" formControlName="nombre" placeholder="Su nombre">
+            <span *ngIf="isFieldInvalid('nombre')" class="invalid-feedback">
+              {{ getFieldError('nombre') }}
+            </span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Apellido</label>
+            <input type="text" class="form-control" formControlName="apellido" placeholder="Su apellido">
+            <span *ngIf="isFieldInvalid('apellido')" class="invalid-feedback">
+              {{ getFieldError('apellido') }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">DNI</label>
+            <input type="text" class="form-control" formControlName="dni" placeholder="Sin puntos">
+            <span *ngIf="isFieldInvalid('dni')" class="invalid-feedback">
+              {{ getFieldError('dni') }}
+            </span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input type="tel" class="form-control" formControlName="telefono" placeholder="3884472423">
+            <span *ngIf="isFieldInvalid('telefono')" class="invalid-feedback">
+              {{ getFieldError('telefono') }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Dirección</label>
+        <input type="text" class="form-control" formControlName="direccion" placeholder="Dirección completa">
+        <span *ngIf="isFieldInvalid('direccion')" class="invalid-feedback">
+          {{ getFieldError('direccion') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Correo Electrónico</label>
+        <input type="email" class="form-control" formControlName="email" placeholder="ejemplo@correo.com">
+        <span *ngIf="isFieldInvalid('email')" class="invalid-feedback">
+          {{ getFieldError('email') }}
+        </span>
+      </div>
+
+      <!-- Campos condicionales -->
+      <div *ngIf="registerForm.get('tipoUsuario')?.value === 'dentista'" class="form-group">
+        <label class="form-label">Legajo</label>
+        <input type="text" class="form-control" formControlName="legajo" placeholder="Número de legajo">
+        <span *ngIf="isFieldInvalid('legajo')" class="invalid-feedback">
+          {{ getFieldError('legajo') }}
+        </span>
+      </div>
+
+      <div *ngIf="registerForm.get('tipoUsuario')?.value === 'paciente'" class="form-group">
+        <label class="form-label">Obra Social</label>
+        <select class="form-select" formControlName="obraSocial">
+          <option value="">Seleccione su obra social</option>
+          <option value="OSDE">OSDE</option>
+          <option value="Swiss Medical">Swiss Medical</option>
+          <option value="Galeno">Galeno</option>
+          <option value="Medicus">Medicus</option>
+          <option value="IOMA">IOMA</option>
+          <option value="Particular">Particular</option>
+        </select>
+        <span *ngIf="isFieldInvalid('obraSocial')" class="invalid-feedback">
+          {{ getFieldError('obraSocial') }}
+        </span>
+      </div>
+
+      <div class="form-section-title">Seguridad</div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Contraseña</label>
+            <input type="password" class="form-control" formControlName="password" placeholder="••••••••">
+            <span *ngIf="isFieldInvalid('password')" class="invalid-feedback">
+              {{ getFieldError('password') }}
+            </span>
+            <div *ngIf="registerForm.get('password')?.value" class="password-strength">
+              {{ passwordStrengthMessage }}
             </div>
           </div>
-          <div class="col-12 col-md-6 mb-3">
-            <label for="regUsuario" class="form-label fw-bold fs-6">Nombre de Usuario</label>
-            <input type="text" class="form-control form-control-lg" id="regUsuario" formControlName="nombreUsuario" required placeholder="Usuario único" />
-            <div *ngIf="isFieldInvalid('nombreUsuario')" class="text-danger mt-2">
-              <small class="fw-bold">{{ getFieldError('nombreUsuario') }}</small>
-            </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Confirmar Contraseña</label>
+            <input type="password" class="form-control" formControlName="confirmPassword" placeholder="••••••••">
+            <span
+              *ngIf="registerForm.hasError('passwordMismatch') && (registerForm.get('confirmPassword')?.dirty || registerForm.get('confirmPassword')?.touched)"
+              class="invalid-feedback">
+              Las contraseñas no coinciden
+            </span>
           </div>
         </div>
-        <div class="row g-3">
-          <div class="col-12 col-md-6 mb-3">
-            <label for="regNombre" class="form-label fw-bold fs-6">Nombre</label>
-            <input type="text" class="form-control form-control-lg" id="regNombre" formControlName="nombre" required placeholder="Tu nombre" />
-            <div *ngIf="isFieldInvalid('nombre')" class="text-danger mt-2">
-              <small class="fw-bold">{{ getFieldError('nombre') }}</small>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 mb-3">
-            <label for="regApellido" class="form-label fw-bold fs-6">Apellido</label>
-            <input type="text" class="form-control form-control-lg" id="regApellido" formControlName="apellido" required placeholder="Tu apellido" />
-            <div *ngIf="isFieldInvalid('apellido')" class="text-danger mt-2">
-              <small class="fw-bold">{{ getFieldError('apellido') }}</small>
-            </div>
-          </div>
-        </div>
-        <div class="row g-3" *ngIf="registerForm.get('tipoUsuario')?.value === 'dentista'">
-          <div class="col-12 mb-3">
-            <label for="regLegajo" class="form-label fw-bold fs-6">Legajo</label>
-            <input type="text" class="form-control form-control-lg" id="regLegajo" formControlName="legajo" required placeholder="Legajo" />
-            <div *ngIf="isFieldInvalid('legajo')" class="text-danger mt-2">
-              <small class="fw-bold">{{ getFieldError('legajo') }}</small>
-            </div>
-          </div>
-        </div>
-        <div class="row g-3">
-          <div class="col-12 col-md-6 mb-3">
-            <label for="regDni" class="form-label fw-bold fs-6">DNI</label>
-            <input type="text" class="form-control form-control-lg" id="regDni" formControlName="dni" required placeholder="12345678" />
-            <div *ngIf="isFieldInvalid('dni')" class="text-danger mt-2">
-              <small class="fw-bold">{{ getFieldError('dni') }}</small>
-            </div>
-          </div>
-          <div class="col-12 col-md-6 mb-3">
-            <label for="regTelefono" class="form-label fw-bold fs-6">Teléfono</label>
-            <input type="tel" class="form-control form-control-lg" id="regTelefono" formControlName="telefono" required placeholder="3884472423" />
-            <small class="text-muted">Formato: 3884472423 (sin código de país)</small>
-            <div *ngIf="isFieldInvalid('telefono')" class="text-danger mt-2">
-              <small class="fw-bold">{{ getFieldError('telefono') }}</small>
-            </div>
-          </div>
-        </div>
-        <div class="row g-3" *ngIf="registerForm.get('tipoUsuario')?.value === 'paciente'">
-          <div class="col-12 mb-3">
-            <label for="regObraSocial" class="form-label fw-bold fs-6">Obra Social</label>
-            <select class="form-select form-select-lg" id="regObraSocial" formControlName="obraSocial" [required]="registerForm.get('tipoUsuario')?.value === 'paciente'">
-              <option value="">Selecciona tu obra social</option>
-              <option value="OSDE">OSDE</option>
-              <option value="Swiss Medical">Swiss Medical</option>
-              <option value="Galeno">Galeno</option>
-              <option value="Medicus">Medicus</option>
-              <option value="IOMA">IOMA</option>
-              <option value="Particular">Particular</option>
-            </select>
-            <div *ngIf="isFieldInvalid('obraSocial')" class="text-danger mt-2">
-              <small class="fw-bold">{{ getFieldError('obraSocial') }}</small>
-            </div>
-          </div>
-        </div>
-        <div class="mb-3">
-          <label for="regDireccion" class="form-label fw-bold fs-6">Dirección</label>
-          <input type="text" class="form-control form-control-lg" id="regDireccion" formControlName="direccion" placeholder="Tu dirección completa" />
-          <div *ngIf="isFieldInvalid('direccion')" class="text-danger mt-2">
-            <small class="fw-bold">{{ getFieldError('direccion') }}</small>
-          </div>
-        </div>
-        <div class="mb-3">
-          <label for="regEmail" class="form-label fw-bold fs-6">Correo Electrónico</label>
-          <input type="email" class="form-control form-control-lg" id="regEmail" formControlName="email" required placeholder="ejemplo@correo.com" />
-          <div *ngIf="isFieldInvalid('email')" class="text-danger mt-2">
-            <small class="fw-bold">{{ getFieldError('email') }}</small>
-          </div>
-        </div>
-        <div class="mb-3">
-          <label for="regPassword" class="form-label fw-bold fs-6">Contraseña</label>
-          <input type="password" class="form-control form-control-lg" id="regPassword" formControlName="password" required placeholder="Contraseña segura" />
-          <div *ngIf="isFieldInvalid('password')" class="text-danger mt-2">
-            <small class="fw-bold">{{ getFieldError('password') }}</small>
-          </div>
-          <div *ngIf="registerForm.get('password')?.value" class="text-info mt-2">
-            <small class="fw-bold">{{ passwordStrengthMessage }}</small>
-          </div>
-        </div>
-        <div class="mb-3">
-          <label for="regConfirmPassword" class="form-label fw-bold fs-6">Confirmar Contraseña</label>
-          <input type="password" class="form-control form-control-lg" id="regConfirmPassword" formControlName="confirmPassword" required placeholder="Repite la contraseña" />
-          <div *ngIf="registerForm.hasError('passwordMismatch') && (registerForm.get('confirmPassword')?.dirty || registerForm.get('confirmPassword')?.touched)" class="text-danger mt-2">
-            <small class="fw-bold">Las contraseñas no coinciden</small>
-          </div>
-        </div>
-        <div class="d-grid gap-3 d-md-flex justify-content-md-end mt-4">
-          <button type="button" class="btn btn-secondary btn-lg me-md-2" (click)="navigateToLogin()">Cancelar</button>
-          <button type="submit" class="btn btn-success btn-lg" [disabled]="registerForm.invalid || isLoading">
-            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-            {{ isLoading ? "Registrando..." : "Registrar" }}
-          </button>
-        </div>
-      </form>
-    </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="navigateToHome()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="registerForm.invalid || isLoading">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ isLoading ? "Registrando..." : "Crear Cuenta" }}
+        </button>
+      </div>
+
+    </form>
   </div>
 </div>

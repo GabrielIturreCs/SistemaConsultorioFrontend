@@ -953,14 +953,15 @@ export class VistaPacienteComponent implements OnInit, OnDestroy {
 
   // Obtener próximos turnos (futuros) para el historial reciente
   getProximosTurnos(): Turno[] {
-    const estadosProximo = ['reservado', 'pagado', 'pendiente', 'pendiente_pago', 'pendiente_pago_efectivo'];
+    // Estados que NO son próximos turnos (completados o cancelados)
+    const estadosNoProximos = ['completado', 'cancelado'];
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0); // Resetear a inicio del día
     
     return this.misTurnos
       .filter(t => {
-        // Solo turnos con estados activos
-        if (!estadosProximo.includes(t.estado)) {
+        // Excluir turnos completados o cancelados
+        if (estadosNoProximos.includes(t.estado)) {
           return false;
         }
         

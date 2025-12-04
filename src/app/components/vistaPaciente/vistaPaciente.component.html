@@ -4,39 +4,39 @@
 <!-- Dashboard del Paciente - Diseño Moderno -->
 <div class="patient-dashboard-modern">
   <div class="container-fluid py-4">
-    
-    <!-- Header de Bienvenida -->
+    <!-- Tarjeta principal: Próximo Turno o mensaje -->
     <div class="welcome-header mb-5">
       <div class="row align-items-center">
-        <div class="col-lg-8">
-          <div class="welcome-content">
-            <h1 class="welcome-title">
-              <i class="material-icons welcome-icon">medical_services</i>
-              ¡Bienvenido, {{ getUserGreeting() }}!
-            </h1>
-            <p class="welcome-subtitle">
-              Tu salud dental es nuestra prioridad. Aquí tienes todo lo que necesitas para gestionar tus citas.
-            </p>
-            <div class="welcome-stats">
-              <div class="stat-item">
-                <span class="stat-number">{{ pacienteStats.totalTurnos }}</span>
-                <span class="stat-label">Turnos Totales</span>
+        <div class="col-lg-12">
+          <div class="next-appointment-card p-5 d-flex align-items-center justify-content-between"
+            style="background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); border-radius: 18px; box-shadow: 0 2px 12px rgba(60,180,120,0.08); color: #222; min-height: 180px;">
+            <div class="d-flex align-items-center">
+              <div class="me-4">
+                <i class="material-icons"
+                  style="font-size: 4rem; color: #fff; background: #1abc9c; border-radius: 50%; padding: 18px;">event_available</i>
               </div>
-              <div class="stat-item">
-                <span class="stat-number">{{ pacienteStats.turnosCompletados }}</span>
-                <span class="stat-label">Completados</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-number">{{ pacienteStats.totalGastado | number:'1.0-0' }}</span>
-                <span class="stat-label">Invertido en Salud</span>
+              <div>
+                <h1 class="welcome-title mb-2" style="color: #fff; font-weight: 800;">
+                  ¡Bienvenido, {{ getUserGreeting() }}!
+                </h1>
+                <ng-container *ngIf="pacienteStats.proximoTurno">
+                  <h4 class="mb-1" style="font-weight: 700; color: #fff;">Tu próximo turno</h4>
+                  <div style="color: #fff; font-size: 1.15rem;">
+                    <strong>Fecha:</strong> {{ pacienteStats.proximoTurno.fecha | date:'fullDate' }}<br>
+                    <strong>Hora:</strong> {{ pacienteStats.proximoTurno.hora }}<br>
+                    <strong>Profesional:</strong> {{ getDentistaName(pacienteStats.proximoTurno) || 'A confirmar' }}<br>
+                    <strong>Tratamiento:</strong> {{ pacienteStats.proximoTurno.tratamiento || 'Consulta General' }}<br>
+                    <span class="badge ms-1" [ngClass]="getStatusClass(pacienteStats.proximoTurno.estado)">
+                      {{ getStatusText(pacienteStats.proximoTurno.estado) }}
+                    </span>
+                  </div>
+                </ng-container>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="welcome-illustration">
-            <div class="illustration-circle">
-              <i class="material-icons illustration-icon">favorite</i>
+            <div class="welcome-illustration d-none d-lg-block">
+              <div class="illustration-circle">
+                <i class="material-icons illustration-icon">favorite</i>
+              </div>
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="col-lg-4 col-md-6">
           <div class="quick-action-card modern" (click)="navigateToMisTurnos()">
             <div class="action-icon-wrapper">
@@ -103,7 +103,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="col-lg-4 col-md-6">
           <div class="quick-action-card modern" (click)="toggleChat()">
             <div class="action-icon-wrapper">
@@ -141,10 +141,7 @@
           Próximos Turnos
         </h3>
         <div class="section-actions">
-          <button 
-            class="btn btn-outline-primary btn-sm" 
-            (click)="refreshData()" 
-            [disabled]="isLoading"
+          <button class="btn btn-outline-primary btn-sm" (click)="refreshData()" [disabled]="isLoading"
             title="Actualizar datos">
             <i class="material-icons" [class.rotating]="isLoading">refresh</i>
             <span *ngIf="isLoading" class="ms-1">Actualizando...</span>
@@ -155,7 +152,7 @@
           </button>
         </div>
       </div>
-      
+
       <div class="history-content">
         <div *ngIf="isLoading" class="loading-state">
           <div class="loading-spinner">
@@ -163,7 +160,7 @@
           </div>
           <p>Cargando tu historial...</p>
         </div>
-        
+
         <div *ngIf="!isLoading && getProximosTurnos().length === 0 && misTurnos.length > 0" class="empty-state">
           <div class="empty-icon">
             <i class="material-icons">event</i>
@@ -203,18 +200,18 @@
                     </span>
                   </div>
                 </div>
-                
+
                 <div class="history-card-body">
                   <h5 class="history-treatment">{{ turno.tratamiento || 'Consulta General' }}</h5>
-                                    <div class="history-details">
+                  <div class="history-details">
                     <div class="detail-item">
                       <i class="material-icons">schedule</i>
                       <span>{{ turno.hora }}</span>
                     </div>
-                     <div class="detail-item">
-                       <i class="material-icons">medical_services</i>
-                       <span>{{ getDentistaName(turno) }}</span>
-                     </div>
+                    <div class="detail-item">
+                      <i class="material-icons">medical_services</i>
+                      <span>{{ getDentistaName(turno) }}</span>
+                    </div>
                     <div class="detail-item">
                       <i class="material-icons">attach_money</i>
                       <span>{{ turno.precioFinal | number:'1.0-0' }}</span>
@@ -225,7 +222,7 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="history-card-footer">
                   <button class="btn btn-outline-primary btn-sm" (click)="navigateToMisTurnos()">
                     <i class="material-icons">visibility</i>
@@ -249,7 +246,8 @@
               ¿Necesitas Ayuda?
             </h3>
             <p class="contact-description">
-              Nuestro equipo está disponible para ayudarte con cualquier consulta sobre tus turnos, tratamientos o pagos.
+              Nuestro equipo está disponible para ayudarte con cualquier consulta sobre tus turnos, tratamientos o
+              pagos.
             </p>
             <div class="contact-methods">
               <div class="contact-method">
@@ -294,9 +292,10 @@
         <span class="chat-toggle-text">Asistente</span>
       </div>
       <i class="material-icons" *ngIf="chatOpen">close</i>
-      
+
       <!-- Burbuja de presentación mejorada -->
-      <div class="welcome-bubble-modern" [class.show]="showWelcomeBubble && !chatOpen" (click)="openChatFromBubble($event)">
+      <div class="welcome-bubble-modern" [class.show]="showWelcomeBubble && !chatOpen"
+        (click)="openChatFromBubble($event)">
         <div class="bubble-content-modern">
           <div class="bubble-avatar-modern">
             <i class="material-icons">smart_toy</i>
@@ -336,26 +335,24 @@
 
       <div class="chat-body-modern">
         <div class="chat-messages-modern" #chatMessages>
-          <div *ngFor="let message of messages" class="message-modern" [class.user]="message.isUser" [class.bot]="!message.isUser">
+          <div *ngFor="let message of messages" class="message-modern" [class.user]="message.isUser"
+            [class.bot]="!message.isUser">
             <div class="message-content-modern">
               <div class="message-text-modern" [innerHTML]="formatMessageText(message.text)"></div>
-              
+
               <!-- Botones de acción únicos del chatbot -->
               <div class="chatbot-actions-container" *ngIf="message.actions && message.actions.length > 0">
-                <button 
-                  *ngFor="let action of message.actions" 
-                  class="chatbot-action-btn"
-                  [class]="'chatbot-' + (action.variant || 'primary')"
-                  (click)="handleChatAction(action)"
+                <button *ngFor="let action of message.actions" class="chatbot-action-btn"
+                  [class]="'chatbot-' + (action.variant || 'primary')" (click)="handleChatAction(action)"
                   [title]="action.text">
                   {{action.text}}
                 </button>
               </div>
-              
+
               <div class="message-time-modern">{{ message.timestamp | date:'HH:mm' }}</div>
             </div>
           </div>
-          
+
           <div *ngIf="isTyping" class="message-modern bot">
             <div class="message-content-modern">
               <div class="typing-indicator-modern">
@@ -370,16 +367,9 @@
 
       <div class="chat-footer-modern">
         <form [formGroup]="chatForm" (ngSubmit)="onSubmit()" class="chat-form-modern">
-          <input 
-            type="text" 
-            formControlName="message"
-            class="chat-input-modern" 
-            placeholder="Escribe tu mensaje..."
+          <input type="text" formControlName="message" class="chat-input-modern" placeholder="Escribe tu mensaje..."
             [disabled]="isTyping">
-          <button 
-            type="submit" 
-            class="chat-send-btn-modern"
-            [disabled]="chatForm.invalid || isTyping">
+          <button type="submit" class="chat-send-btn-modern" [disabled]="chatForm.invalid || isTyping">
             <i class="material-icons">send</i>
           </button>
         </form>
@@ -387,5 +377,3 @@
     </div>
   </div>
 </div>
-
-<app-footer></app-footer>

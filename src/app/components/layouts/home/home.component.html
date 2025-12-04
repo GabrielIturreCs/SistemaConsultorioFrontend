@@ -1,39 +1,90 @@
-<div class="hero d-flex align-items-center justify-content-center min-vh-100 bg-light">
-  <div class="container">
-    <div class="content-wrapper p-3 p-sm-4 p-md-5 bg-white bg-opacity-75 rounded shadow-sm text-center">
-      <h1 class="title display-5 display-md-4 fw-bold text-primary">DentalTurnos</h1>
-      <p class="subtitle fs-4 fs-md-3 text-muted">Sistema de Gestión Odontológica</p>
-      <p class="description fs-6 fs-md-5 mb-4 text-secondary">Gestiona tus turnos de manera fácil y eficiente</p>
-      <div class="buttons d-flex flex-column flex-sm-row justify-content-center gap-2 gap-sm-3">
-        <button class="btn btn-primary btn-lg w-100 w-sm-auto" (click)="navigateToLogin()">Iniciar Sesión</button>
-        <button class="btn btn-outline-primary btn-lg w-100 w-sm-auto" (click)="navigateToRegistro()">Registrarse</button>
+<div class="home-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-bg-pattern"></div>
+    <div class="hero-content">
+      <div class="hero-grid">
+        <div class="hero-text">
+          <span class="hero-badge">Líderes en Gestión Clínica</span>
+          <h1 class="hero-title">Transforme su Práctica Odontológica</h1>
+          <p class="hero-subtitle">
+            DentalTurnos ofrece una solución integral de nivel empresarial para clínicas modernas.
+            Optimice su flujo de trabajo, mejore la experiencia del paciente y tome decisiones basadas en datos.
+          </p>
+          <div class="hero-buttons">
+            <button class="btn-hero-primary" (click)="navigateToRegistro()">Comenzar Ahora</button>
+            <button class="btn-hero-secondary" (click)="navigateToLogin()">Iniciar Sesión</button>
+          </div>
+        </div>
+        <div class="hero-image-wrapper">
+          <img
+            src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+            alt="Clínica Dental Moderna" class="hero-image">
+        </div>
       </div>
     </div>
-  </div>
-</div>
-<div class="features py-4 py-md-5">
-  <div class="container">
-    <h2 class="section-title text-center mb-4 mb-md-5 fw-bold text-primary">¿Por qué elegir DentalTurnos?</h2>
-    <div class="feature-cards row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 g-md-4 justify-content-center">
-      <div class="feature-card col">
-        <img src="https://weformacion.com/wp-content/uploads/2024/10/Recepcionista-de-clinica-scaled.jpg" alt="Gestión de Turnos" class="feature-image img-fluid rounded mb-3">
-        <i class="icon calendar bi bi-calendar-check fs-3 text-primary mb-2"></i>
-        <h3 class="h6 h5-md mb-2">Gestión de Turnos</h3>
-        <p class="text-muted fs-6">Reserva, cancela y reprograma tus turnos de manera sencilla.</p>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-number">98%</span>
+        <span class="stat-label">Satisfacción</span>
       </div>
-      <div class="feature-card col">
-        <img src="https://img.freepik.com/foto-gratis/foto-dentista-sonriente-pie-brazos-cruzados-su-colega-mostrando-signo-bien_496169-1043.jpg?semt=ais_hybrid&w=740" alt="Para Profesionales" class="feature-image img-fluid rounded mb-3">
-        <i class="icon professional bi bi-person-square fs-3 text-success mb-2"></i>
-        <h3 class="h6 h5-md mb-2">Para Profesionales</h3>
-        <p class="text-muted fs-6">Los dentistas pueden gestionar su agenda y pacientes eficientemente.</p>
-      </div>
-      <div class="feature-card col">
-        <img src="https://img.freepik.com/foto-gratis/primer-plano-informes-negocios_1098-193.jpg?semt=ais_hybrid&w=740" alt="Estadísticas" class="feature-image img-fluid rounded mb-3">
-        <i class="icon stats bi bi-bar-chart-fill fs-3 text-info mb-2"></i>
-        <h3 class="h6 h5-md mb-2">Estadísticas</h3>
-        <p class="text-muted fs-6">Accede a reportes y estadísticas detalladas de tu clínica.</p>
+      <div class="stat-item">
+        <span class="stat-number">24/7</span>
+        <span class="stat-label">Soporte Técnico</span>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section">
+    <div class="section-header">
+      <h2 class="section-title">Excelencia en Cada Detalle</h2>
+      <p class="section-subtitle">
+        Nuestra plataforma está diseñada pensando en las necesidades específicas de los profesionales
+        de la salud dental más exigentes.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <!-- Feature 1 -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">
+          <i class="bi bi-calendar-check-fill"></i>
+        </div>
+        <h3 class="feature-title">Agenda Inteligente</h3>
+        <p class="feature-desc">
+          Sistema de turnos avanzado con recordatorios automáticos, listas de espera y
+          optimización de huecos libres para maximizar la productividad.
+        </p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <h3 class="feature-title">Seguridad de Grado Bancario</h3>
+        <p class="feature-desc">
+          Sus datos y los de sus pacientes están protegidos con encriptación de extremo a extremo
+          y copias de seguridad automáticas diarias.
+        </p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">
+          <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <h3 class="feature-title">Analytics Avanzado</h3>
+        <p class="feature-desc">
+          Tome decisiones informadas con nuestro dashboard de métricas en tiempo real.
+          Analice rendimiento, facturación y retención de pacientes.
+        </p>
+      </div>
+    </div>
+  </section>
 </div>
-<app-footer></app-footer>

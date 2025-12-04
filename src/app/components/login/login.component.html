@@ -1,70 +1,85 @@
-<!-- Vista de Login -->
-<div class="container-fluid vh-100 d-flex align-items-center justify-content-center position-relative login-animate">
-  <!-- Botón Volver (icono Bootstrap, gradiente celeste) -->
-  <button class="btn btn-back" (click)="navigateToHome()" title="Volver al inicio">
-    <i class="bi bi-house-door-fill"></i>
-  </button>
-  <div class="card shadow-lg" style="max-width: 400px; width: 100%;">
-    <div class="card-header text-center bg-primary text-white">
-      <h3><i class="fas fa-tooth me-2"></i> DentalTurnos</h3>
-      <p class="mb-0">Sistema de Gestión Odontológica</p>
+<div class="login-container">
+  <!-- Left Side: Brand -->
+  <div class="login-brand-side">
+    <div class="brand-pattern"></div>
+    <div class="brand-content">
+      <div class="brand-logo">
+        <i class="fas fa-tooth"></i>
+      </div>
+      <h1 class="brand-title">DentalTurnos</h1>
+      <p class="brand-subtitle">
+        Gestión odontológica de vanguardia.<br>
+        Eficiencia, seguridad y tecnología al servicio de su clínica.
+      </p>
     </div>
-    <div class="card-body">
-      <form #loginFormRef="ngForm" (ngSubmit)="login()">
-        <div class="mb-3">
-          <label for="loginUsuario" class="form-label">Usuario</label>
-          <div class="input-group">
-            <span class="input-icon"><i class="bi bi-person-fill"></i></span>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="loginUsuario"
-              [(ngModel)]="loginForm.nombreUsuario" 
-              name="nombreUsuario"
-              autocomplete="username"
-              required
-              placeholder="Ingresa tu usuario">
-          </div>
+  </div>
+
+  <!-- Right Side: Form -->
+  <div class="login-form-side">
+    <button class="back-btn" (click)="navigateToHome()" title="Volver al inicio">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+
+    <div class="form-header">
+      <h2 class="form-title">Bienvenido</h2>
+      <p class="form-subtitle">Ingrese sus credenciales para acceder al sistema</p>
+    </div>
+
+    <form (ngSubmit)="login()">
+      <div class="form-group">
+        <label class="form-label">Usuario</label>
+        <div class="input-wrapper">
+          <i class="bi bi-person input-icon"></i>
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="loginForm.nombreUsuario" 
+            name="nombreUsuario"
+            placeholder="Ingrese su usuario"
+            autocomplete="username"
+            required>
         </div>
-        <div class="mb-3">
-          <label for="loginPassword" class="form-label">Contraseña</label>
-          <div class="input-group">
-            <span class="input-icon"><i class="bi bi-lock-fill"></i></span>
-            <input 
-              type="password" 
-              class="form-control" 
-              id="loginPassword"
-              [(ngModel)]="loginForm.password" 
-              name="password"
-              autocomplete="current-password"
-              required
-              placeholder="Ingresa tu contraseña">
-          </div>
-        </div>
-        <!-- Mensaje de error -->
-        <div *ngIf="msglogin" class="alert alert-danger text-center py-2">
-          {{ msglogin }}
-        </div>
-        <button 
-          type="submit" 
-          class="btn btn-primary w-100 mb-3"
-          [disabled]="!canLogin || isLoading">
-          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-          {{ isLoading ? 'Ingresando...' : 'Iniciar Sesión' }}
-        </button>
-      </form>
-      <div class="text-center mb-3">
-        <button class="btn btn-link" (click)="navigateToRegister()">
-          <i class="bi bi-person-plus-fill me-1"></i> ¿No tienes cuenta? Regístrate
-        </button>
       </div>
-      <!-- Botón de Google Login -->
-      <div class="text-center mt-2">
-        <button class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center" (click)="loginWithGoogle()" type="button">
-          <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
-          <span class="ms-1"><i class="bi bi-google me-1"></i>Iniciar sesión con Google</span>
-        </button>
+
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <div class="input-wrapper">
+          <i class="bi bi-lock input-icon"></i>
+          <input 
+            type="password" 
+            class="form-control" 
+            [(ngModel)]="loginForm.password" 
+            name="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required>
+        </div>
       </div>
+
+      <div *ngIf="msglogin" class="alert alert-danger mb-4">
+        {{ msglogin }}
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn-primary"
+        [disabled]="!canLogin || isLoading">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+        {{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+      </button>
+    </form>
+
+    <div class="divider">
+      <span>o continúe con</span>
+    </div>
+
+    <div class="google-btn-container">
+      <div id="google-btn-wrapper"></div>
+    </div>
+
+    <div class="register-link">
+      ¿No tiene una cuenta? 
+      <a href="javascript:void(0)" (click)="navigateToRegister()">Regístrese aquí</a>
     </div>
   </div>
 </div>
